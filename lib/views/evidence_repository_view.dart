@@ -3,7 +3,6 @@ import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/evidence_modal.dart';
-import '../models/models.dart';
 
 class EvidenceRepositoryView extends StatefulWidget {
   final AuditState state;

@@ -32,7 +32,7 @@ class KPICard extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: kpi.color.withOpacity(0.12),
+                  color: kpi.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(kpi.icon, color: kpi.color, size: 20),
