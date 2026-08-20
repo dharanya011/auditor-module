@@ -100,15 +100,17 @@ class DashboardView extends StatelessWidget {
                         ),
                         const SizedBox(width: 24),
                         // Legend
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildLegendItem(const Color(0xFF10B981), 'Verified'),
-                            const SizedBox(height: 8),
-                            _buildLegendItem(const Color(0xFFF59E0B), 'Pending'),
-                            const SizedBox(height: 8),
-                            _buildLegendItem(const Color(0xFFEF4444), 'Issues'),
-                          ],
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLegendItem(const Color(0xFF10B981), 'Verified'),
+                              const SizedBox(height: 8),
+                              _buildLegendItem(const Color(0xFFF59E0B), 'Pending'),
+                              const SizedBox(height: 8),
+                              _buildLegendItem(const Color(0xFFEF4444), 'Issues'),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -190,12 +192,16 @@ class DashboardView extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Recent Audit Activity',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        const Flexible(
+                          child: Text(
+                            'Recent Audit Activity',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         TextButton(
@@ -442,6 +448,7 @@ class DashboardView extends StatelessWidget {
 
   Widget _buildLegendItem(Color color, String text) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 12,
@@ -449,7 +456,14 @@ class DashboardView extends StatelessWidget {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
-        Text(text, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        Flexible(
+          child: Text(
+            text,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }

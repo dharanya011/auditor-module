@@ -19,238 +19,255 @@ class Header extends StatelessWidget {
       child: Row(
         children: [
           // View title & welcome subtitle
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                state.activeModule,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+          Flexible(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    state.activeModule,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Welcome back, Auditor',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 2),
-              const Text(
-                'Welcome back, Auditor',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
-              ),
-            ],
+            ),
           ),
 
           const Spacer(),
 
-          // Academic Year Dropdown
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              children: [
-                const Text(
-                  'Academic Year : ',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                ),
-                DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: state.selectedAcademicYear,
-                    isDense: true,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
+          // Right-side controls (scrollable when space is tight)
+          Flexible(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  // Academic Year Dropdown
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.border),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: '2025 - 2026', child: Text('2025 - 2026')),
-                      DropdownMenuItem(value: '2024 - 2025', child: Text('2024 - 2025')),
-                      DropdownMenuItem(value: '2023 - 2024', child: Text('2023 - 2024')),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) state.setSelectedAcademicYear(val);
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Academic Year : ',
+                          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        ),
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: state.selectedAcademicYear,
+                            isDense: true,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: '2025 - 2026', child: Text('2025 - 2026')),
+                              DropdownMenuItem(value: '2024 - 2025', child: Text('2024 - 2025')),
+                              DropdownMenuItem(value: '2023 - 2024', child: Text('2023 - 2024')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) state.setSelectedAcademicYear(val);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // Search button trigger
+                  IconButton(
+                    onPressed: () {
+                      state.setActiveModule('Global Search');
                     },
+                    icon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+                    tooltip: 'Global Search',
                   ),
-                ),
-              ],
-            ),
-          ),
 
-          const SizedBox(width: 16),
+                  const SizedBox(width: 8),
 
-          // Search button trigger
-          IconButton(
-            onPressed: () {
-              state.setActiveModule('Global Search');
-            },
-            icon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
-            tooltip: 'Global Search',
-          ),
-
-          const SizedBox(width: 8),
-
-          // Notifications Bell Popover
-          PopupMenuButton<String>(
-            tooltip: 'Audit Notifications',
-            offset: const Offset(0, 50),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  child: const Icon(Icons.notifications_none_rounded, color: AppColors.textSecondary),
-                ),
-                Positioned(
-                  right: 4,
-                  top: 4,
-                  child: Container(
-                    width: 18,
-                    height: 18,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFEF4444),
-                      shape: BoxShape.circle,
+                  // Notifications Bell Popover
+                  PopupMenuButton<String>(
+                    tooltip: 'Audit Notifications',
+                    offset: const Offset(0, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          child: const Icon(Icons.notifications_none_rounded, color: AppColors.textSecondary),
+                        ),
+                        Positioned(
+                          right: 4,
+                          top: 4,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFEF4444),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Center(
+                              child: Text(
+                                '5',
+                                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: const Center(
-                      child: Text(
-                        '5',
-                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    itemBuilder: (context) => [
+                      PopupMenuItem<String>(
+                        enabled: false,
+                        child: SizedBox(
+                          width: 320,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Audit Alerts (5 Unread)',
+                                style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  state.showToast('All notifications marked as read');
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('Mark all read', style: TextStyle(fontSize: 11)),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            itemBuilder: (context) => [
-              PopupMenuItem<String>(
-                enabled: false,
-                child: SizedBox(
-                  width: 320,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Audit Alerts (5 Unread)',
-                        style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+                      const PopupMenuDivider(),
+                      _buildNotificationItem(
+                        context,
+                        title: 'Marks mismatch in 23CS201',
+                        subtitle: 'High Priority • AUD-2025-00145',
+                        time: '2m ago',
+                        icon: Icons.warning_amber_rounded,
+                        iconColor: Colors.red,
+                        targetModule: 'Marks Audit',
                       ),
-                      TextButton(
-                        onPressed: () {
-                          state.showToast('All notifications marked as read');
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Mark all read', style: TextStyle(fontSize: 11)),
+                      _buildNotificationItem(
+                        context,
+                        title: 'Missing assignment evidence',
+                        subtitle: '12 Students • 23IT304',
+                        time: '15m ago',
+                        icon: Icons.assignment_late_rounded,
+                        iconColor: Colors.orange,
+                        targetModule: 'Assignment Audit',
+                      ),
+                      _buildNotificationItem(
+                        context,
+                        title: 'Question paper not approved',
+                        subtitle: 'High Priority • 23IT204 DBMS',
+                        time: '1h ago',
+                        icon: Icons.description_outlined,
+                        iconColor: Colors.red,
+                        targetModule: 'Question Paper Audit',
+                      ),
+                      _buildNotificationItem(
+                        context,
+                        title: 'Faculty report data inconsistency',
+                        subtitle: 'Medium Priority • CSE Dept',
+                        time: '2h ago',
+                        icon: Icons.badge_outlined,
+                        iconColor: Colors.amber.shade800,
+                        targetModule: 'Faculty Report Audit',
+                      ),
+                      _buildNotificationItem(
+                        context,
+                        title: 'Research DOI mismatch',
+                        subtitle: 'Medium Priority • 2 Records',
+                        time: '3h ago',
+                        icon: Icons.science_outlined,
+                        iconColor: Colors.purple,
+                        targetModule: 'Research Audit',
+                      ),
+                      const PopupMenuDivider(),
+                      PopupMenuItem<String>(
+                        onTap: () => state.setActiveModule('Audit Cases'),
+                        child: const Center(
+                          child: Text(
+                            'View All Audit Cases & Alerts →',
+                            style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ),
-              const PopupMenuDivider(),
-              _buildNotificationItem(
-                context,
-                title: 'Marks mismatch in 23CS201',
-                subtitle: 'High Priority • AUD-2025-00145',
-                time: '2m ago',
-                icon: Icons.warning_amber_rounded,
-                iconColor: Colors.red,
-                targetModule: 'Marks Audit',
-              ),
-              _buildNotificationItem(
-                context,
-                title: 'Missing assignment evidence',
-                subtitle: '12 Students • 23IT304',
-                time: '15m ago',
-                icon: Icons.assignment_late_rounded,
-                iconColor: Colors.orange,
-                targetModule: 'Assignment Audit',
-              ),
-              _buildNotificationItem(
-                context,
-                title: 'Question paper not approved',
-                subtitle: 'High Priority • 23IT204 DBMS',
-                time: '1h ago',
-                icon: Icons.description_outlined,
-                iconColor: Colors.red,
-                targetModule: 'Question Paper Audit',
-              ),
-              _buildNotificationItem(
-                context,
-                title: 'Faculty report data inconsistency',
-                subtitle: 'Medium Priority • CSE Dept',
-                time: '2h ago',
-                icon: Icons.badge_outlined,
-                iconColor: Colors.amber.shade800,
-                targetModule: 'Faculty Report Audit',
-              ),
-              _buildNotificationItem(
-                context,
-                title: 'Research DOI mismatch',
-                subtitle: 'Medium Priority • 2 Records',
-                time: '3h ago',
-                icon: Icons.science_outlined,
-                iconColor: Colors.purple,
-                targetModule: 'Research Audit',
-              ),
-              const PopupMenuDivider(),
-              PopupMenuItem<String>(
-                onTap: () => state.setActiveModule('Audit Cases'),
-                child: const Center(
-                  child: Text(
-                    'View All Audit Cases & Alerts →',
-                    style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 12),
-                  ),
-                ),
-              ),
-            ],
-          ),
 
-          const SizedBox(width: 16),
+                  const SizedBox(width: 16),
 
-          // User Profile Pill
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: const Color(0xFF818CF8),
-                  child: Text(
-                    state.userName.substring(0, 2).toUpperCase(),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  // User Profile Pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: const Color(0xFF818CF8),
+                          child: Text(
+                            state.userName.substring(0, 2).toUpperCase(),
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              state.userName,
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              state.userRole,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      state.userName,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                    Text(
-                      state.userRole,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

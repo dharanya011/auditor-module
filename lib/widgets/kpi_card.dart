@@ -52,7 +52,7 @@ class KPICard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
           Text(
             kpi.value,
             style: const TextStyle(
@@ -62,15 +62,19 @@ class KPICard extends StatelessWidget {
               letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Row(
             children: [
-              Text(
-                kpi.change,
-                style: TextStyle(
-                  color: kpi.isPositive ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  kpi.change,
+                  style: TextStyle(
+                    color: kpi.isPositive ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
