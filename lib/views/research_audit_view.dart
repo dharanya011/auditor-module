@@ -39,26 +39,32 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
         // Header Title
         Row(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Research, Publications, Patents & Grants Audit',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.5,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Research, Publications, Patents & Grants Audit',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Verifying paper titles, author affiliations, CrossRef DOI metadata, and Scopus/Web of Science indexing.',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                ),
-              ],
+                  SizedBox(height: 4),
+                  Text(
+                    'Verifying paper titles, author affiliations, CrossRef DOI metadata, and Scopus/Web of Science indexing.',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-            const Spacer(),
+            const SizedBox(width: 12),
             ElevatedButton.icon(
               onPressed: widget.state.canVerify ? () => widget.state.showToast('Verifying DOIs against CrossRef REST API...') : null,
               icon: const Icon(Icons.refresh_rounded, size: 16),
@@ -434,7 +440,12 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
+                Text(
+                  label,
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 2),
                 Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
