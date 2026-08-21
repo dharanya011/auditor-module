@@ -96,7 +96,7 @@ class _StudentAuditViewState extends State<StudentAuditView> {
 
         const SizedBox(height: 20),
 
-        // Executive Student Profile Header Card (Perfect 3-Column Alignment)
+        // Executive Student Profile Header Card (Responsive Layout)
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -105,161 +105,182 @@ class _StudentAuditViewState extends State<StudentAuditView> {
             border: Border.all(color: AppColors.border),
             boxShadow: AppColors.cardShadow,
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Column 1: Student Avatar Circle
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.accent.withValues(alpha: 0.25),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    student.name.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-
-              // Column 2: Name & Details & Metrics Chips
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isDesktop = constraints.maxWidth > 900;
+              final content = [
+                // Avatar & Student Info Row
+                Row(
                   children: [
-                    Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        Text(
-                          student.name,
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                        ),
-                        StatusBadge(status: student.status, isCompact: true),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.background,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.border),
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accent.withValues(alpha: 0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
-                          child: Text(
-                            'Reg No: ${student.registerNo}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, fontFamily: 'monospace', color: AppColors.textPrimary),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          student.name.substring(0, 1).toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              Text(
+                                student.name,
+                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                              ),
+                              StatusBadge(status: student.status, isCompact: true),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                child: Text(
+                                  'Reg No: ${student.registerNo}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, fontFamily: 'monospace', color: AppColors.textPrimary),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Dept of ${student.department} • Semester ${student.semester} (AY 2025-2026)',
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Metric Chips Row
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _buildStatMetricCard(
-                          label: 'CGPA Score',
-                          value: '${student.cgpa} / 10.0',
-                          icon: Icons.grade_rounded,
-                          color: const Color(0xFF4F46E5),
-                          bgColor: const Color(0xFFEEF2FF),
-                        ),
-                        _buildStatMetricCard(
-                          label: 'Biometric Attendance',
-                          value: '${student.attendance}% Logged',
-                          icon: Icons.fingerprint_rounded,
-                          color: student.attendance >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                          bgColor: student.attendance >= 75 ? const Color(0xFFECFDF5) : const Color(0xFFFEE2E2),
-                        ),
-                        _buildStatMetricCard(
-                          label: 'Earned Credits',
-                          value: '124 / 160 Credits',
-                          icon: Icons.stars_rounded,
-                          color: const Color(0xFF3B82F6),
-                          bgColor: const Color(0xFFEFF6FF),
-                        ),
-                        _buildStatMetricCard(
-                          label: 'Standing Backlogs',
-                          value: '0 Active Backlogs',
-                          icon: Icons.verified_rounded,
-                          color: const Color(0xFF059669),
-                          bgColor: const Color(0xFFECFDF5),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            'Dept of ${student.department} • Semester ${student.semester} (AY 2025-2026)',
+                            style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                          ),
+                          const SizedBox(height: 12),
+                          // Metric Chips Row
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              _buildStatMetricCard(
+                                label: 'CGPA Score',
+                                value: '${student.cgpa} / 10.0',
+                                icon: Icons.grade_rounded,
+                                color: const Color(0xFF4F46E5),
+                                bgColor: const Color(0xFFEEF2FF),
+                              ),
+                              _buildStatMetricCard(
+                                label: 'Biometric Attendance',
+                                value: '${student.attendance}% Logged',
+                                icon: Icons.fingerprint_rounded,
+                                color: student.attendance >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                bgColor: student.attendance >= 75 ? const Color(0xFFECFDF5) : const Color(0xFFFEE2E2),
+                              ),
+                              _buildStatMetricCard(
+                                label: 'Earned Credits',
+                                value: '124 / 160 Credits',
+                                icon: Icons.stars_rounded,
+                                color: const Color(0xFF3B82F6),
+                                bgColor: const Color(0xFFEFF6FF),
+                              ),
+                              _buildStatMetricCard(
+                                label: 'Standing Backlogs',
+                                value: '0 Active Backlogs',
+                                icon: Icons.verified_rounded,
+                                color: const Color(0xFF059669),
+                                bgColor: const Color(0xFFECFDF5),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-
-              const SizedBox(width: 16),
-
-              // Column 3: Action Buttons
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      widget.state.verifyStudentRecord(student.registerNo);
-                    },
-                    icon: const Icon(Icons.check_circle_rounded, size: 16),
-                    label: const Text('Verify Entire 360° Record'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      elevation: 1,
+                if (!isDesktop) const SizedBox(height: 16),
+                // Action Buttons
+                Column(
+                  crossAxisAlignment: isDesktop ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: widget.state.canVerify
+                          ? () {
+                              widget.state.verifyStudentRecord(student.registerNo);
+                            }
+                          : null,
+                      icon: const Icon(Icons.check_circle_rounded, size: 16),
+                      label: const Text('Verify Entire 360° Record'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        elevation: 1,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => ActionModal(
-                          recordId: student.registerNo,
-                          actionType: 'Flag Issue',
-                          state: widget.state,
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.flag_rounded, size: 14, color: Color(0xFFDC2626)),
-                    label: const Text('Flag Discrepancy', style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.bold, fontSize: 11)),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      side: const BorderSide(color: Color(0xFFDC2626)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: widget.state.canFlagIssue
+                          ? () {
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => ActionModal(
+                                  recordId: student.registerNo,
+                                  actionType: 'Flag Issue',
+                                  state: widget.state,
+                                ),
+                              );
+                            }
+                          : null,
+                      icon: const Icon(Icons.flag_rounded, size: 14, color: Color(0xFFDC2626)),
+                      label: const Text('Flag Discrepancy', style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.bold, fontSize: 11)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        side: const BorderSide(color: Color(0xFFDC2626)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextButton.icon(
-                    onPressed: () {
-                      widget.state.showToast('Generating 360° Audit PDF report for ${student.registerNo}...');
-                    },
-                    icon: const Icon(Icons.picture_as_pdf_rounded, size: 14, color: AppColors.textSecondary),
-                    label: const Text('Download 360° Audit Report', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(height: 6),
+                    TextButton.icon(
+                      onPressed: () {
+                        widget.state.showToast('Generating 360° Audit PDF report for ${student.registerNo}...');
+                      },
+                      icon: const Icon(Icons.picture_as_pdf_rounded, size: 14, color: AppColors.textSecondary),
+                      label: const Text('Download 360° Audit Report', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                    ),
+                  ],
+                ),
+              ];
+
+              if (isDesktop) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: content[0]),
+                    const SizedBox(width: 16),
+                    content[2],
+                  ],
+                );
+              } else {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: content,
+                );
+              }
+            },
           ),
         ),
 
@@ -486,9 +507,11 @@ class _StudentAuditViewState extends State<StudentAuditView> {
                 ),
               ),
               ElevatedButton.icon(
-                onPressed: () {
-                  widget.state.showToast('$title verified successfully!');
-                },
+                onPressed: widget.state.canVerify
+                    ? () {
+                        widget.state.showToast('$title verified successfully!');
+                      }
+                    : null,
                 icon: const Icon(Icons.check_circle_outline_rounded, size: 14),
                 label: const Text('Verify Module'),
                 style: ElevatedButton.styleFrom(

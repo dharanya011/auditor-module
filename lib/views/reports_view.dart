@@ -19,16 +19,24 @@ class ReportsView extends StatelessWidget {
         const SizedBox(height: 20),
 
         // KPI Cards
-        Row(
-          children: [
-            _buildKpiCard('Total Generated', '1,420', Icons.analytics_rounded, Colors.blue),
-            const SizedBox(width: 16),
-            _buildKpiCard('Scheduled Jobs', '8 Active', Icons.schedule_rounded, Colors.orange),
-            const SizedBox(width: 16),
-            _buildKpiCard('Export Templates', '12 Custom', Icons.format_paint_rounded, Colors.purple),
-            const SizedBox(width: 16),
-            _buildKpiCard('Data Storage', '2.4 GB', Icons.storage_rounded, Colors.green),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final count = constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 600 ? 2 : 1);
+            return GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: count,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 2.6,
+              children: [
+                _buildKpiCard('Total Generated', '1,420', Icons.analytics_rounded, Colors.blue),
+                _buildKpiCard('Scheduled Jobs', '8 Active', Icons.schedule_rounded, Colors.orange),
+                _buildKpiCard('Export Templates', '12 Custom', Icons.format_paint_rounded, Colors.purple),
+                _buildKpiCard('Data Storage', '2.4 GB', Icons.storage_rounded, Colors.green),
+              ],
+            );
+          },
         ),
 
         const SizedBox(height: 24),
@@ -98,44 +106,42 @@ class ReportsView extends StatelessWidget {
   }
 
   Widget _buildKpiCard(String title, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 4),
+                Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 4),
-                  Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

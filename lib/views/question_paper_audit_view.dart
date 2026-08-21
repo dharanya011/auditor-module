@@ -58,7 +58,7 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
             ),
             const Spacer(),
             ElevatedButton.icon(
-              onPressed: () => widget.state.showToast('Re-verifying Bloom Taxonomy distributions...'),
+              onPressed: widget.state.canVerify ? () => widget.state.showToast('Re-verifying Bloom Taxonomy distributions...') : null,
               icon: const Icon(Icons.refresh_rounded, size: 16),
               label: const Text('Re-verify Taxonomy'),
               style: ElevatedButton.styleFrom(

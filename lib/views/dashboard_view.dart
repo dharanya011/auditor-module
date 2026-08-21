@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 import '../widgets/kpi_card.dart';
+import '../widgets/responsive_row.dart';
 
 class DashboardView extends StatelessWidget {
   final AuditState state;
@@ -36,13 +37,11 @@ class DashboardView extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Row 2: Audit Progress Overview (Donut Chart & Table) & Recent Audit Activity
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        ResponsiveRow(
+          flexValues: const [3, 2],
           children: [
             // Left Column: Audit Progress Overview
-            Expanded(
-              flex: 3,
-              child: Container(
+            Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -172,101 +171,93 @@ class DashboardView extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-
-            const SizedBox(width: 24),
-
-            // Right Column: Recent Audit Activity
-            Expanded(
-              flex: 2,
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Flexible(
-                          child: Text(
-                            'Recent Audit Activity',
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Flexible(
+                        child: Text(
+                          'Recent Audit Activity',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        TextButton(
-                          onPressed: () => state.setActiveModule('Audit History'),
-                          child: const Text('View All'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: state.recentActivities.length,
-                      separatorBuilder: (context, index) => const Divider(height: 20, color: AppColors.border),
-                      itemBuilder: (context, index) {
-                        final act = state.recentActivities[index];
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(act.icon, color: act.iconColor, size: 20),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    act.title,
-                                    style: const TextStyle(
-                                      color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    act.module,
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              act.timestamp,
-                              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton.icon(
-                        onPressed: () => state.setActiveModule('Audit Work Queue'),
-                        icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                        label: const Text('Go to Work Queue'),
                       ),
+                      TextButton(
+                        onPressed: () => state.setActiveModule('Audit History'),
+                        child: const Text('View All'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: state.recentActivities.length,
+                    separatorBuilder: (context, index) => const Divider(height: 20, color: AppColors.border),
+                    itemBuilder: (context, index) {
+                      final act = state.recentActivities[index];
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(act.icon, color: act.iconColor, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  act.title,
+                                  style: const TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  act.module,
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            act.timestamp,
+                            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () => state.setActiveModule('Audit Work Queue'),
+                      icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                      label: const Text('Go to Work Queue'),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -275,12 +266,10 @@ class DashboardView extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Row 3: Critical Issues & Work Queue Summary & Quick Search
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        ResponsiveRow(
           children: [
             // Critical Issues
-            Expanded(
-              child: Container(
+            Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -341,103 +330,94 @@ class DashboardView extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-
-            const SizedBox(width: 24),
 
             // Work Queue Summary
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Audit Work Queue Summary',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        TextButton(
-                          onPressed: () => state.setActiveModule('Audit Work Queue'),
-                          child: const Text('View All'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _buildQueueItem(Icons.hourglass_top_rounded, 'Pending Verification', 124, Colors.amber),
-                    const Divider(height: 16),
-                    _buildQueueItem(Icons.find_in_page_rounded, 'In Review', 32, Colors.blue),
-                    const Divider(height: 16),
-                    _buildQueueItem(Icons.published_with_changes_rounded, 'Correction Requested', 18, Colors.purple),
-                    const Divider(height: 16),
-                    _buildQueueItem(Icons.autorenew_rounded, 'Re-verification', 11, Colors.orange),
-                    const Divider(height: 16),
-                    _buildQueueItem(Icons.check_circle_rounded, 'Completed', 458, Colors.green),
-                  ],
-                ),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Audit Work Queue Summary',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton(
+                        onPressed: () => state.setActiveModule('Audit Work Queue'),
+                        child: const Text('View All'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildQueueItem(Icons.hourglass_top_rounded, 'Pending Verification', 124, Colors.amber),
+                  const Divider(height: 16),
+                  _buildQueueItem(Icons.find_in_page_rounded, 'In Review', 32, Colors.blue),
+                  const Divider(height: 16),
+                  _buildQueueItem(Icons.published_with_changes_rounded, 'Correction Requested', 18, Colors.purple),
+                  const Divider(height: 16),
+                  _buildQueueItem(Icons.autorenew_rounded, 'Re-verification', 11, Colors.orange),
+                  const Divider(height: 16),
+                  _buildQueueItem(Icons.check_circle_rounded, 'Completed', 458, Colors.green),
+                ],
               ),
             ),
 
-            const SizedBox(width: 24),
-
             // Quick Search Card & Popular Tags
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Quick Search',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Quick Search',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      hintText: 'Search student, faculty, assignment...',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      isDense: true,
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search_rounded),
-                        hintText: 'Search student, faculty, assignment...',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        isDense: true,
-                      ),
-                      onSubmitted: (val) {
-                        state.setGlobalSearchQuery(val);
-                        state.setActiveModule('Global Search');
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Popular Searches',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: ['23CS001', 'Dr. Kumar', 'AI in Education', 'Data Structures', '23IT045', 'Analog Electronics'].map((tag) {
-                        return ActionChip(
-                          label: Text(tag, style: const TextStyle(fontSize: 11)),
-                          backgroundColor: AppColors.background,
-                          onPressed: () {
-                            state.setGlobalSearchQuery(tag);
-                            state.setActiveModule('Global Search');
-                          },
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
+                    onSubmitted: (val) {
+                      state.setGlobalSearchQuery(val);
+                      state.setActiveModule('Global Search');
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Popular Searches',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: ['23CS001', 'Dr. Kumar', 'AI in Education', 'Data Structures', '23IT045', 'Analog Electronics'].map((tag) {
+                      return ActionChip(
+                        label: Text(tag, style: const TextStyle(fontSize: 11)),
+                        backgroundColor: AppColors.background,
+                        onPressed: () {
+                          state.setGlobalSearchQuery(tag);
+                          state.setActiveModule('Global Search');
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
             ),
           ],

@@ -59,7 +59,7 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
             ),
             const Spacer(),
             ElevatedButton.icon(
-              onPressed: () => widget.state.showToast('Verifying DOIs against CrossRef REST API...'),
+              onPressed: widget.state.canVerify ? () => widget.state.showToast('Verifying DOIs against CrossRef REST API...') : null,
               icon: const Icon(Icons.refresh_rounded, size: 16),
               label: const Text('Sync CrossRef DOI'),
               style: ElevatedButton.styleFrom(
@@ -329,9 +329,11 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
                         SizedBox(
                           width: 120,
                           child: ElevatedButton.icon(
-                            onPressed: () {
-                              widget.state.showToast('Verifying DOI metadata against CrossRef for ${r.id}...');
-                            },
+                            onPressed: widget.state.canVerify
+                                ? () {
+                                    widget.state.showToast('Verifying DOI metadata against CrossRef for ${r.id}...');
+                                  }
+                                : null,
                             icon: const Icon(Icons.link_rounded, size: 14),
                             label: const Text('Verify DOI'),
                             style: ElevatedButton.styleFrom(

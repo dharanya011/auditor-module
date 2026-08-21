@@ -383,16 +383,18 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                               IconButton(
                                 icon: const Icon(Icons.flag_outlined, color: Colors.red, size: 20),
                                 tooltip: 'Request Correction',
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (ctx) => ActionModal(
-                                      recordId: a.id,
-                                      actionType: 'Request Correction',
-                                      state: widget.state,
-                                    ),
-                                  );
-                                },
+                                onPressed: widget.state.canRequestCorrection
+                                    ? () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => ActionModal(
+                                            recordId: a.id,
+                                            actionType: 'Request Correction',
+                                            state: widget.state,
+                                          ),
+                                        );
+                                      }
+                                    : null,
                               ),
                             ],
                           ),

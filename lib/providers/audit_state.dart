@@ -5,7 +5,7 @@ class AuditState extends ChangeNotifier {
   String _activeModule = 'Dashboard';
   String _selectedAcademicYear = '2025 - 2026';
   String _globalSearchQuery = '';
-  final String _userRole = 'Chief Auditor';
+  String _userRole = 'Lead Auditor';
   final String _userName = 'Auditor User';
   
   // Dialog State
@@ -20,6 +20,19 @@ class AuditState extends ChangeNotifier {
   String get userName => _userName;
   EvidenceItem? get selectedEvidence => _selectedEvidence;
   String? get notificationToast => _notificationToast;
+
+  // Department Scope & Permissions
+  String? get departmentScope => _userRole == 'Department Auditor' ? 'CSE' : null;
+
+  bool get canVerify => _userRole == 'Lead Auditor' || _userRole == 'Department Auditor' || _userRole == 'Chief Auditor';
+  bool get canFlagIssue => _userRole != 'Read-Only Inspector';
+  bool get canRequestCorrection => _userRole == 'Lead Auditor' || _userRole == 'Department Auditor' || _userRole == 'Chief Auditor';
+  bool get canEditRecords => false;
+
+  void setUserRole(String role) {
+    _userRole = role;
+    notifyListeners();
+  }
 
   void setActiveModule(String module) {
     _activeModule = module;

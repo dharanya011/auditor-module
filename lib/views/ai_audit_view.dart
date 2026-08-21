@@ -105,16 +105,28 @@ class AIAuditView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    alignment: WrapAlignment.spaceBetween,
+                    spacing: 12,
+                    runSpacing: 8,
                     children: [
-                      const Icon(Icons.lightbulb_outline_rounded, color: Colors.amber, size: 18),
-                      const SizedBox(width: 6),
-                      Text('AI Recommendation: ${anomaly.recommendation}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                      const Spacer(),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.lightbulb_outline_rounded, color: Colors.amber, size: 18),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text('AI Recommendation: ${anomaly.recommendation}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          ),
+                        ],
+                      ),
                       ElevatedButton.icon(
-                        onPressed: () {
-                          state.flagIssue(anomaly.recordReference, anomaly.detectionReason, anomaly.severity);
-                        },
+                        onPressed: state.canFlagIssue
+                            ? () {
+                                state.flagIssue(anomaly.recordReference, anomaly.detectionReason, anomaly.severity);
+                              }
+                            : null,
                         icon: const Icon(Icons.flag_rounded, size: 16),
                         label: const Text('Accept & Flag Case'),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),

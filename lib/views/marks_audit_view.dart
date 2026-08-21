@@ -439,16 +439,18 @@ class _MarksAuditViewState extends State<MarksAuditView> {
                         SizedBox(
                           width: 120,
                           child: ElevatedButton.icon(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (ctx) => ActionModal(
-                                  recordId: m.id,
-                                  actionType: m.isMismatch ? 'Flag Issue' : 'Verify',
-                                  state: widget.state,
-                                ),
-                              );
-                            },
+                            onPressed: (m.isMismatch ? widget.state.canFlagIssue : widget.state.canVerify)
+                                ? () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => ActionModal(
+                                        recordId: m.id,
+                                        actionType: m.isMismatch ? 'Flag Issue' : 'Verify',
+                                        state: widget.state,
+                                      ),
+                                    );
+                                  }
+                                : null,
                             icon: Icon(m.isMismatch ? Icons.flag_rounded : Icons.check_circle_rounded, size: 14),
                             label: Text(m.isMismatch ? 'Flag' : 'Verify'),
                             style: ElevatedButton.styleFrom(

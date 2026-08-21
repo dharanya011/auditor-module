@@ -60,7 +60,7 @@ class _EvidenceRepositoryViewState extends State<EvidenceRepositoryView> {
             ),
             const Spacer(),
             ElevatedButton.icon(
-              onPressed: () => widget.state.showToast('Re-verifying AWS S3 document hashes...'),
+              onPressed: widget.state.canVerify ? () => widget.state.showToast('Re-verifying AWS S3 document hashes...') : null,
               icon: const Icon(Icons.security_rounded, size: 15),
               label: const Text('Verify S3 Hashes'),
               style: ElevatedButton.styleFrom(

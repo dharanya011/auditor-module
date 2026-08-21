@@ -370,16 +370,18 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
                         SizedBox(
                           width: 120,
                           child: ElevatedButton.icon(
-                            onPressed: () {
-                              if (f.hasConflict) {
-                                showDialog(
-                                  context: context,
-                                  builder: (ctx) => ActionModal(recordId: f.id, actionType: 'Flag Issue', state: widget.state),
-                                );
-                              } else {
-                                widget.state.showToast('Faculty report ${f.id} verified!');
-                              }
-                            },
+                            onPressed: (f.hasConflict ? widget.state.canFlagIssue : widget.state.canVerify)
+                                ? () {
+                                    if (f.hasConflict) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx) => ActionModal(recordId: f.id, actionType: 'Flag Issue', state: widget.state),
+                                      );
+                                    } else {
+                                      widget.state.showToast('Faculty report ${f.id} verified!');
+                                    }
+                                  }
+                                : null,
                             icon: Icon(f.hasConflict ? Icons.warning_rounded : Icons.check_circle_rounded, size: 14),
                             label: Text(f.hasConflict ? 'Inspect' : 'Verify'),
                             style: ElevatedButton.styleFrom(

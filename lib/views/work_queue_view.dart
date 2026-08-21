@@ -270,12 +270,14 @@ class _WorkQueueViewState extends State<WorkQueueView> {
                                   IconButton(
                                     icon: const Icon(Icons.flag_outlined, size: 20, color: Color(0xFFDC2626)),
                                     tooltip: 'Flag Discrepancy',
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (ctx) => ActionModal(recordId: t['target']!, actionType: 'Flag Issue', state: widget.state),
-                                      );
-                                    },
+                                    onPressed: widget.state.canFlagIssue
+                                        ? () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (ctx) => ActionModal(recordId: t['target']!, actionType: 'Flag Issue', state: widget.state),
+                                            );
+                                          }
+                                        : null,
                                   ),
                                 ],
                               ),
