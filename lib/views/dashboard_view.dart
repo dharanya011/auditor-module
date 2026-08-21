@@ -19,6 +19,10 @@ class DashboardView extends StatelessWidget {
         LayoutBuilder(
           builder: (context, constraints) {
             final count = constraints.maxWidth > 1200 ? 6 : (constraints.maxWidth > 800 ? 3 : 2);
+            final double cellWidth = (constraints.maxWidth - (count - 1) * 16) / count;
+            final double aspectRatio = count == 6
+                ? 1.55
+                : (count == 3 ? cellWidth / 135 : cellWidth / 128);
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -26,7 +30,7 @@ class DashboardView extends StatelessWidget {
                 crossAxisCount: count,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 1.55,
+                childAspectRatio: aspectRatio,
               ),
               itemCount: state.kpis.length,
               itemBuilder: (context, index) => KPICard(kpi: state.kpis[index]),

@@ -25,19 +25,22 @@ class AIAuditView extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Row(
-                children: [
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
                   Icon(Icons.auto_awesome_rounded, color: Color(0xFF818CF8), size: 28),
                   SizedBox(width: 12),
-                  Text(
-                    'AI-Assisted ERP Audit & Anomaly Detection',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                  Expanded(
+                    child: Text(
+                      'AI-Assisted ERP Audit & Anomaly Detection',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
-              SizedBox(height: 8),
-              Text(
+              const SizedBox(height: 8),
+              const Text(
                 'AI acts as a detection layer: identifying unusual grade patterns, missing submission hash links, faculty report conflicts, and post-approval grade changes.',
                 style: TextStyle(color: Color(0xFFA5B4FC), fontSize: 13),
               ),
