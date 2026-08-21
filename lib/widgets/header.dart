@@ -4,20 +4,40 @@ import '../providers/audit_state.dart';
 
 class Header extends StatelessWidget {
   final AuditState state;
+  final bool showHamburger;
 
-  const Header({super.key, required this.state});
+  const Header({
+    super.key,
+    required this.state,
+    this.showHamburger = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Container(
       height: 70,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [
+          // Drawer Hamburger Menu Button on Mobile/Tablet
+          if (showHamburger) ...[
+            Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                tooltip: 'Open Navigation Drawer',
+              ),
+            ),
+            const SizedBox(width: 4),
+          ],
+
           // View title & welcome subtitle
           Flexible(
             child: Align(
@@ -28,22 +48,24 @@ class Header extends StatelessWidget {
                 children: [
                   Text(
                     state.activeModule,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 20,
+                      fontSize: isMobile ? 16 : 20,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Welcome back, Auditor',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
+                  if (!isMobile) ...[
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Welcome back, Auditor',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -59,7 +81,7 @@ class Header extends StatelessWidget {
                 children: [
                   // Academic Year Dropdown
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 14, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppColors.background,
                       borderRadius: BorderRadius.circular(8),
@@ -67,9 +89,9 @@ class Header extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Text(
-                          'Academic Year : ',
-                          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        Text(
+                          isMobile ? 'AY: ' : 'Academic Year : ',
+                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                         ),
                         DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
@@ -94,7 +116,7 @@ class Header extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(width: 16),
+                  SizedBox(width: isMobile ? 8 : 16),
 
                   // Search button trigger
                   IconButton(
@@ -105,7 +127,7 @@ class Header extends StatelessWidget {
                     tooltip: 'Global Search',
                   ),
 
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
 
                   // Notifications Bell Popover
                   PopupMenuButton<String>(
@@ -221,7 +243,7 @@ class Header extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(width: 16),
+                  SizedBox(width: isMobile ? 8 : 16),
 
                   // User Profile Pill
                   Container(
@@ -234,35 +256,37 @@ class Header extends StatelessWidget {
                     child: Row(
                       children: [
                         CircleAvatar(
-                          radius: 16,
+                          radius: 14,
                           backgroundColor: const Color(0xFF818CF8),
                           child: Text(
                             state.userName.substring(0, 2).toUpperCase(),
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              state.userName,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                        if (!isMobile) ...[
+                          const SizedBox(width: 8),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                state.userName,
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
                               ),
-                            ),
-                            Text(
-                              state.userRole,
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 10,
+                              Text(
+                                state.userRole,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 10,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),

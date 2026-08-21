@@ -53,59 +53,73 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
             textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
             scaffoldBackgroundColor: AppColors.background,
           ),
-          home: Scaffold(
-            body: Stack(
-              children: [
-                Row(
+          home: LayoutBuilder(
+            builder: (context, constraints) {
+              final isDesktop = constraints.maxWidth >= 900;
+              return Scaffold(
+                drawer: !isDesktop
+                    ? Drawer(
+                        width: 250,
+                        child: Sidebar(state: _auditState),
+                      )
+                    : null,
+                body: Stack(
                   children: [
-                    // Sidebar Navigation Shell
-                    Sidebar(state: _auditState),
+                    Row(
+                      children: [
+                        // Sidebar Navigation Shell (Persistent on Desktop >= 900px)
+                        if (isDesktop) Sidebar(state: _auditState),
 
-                    // Main Right Content Canvas
-                    Expanded(
-                      child: Column(
-                        children: [
-                          // Top Header
-                          Header(state: _auditState),
+                        // Main Right Content Canvas
+                        Expanded(
+                          child: Column(
+                            children: [
+                              // Top Header with Drawer Hamburger toggle on Mobile/Tablet
+                              Header(
+                                state: _auditState,
+                                showHamburger: !isDesktop,
+                              ),
 
-                          // Dynamic View Router Canvas
-                          Expanded(
-                            child: _buildActiveView(_auditState),
+                              // Dynamic View Router Canvas
+                              Expanded(
+                                child: _buildActiveView(_auditState),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+
+                    // Floating Toast Notification Overlay
+                    if (_auditState.notificationToast != null)
+                      Positioned(
+                        bottom: 24,
+                        right: 24,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline_rounded, color: Color(0xFF38BDF8), size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                _auditState.notificationToast!,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-
-                // Floating Toast Notification Overlay
-                if (_auditState.notificationToast != null)
-                  Positioned(
-                    bottom: 24,
-                    right: 24,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.info_outline_rounded, color: Color(0xFF38BDF8), size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            _auditState.notificationToast!,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+              );
+            },
           ),
         );
       },

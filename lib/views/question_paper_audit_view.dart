@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
+import '../widgets/responsive_row.dart';
 
 class QuestionPaperAuditView extends StatefulWidget {
   final AuditState state;
@@ -75,22 +76,20 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
 
         const SizedBox(height: 20),
 
-        // KPI Summary Cards Row
-        Row(
+        // KPI Summary Cards Row (Responsive)
+        ResponsiveRow(
+          spacing: 14,
           children: [
             _buildKpiCard('Total Question Papers', '420 Papers', Icons.description_outlined, const Color(0xFF4F46E5), const Color(0xFFEEF2FF)),
-            const SizedBox(width: 14),
             _buildKpiCard('Regulation R2023 Passed', '398 Papers', Icons.verified_rounded, const Color(0xFF10B981), const Color(0xFFECFDF5)),
-            const SizedBox(width: 14),
             _buildKpiCard('Bloom Taxonomy Gaps', '14 Flags', Icons.error_outline_rounded, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
-            const SizedBox(width: 14),
             _buildKpiCard('CoE Approval Pending', '8 Papers', Icons.pending_actions_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
           ],
         ),
 
         const SizedBox(height: 20),
 
-        // Filter Toolbar Card
+        // Filter Toolbar Card (Responsive Wrap)
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -99,10 +98,13 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
             border: Border.all(color: AppColors.border),
             boxShadow: AppColors.cardShadow,
           ),
-          child: Row(
+          child: Wrap(
+            spacing: 16,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              // Search Input
-              Expanded(
+              SizedBox(
+                width: 320,
                 child: TextField(
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 20),
@@ -124,17 +126,13 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
                   onChanged: (val) => setState(() => _searchQuery = val),
                 ),
               ),
-              const SizedBox(width: 16),
-
-              // Filter Chips
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   _buildFilterChip('All Departments', 'All'),
-                  const SizedBox(width: 8),
                   _buildFilterChip('MECH Dept', 'MECH'),
-                  const SizedBox(width: 8),
                   _buildFilterChip('IT Dept', 'IT'),
-                  const SizedBox(width: 8),
                   _buildFilterChip('CSE Dept', 'CSE'),
                 ],
               ),
@@ -144,8 +142,16 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
 
         const SizedBox(height: 20),
 
-        // Executive Data Table Container (Minimum Width 1350px = ZERO OVERLAPS)
-        Container(
+        // Data Table — Desktop scroll table; Mobile card-per-record
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            if (isMobile) {
+              return Column(
+                children: papers.map((q) => _buildMobileCard(q)).toList(),
+              );
+            }
+            return Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
@@ -335,8 +341,55 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
               ),
             ),
           ),
+        );
+          },
         ),
       ],
+    );
+  }
+
+  Widget _buildMobileCard(dynamic q) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text(q.courseTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14))),
+              StatusBadge(status: q.status, isCompact: true),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(q.id, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontFamily: 'monospace')),
+          const Divider(height: 20),
+          _mobileRow('Department', q.department),
+          _mobileRow('Regulation', q.regulation),
+          _mobileRow('Bloom Taxonomy', q.bloomTaxonomyCompliant ? '✓ Pass (60% HOTS)' : '✗ Taxonomy Gap'),
+          _mobileRow('Syllabus Mapped', q.syllabusMapped ? '✓ 100% Mapped' : '✗ Unmapped COs'),
+          _mobileRow('HOD Approval', q.hodApproved ? '✓ Approved' : '✗ Pending HOD'),
+          _mobileRow('CoE Approval', q.coeApproved ? '✓ Approved' : '✗ Pending CoE'),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          SizedBox(width: 120, child: Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600))),
+          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+        ],
+      ),
     );
   }
 
@@ -359,33 +412,33 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
   }
 
   Widget _buildKpiCard(String label, String value, IconData icon, Color color, Color bgColor) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppColors.cardShadow,
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Column(
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 2),
-                Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -174,7 +174,12 @@ class Sidebar extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => state.setActiveModule(title),
+          onTap: () {
+            state.setActiveModule(title);
+            if (Scaffold.of(context).isDrawerOpen) {
+              Navigator.pop(context);
+            }
+          },
           borderRadius: BorderRadius.circular(8),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),

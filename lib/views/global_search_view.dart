@@ -94,8 +94,11 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
 
         const SizedBox(height: 20),
 
-        // Faceted Filters
-        Row(
+        // Faceted Filters (Responsive Wrap)
+        Wrap(
+          spacing: 16,
+          runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             DropdownButton<String>(
               value: _selectedDept,
@@ -107,7 +110,6 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
               ],
               onChanged: (v) => setState(() => _selectedDept = v!),
             ),
-            const SizedBox(width: 16),
             DropdownButton<String>(
               value: _selectedRecordType,
               items: const [

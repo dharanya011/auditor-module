@@ -85,10 +85,14 @@ class ReportsView extends StatelessWidget {
         
         const SizedBox(height: 16),
 
-        GridView.count(
+        // Report Cards Grid (Responsive: 1 col mobile, 2 tablet, 3 desktop)
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final count = constraints.maxWidth > 900 ? 3 : (constraints.maxWidth > 600 ? 2 : 1);
+            return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 3,
+          crossAxisCount: count,
           crossAxisSpacing: 20,
           mainAxisSpacing: 20,
           childAspectRatio: 1.3,
@@ -100,6 +104,8 @@ class ReportsView extends StatelessWidget {
             _buildReportCard(context, 'Issue & Discrepancy Report', 'Critical, high, medium, and low severity findings and HOD resolution status.', Icons.warning_amber_rounded, Colors.red),
             _buildReportCard(context, 'Audit Completion Report', 'Overall audit completion progress by department, module, and academic year.', Icons.pie_chart_rounded, Colors.green),
           ],
+        );
+          },
         ),
       ],
     );

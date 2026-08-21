@@ -129,32 +129,35 @@ class _WorkQueueViewState extends State<WorkQueueView> {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        // Tabs
-        Row(
-          children: ['All Tasks', 'Pending Verification', 'In Review', 'Correction Requested', 'Re-verification', 'Completed'].map((tab) {
-            final isSel = _activeTab == tab;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(tab),
-                selected: isSel,
-                onSelected: (val) {
-                  if (val) setState(() => _activeTab = tab);
-                },
-                selectedColor: const Color(0xFF4F46E5),
-                labelStyle: TextStyle(
-                  color: isSel ? Colors.white : AppColors.textPrimary,
-                  fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 13,
+        // Horizontally Scrollable Status Chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: ['All Tasks', 'Pending Verification', 'In Review', 'Correction Requested', 'Re-verification', 'Completed'].map((tab) {
+              final isSel = _activeTab == tab;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(tab),
+                  selected: isSel,
+                  onSelected: (val) {
+                    if (val) setState(() => _activeTab = tab);
+                  },
+                  selectedColor: const Color(0xFF4F46E5),
+                  labelStyle: TextStyle(
+                    color: isSel ? Colors.white : AppColors.textPrimary,
+                    fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 13,
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
 
         const SizedBox(height: 20),
 
-        // Clean Full-Width Task Table Container (Matching Reference Wireframe)
+        // Clean Full-Width Task Table Container (Responsive Scroll)
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -168,8 +171,14 @@ class _WorkQueueViewState extends State<WorkQueueView> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Row(
                   children: [
-                    const Text('Auditor Work Queue Tasks', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
-                    const Spacer(),
+                    const Flexible(
+                      child: Text(
+                        'Auditor Work Queue Tasks',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     // Department Filter Popup
                     PopupMenuButton<String>(
                       initialValue: _selectedDept,
@@ -187,7 +196,7 @@ class _WorkQueueViewState extends State<WorkQueueView> {
                           const Icon(Icons.filter_list_rounded, color: AppColors.textSecondary, size: 20),
                           const SizedBox(width: 6),
                           Text(
-                            _selectedDept == 'All Departments' ? 'Filter by Priority / Dept' : 'Dept: $_selectedDept',
+                            _selectedDept == 'All Departments' ? 'Filter Dept' : 'Dept: $_selectedDept',
                             style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
                           ),
                         ],
@@ -209,6 +218,7 @@ class _WorkQueueViewState extends State<WorkQueueView> {
                         Text(
                           'No tasks found matching status "$_activeTab" and department "$_selectedDept"',
                           style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                          textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 12),
                         TextButton(
@@ -228,64 +238,61 @@ class _WorkQueueViewState extends State<WorkQueueView> {
               else
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width - 300,
-                    child: DataTable(
-                      columnSpacing: 28,
-                      horizontalMargin: 20,
-                      columns: const [
-                        DataColumn(label: Text('Task / Case ID', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
-                        DataColumn(label: Text('Target Record', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
-                        DataColumn(label: Text('Module', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
-                        DataColumn(label: Text('Department', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
-                        DataColumn(label: Text('Priority', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
-                        DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
-                        DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
-                      ],
-                      rows: filteredTasks.map((t) {
-                        return DataRow(
-                          cells: [
-                            DataCell(
-                              Text(
-                                t['id']!,
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF4F46E5), fontSize: 13),
-                              ),
+                  child: DataTable(
+                    columnSpacing: 28,
+                    horizontalMargin: 20,
+                    columns: const [
+                      DataColumn(label: Text('Task / Case ID', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
+                      DataColumn(label: Text('Target Record', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
+                      DataColumn(label: Text('Module', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
+                      DataColumn(label: Text('Department', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
+                      DataColumn(label: Text('Priority', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
+                      DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
+                      DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary))),
+                    ],
+                    rows: filteredTasks.map((t) {
+                      return DataRow(
+                        cells: [
+                          DataCell(
+                            Text(
+                              t['id']!,
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF4F46E5), fontSize: 13),
                             ),
-                            DataCell(Text(t['target']!, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
-                            DataCell(Text(t['module']!)),
-                            DataCell(Text(t['dept']!)),
-                            DataCell(StatusBadge(status: t['priority']!, isCompact: true, showDot: false)),
-                            DataCell(StatusBadge(status: t['status']!, isCompact: true, showDot: false)),
-                            DataCell(
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.remove_red_eye_outlined, size: 20, color: Color(0xFF4F46E5)),
-                                    tooltip: 'Review Task',
-                                    onPressed: () {
-                                      widget.state.setActiveModule(t['module']!);
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.flag_outlined, size: 20, color: Color(0xFFDC2626)),
-                                    tooltip: 'Flag Discrepancy',
-                                    onPressed: widget.state.canFlagIssue
-                                        ? () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (ctx) => ActionModal(recordId: t['target']!, actionType: 'Flag Issue', state: widget.state),
-                                            );
-                                          }
-                                        : null,
-                                  ),
-                                ],
-                              ),
+                          ),
+                          DataCell(Text(t['target']!, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
+                          DataCell(Text(t['module']!)),
+                          DataCell(Text(t['dept']!)),
+                          DataCell(StatusBadge(status: t['priority']!, isCompact: true, showDot: false)),
+                          DataCell(StatusBadge(status: t['status']!, isCompact: true, showDot: false)),
+                          DataCell(
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.remove_red_eye_outlined, size: 20, color: Color(0xFF4F46E5)),
+                                  tooltip: 'Review Task',
+                                  onPressed: () {
+                                    widget.state.setActiveModule(t['module']!);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.flag_outlined, size: 20, color: Color(0xFFDC2626)),
+                                  tooltip: 'Flag Discrepancy',
+                                  onPressed: widget.state.canFlagIssue
+                                      ? () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (ctx) => ActionModal(recordId: t['target']!, actionType: 'Flag Issue', state: widget.state),
+                                          );
+                                        }
+                                      : null,
+                                ),
+                              ],
                             ),
-                          ],
-                        );
-                      }).toList(),
-                    ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
                   ),
                 ),
             ],

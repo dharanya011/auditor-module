@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
+import '../widgets/responsive_row.dart';
 
 class ResearchAuditView extends StatefulWidget {
   final AuditState state;
@@ -76,22 +77,20 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
 
         const SizedBox(height: 20),
 
-        // KPI Summary Cards Row
-        Row(
+        // KPI Summary Cards Row (Responsive)
+        ResponsiveRow(
+          spacing: 14,
           children: [
             _buildKpiCard('Total Publications Audited', '1,120 Papers', Icons.science_outlined, const Color(0xFF4F46E5), const Color(0xFFEEF2FF)),
-            const SizedBox(width: 14),
             _buildKpiCard('CrossRef DOI Verified', '1,048 Papers', Icons.verified_rounded, const Color(0xFF10B981), const Color(0xFFECFDF5)),
-            const SizedBox(width: 14),
             _buildKpiCard('DOI Metadata Mismatches', '24 Flags', Icons.error_outline_rounded, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
-            const SizedBox(width: 14),
             _buildKpiCard('Scopus / WoS Indexed', '980 Papers', Icons.auto_awesome_rounded, const Color(0xFF8B5CF6), const Color(0xFFF5F3FF)),
           ],
         ),
 
         const SizedBox(height: 20),
 
-        // Filter Toolbar Card
+        // Filter Toolbar Card (Responsive Wrap)
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -100,10 +99,13 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
             border: Border.all(color: AppColors.border),
             boxShadow: AppColors.cardShadow,
           ),
-          child: Row(
+          child: Wrap(
+            spacing: 16,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              // Search Input
-              Expanded(
+              SizedBox(
+                width: 320,
                 child: TextField(
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 20),
@@ -125,15 +127,12 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
                   onChanged: (val) => setState(() => _searchQuery = val),
                 ),
               ),
-              const SizedBox(width: 16),
-
-              // Filter Chips
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   _buildFilterChip('All Types', 'All'),
-                  const SizedBox(width: 8),
                   _buildFilterChip('Journal Articles', 'Journal Article'),
-                  const SizedBox(width: 8),
                   _buildFilterChip('Conference Papers', 'Conference Paper'),
                 ],
               ),
@@ -143,8 +142,16 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
 
         const SizedBox(height: 20),
 
-        // Executive Data Table Container (Minimum Width 1350px = ZERO OVERLAPS)
-        Container(
+        // Data Table — Desktop scroll table; Mobile card-per-record
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            if (isMobile) {
+              return Column(
+                children: records.map((r) => _buildMobileCard(r)).toList(),
+              );
+            }
+            return Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
@@ -352,39 +359,88 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
               ),
             ),
           ),
+        );
+          },
         ),
       ],
     );
   }
 
+  Widget _buildMobileCard(dynamic r) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: r.metadataMatch ? AppColors.border : const Color(0xFFEF4444)),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(r.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 2, overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(width: 8),
+              StatusBadge(status: r.status, isCompact: true),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(r.authors, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+          const Divider(height: 20),
+          _mobileRow('Type', r.type),
+          _mobileRow('DOI', r.doi),
+          _mobileRow('Journal', r.journalName),
+          _mobileRow('Indexing', r.indexing),
+          _mobileRow('DOI Match', r.metadataMatch ? '✓ 100% DOI Match' : '✗ Mismatch', highlight: !r.metadataMatch),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileRow(String label, String value, {bool highlight = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          SizedBox(width: 90, child: Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600))),
+          Expanded(child: Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: highlight ? const Color(0xFFEF4444) : AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildKpiCard(String label, String value, IconData icon, Color color, Color bgColor) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppColors.cardShadow,
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Column(
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 2),
-                Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

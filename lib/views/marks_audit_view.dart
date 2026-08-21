@@ -3,6 +3,7 @@ import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/action_modal.dart';
+import '../widgets/responsive_row.dart';
 
 class MarksAuditView extends StatefulWidget {
   final AuditState state;
@@ -78,15 +79,13 @@ class _MarksAuditViewState extends State<MarksAuditView> {
 
         const SizedBox(height: 20),
 
-        // KPI Summary Cards Row
-        Row(
+        // KPI Summary Cards Row (Responsive)
+        ResponsiveRow(
+          spacing: 14,
           children: [
             _buildKpiCard('Total Marks Audited', '34,850', Icons.analytics_outlined, const Color(0xFF4F46E5), const Color(0xFFEEF2FF)),
-            const SizedBox(width: 14),
             _buildKpiCard('5-Stage Matched', '34,210', Icons.verified_rounded, const Color(0xFF10B981), const Color(0xFFECFDF5)),
-            const SizedBox(width: 14),
             _buildKpiCard('Post-Approval Mismatches', '42 Flags', Icons.error_outline_rounded, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
-            const SizedBox(width: 14),
             _buildKpiCard('Pending HOD Verification', '598 Records', Icons.pending_actions_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
           ],
         ),
@@ -138,7 +137,7 @@ class _MarksAuditViewState extends State<MarksAuditView> {
 
         const SizedBox(height: 20),
 
-        // Filter Toolbar Card
+        // Filter Toolbar Card (Responsive Wrap)
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -147,10 +146,14 @@ class _MarksAuditViewState extends State<MarksAuditView> {
             border: Border.all(color: AppColors.border),
             boxShadow: AppColors.cardShadow,
           ),
-          child: Row(
+          child: Wrap(
+            spacing: 16,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               // Search Input
-              Expanded(
+              SizedBox(
+                width: 320,
                 child: TextField(
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 20),
@@ -172,15 +175,14 @@ class _MarksAuditViewState extends State<MarksAuditView> {
                   onChanged: (val) => setState(() => _searchQuery = val),
                 ),
               ),
-              const SizedBox(width: 16),
 
               // Filter Chips
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   _buildFilterChip('All Records', 'All'),
-                  const SizedBox(width: 8),
                   _buildFilterChip('Mismatches Only', 'Mismatches'),
-                  const SizedBox(width: 8),
                   _buildFilterChip('Verified', 'Verified'),
                 ],
               ),
@@ -190,8 +192,16 @@ class _MarksAuditViewState extends State<MarksAuditView> {
 
         const SizedBox(height: 20),
 
-        // Executive Data Table Container (Minimum Width 1350px = ZERO OVERLAPS)
-        Container(
+        // Data Table — Desktop: horizontal scroll table; Mobile: card-per-record
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            if (isMobile) {
+              return Column(
+                children: entries.map((m) => _buildMobileCard(m)).toList(),
+              );
+            }
+            return Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
@@ -469,39 +479,126 @@ class _MarksAuditViewState extends State<MarksAuditView> {
               ),
             ),
           ),
+        );
+          },
         ),
       ],
     );
   }
 
-  Widget _buildKpiCard(String label, String value, IconData icon, Color color, Color bgColor) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppColors.cardShadow,
-        ),
-        child: Row(
-          children: [
+  Widget _buildMobileCard(dynamic m) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: m.isMismatch ? const Color(0xFFEF4444) : AppColors.border),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: AppColors.accentLight,
+                child: Text(
+                  m.studentName.substring(0, 1).toUpperCase(),
+                  style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(m.studentName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text(m.studentRegNo, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontFamily: 'monospace')),
+                  ],
+                ),
+              ),
+              StatusBadge(status: m.status, isCompact: true),
+            ],
+          ),
+          const Divider(height: 20),
+          _mobileRow('Subject', '${m.subjectName} (${m.subjectCode})'),
+          _mobileRow('Faculty Entry', m.facultyEntry.toString()),
+          _mobileRow('Dept Record', m.deptRecord.toString()),
+          _mobileRow('Exam Record', m.examRecord.toString(), highlight: m.isMismatch),
+          _mobileRow('Final Result', m.finalResult.toString()),
+          const SizedBox(height: 8),
+          if (m.isMismatch)
             Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
-              child: Icon(icon, color: color, size: 22),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(6)),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFDC2626)),
+                  SizedBox(width: 4),
+                  Text('Mismatch Detected', style: TextStyle(color: Color(0xFFDC2626), fontSize: 11, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
-            const SizedBox(width: 12),
-            Column(
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileRow(String label, String value, {bool highlight = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: highlight ? const Color(0xFFDC2626) : AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKpiCard(String label, String value, IconData icon, Color color, Color bgColor) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 2),
-                Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
