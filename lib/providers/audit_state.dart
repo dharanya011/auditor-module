@@ -24,9 +24,25 @@ class AuditState extends ChangeNotifier {
   // Department Scope & Permissions
   String? get departmentScope => _userRole == 'Department Auditor' ? 'CSE' : null;
 
-  bool get canVerify => _userRole == 'Lead Auditor' || _userRole == 'Department Auditor' || _userRole == 'Chief Auditor';
-  bool get canFlagIssue => _userRole != 'Read-Only Inspector';
-  bool get canRequestCorrection => _userRole == 'Lead Auditor' || _userRole == 'Department Auditor' || _userRole == 'Chief Auditor';
+  bool get canVerify {
+    if (_userRole == 'System Admin') return false;
+    return true;
+  }
+
+  bool get canFlagIssue {
+    if (_userRole == 'System Admin' || _userRole == 'HOD' || _userRole == 'Dean Academics' || _userRole == 'Read-Only Inspector') {
+      return false;
+    }
+    return true;
+  }
+
+  bool get canRequestCorrection {
+    if (_userRole == 'System Admin' || _userRole == 'HOD' || _userRole == 'Dean Academics' || _userRole == 'Read-Only Inspector') {
+      return false;
+    }
+    return true;
+  }
+
   bool get canEditRecords => false;
 
   void setUserRole(String role) {

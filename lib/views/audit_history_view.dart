@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 
+import '../widgets/responsive_row.dart';
+
 class AuditHistoryView extends StatelessWidget {
   final AuditState state;
 
@@ -12,8 +14,10 @@ class AuditHistoryView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: 12,
+          runSpacing: 4,
           children: const [
             Text('Immutable Audit Ledger Log', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             Text('Security Guarantee: Audit logs are cryptographically timestamped & immutable.', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
@@ -23,14 +27,11 @@ class AuditHistoryView extends StatelessWidget {
         const SizedBox(height: 20),
 
         // KPI Cards
-        Row(
+        ResponsiveRow(
           children: [
             _buildKpiCard('Total Audit Logs', '14,250+', Icons.history_rounded, Colors.blue),
-            const SizedBox(width: 16),
             _buildKpiCard('Security Level', 'AES-256 Secured', Icons.security_rounded, Colors.green),
-            const SizedBox(width: 16),
             _buildKpiCard('Last Sync', '2 Mins Ago', Icons.sync_rounded, Colors.orange),
-            const SizedBox(width: 16),
             _buildKpiCard('Active Auditors', '12 Online', Icons.admin_panel_settings_rounded, Colors.purple),
           ],
         ),
@@ -200,44 +201,42 @@ class AuditHistoryView extends StatelessWidget {
   }
 
   Widget _buildKpiCard(String title, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 4),
+                Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 4),
-                  Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -26,7 +26,7 @@ class DashboardView extends StatelessWidget {
                 crossAxisCount: count,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 1.85,
+                childAspectRatio: 1.55,
               ),
               itemCount: state.kpis.length,
               itemBuilder: (context, index) => KPICard(kpi: state.kpis[index]),

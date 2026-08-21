@@ -3,6 +3,8 @@ import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
 
+import '../widgets/responsive_row.dart';
+
 class AuditCasesView extends StatelessWidget {
   final AuditState state;
 
@@ -20,14 +22,11 @@ class AuditCasesView extends StatelessWidget {
         const SizedBox(height: 20),
 
         // KPI Cards
-        Row(
+        ResponsiveRow(
           children: [
             _buildKpiCard('Total Active Cases', '3', Icons.folder_open, Colors.blue),
-            const SizedBox(width: 16),
             _buildKpiCard('High Severity', '1', Icons.warning_amber_rounded, Colors.red),
-            const SizedBox(width: 16),
             _buildKpiCard('Under Review', '1', Icons.pending_actions, Colors.orange),
-            const SizedBox(width: 16),
             _buildKpiCard('Correction Requested', '1', Icons.edit_note, Colors.purple),
           ],
         ),
@@ -184,44 +183,42 @@ class AuditCasesView extends StatelessWidget {
   }
 
   Widget _buildKpiCard(String title, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 4),
+                Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 4),
-                  Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

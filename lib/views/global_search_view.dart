@@ -185,32 +185,71 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: AppColors.accentLight, borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.description_rounded, color: AppColors.accent),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 600;
+          if (isMobile) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(color: AppColors.accentLight, borderRadius: BorderRadius.circular(10)),
+                      child: const Icon(Icons.description_rounded, color: AppColors.accent),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    StatusBadge(status: status),
+                    ElevatedButton(
+                      onPressed: onTap,
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
+                      child: const Text('Audit Record'),
+                    ),
+                  ],
+                ),
               ],
-            ),
-          ),
-          StatusBadge(status: status),
-          const SizedBox(width: 12),
-          ElevatedButton(
-            onPressed: onTap,
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
-            child: const Text('Audit Record'),
-          ),
-        ],
+            );
+          }
+          return Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: AppColors.accentLight, borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.description_rounded, color: AppColors.accent),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                  ],
+                ),
+              ),
+              StatusBadge(status: status),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: onTap,
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
+                child: const Text('Audit Record'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

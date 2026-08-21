@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 
+import '../widgets/responsive_row.dart';
+
 class ProfileView extends StatelessWidget {
   final AuditState state;
 
@@ -30,91 +32,130 @@ class ProfileView extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: CircleAvatar(
-                  radius: 44,
-                  backgroundColor: AppColors.accent,
-                  child: Text(
-                    state.userName.substring(0, 2).toUpperCase(),
-                    style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 700;
+              if (isMobile) {
+                return Column(
                   children: [
+                    CircleAvatar(
+                      radius: 44,
+                      backgroundColor: AppColors.accent,
+                      child: Text(
+                        state.userName.substring(0, 2).toUpperCase(),
+                        style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     Text(
                       state.userName,
-                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Role: ${state.userRole} • KSRCE ERP Auditor Portal',
-                      style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                      style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 12),
-                    Row(
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: () => state.showToast('Opening account settings...'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      icon: const Icon(Icons.settings_rounded, size: 18),
+                      label: const Text('Settings'),
+                    ),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: CircleAvatar(
+                      radius: 44,
+                      backgroundColor: AppColors.accent,
+                      child: Text(
+                        state.userName.substring(0, 2).toUpperCase(),
+                        style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.verified_user_rounded, color: Color(0xFF10B981), size: 14),
-                              SizedBox(width: 6),
-                              Text(
-                                'Authorized Independent Auditor',
-                                style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 11),
+                        Text(
+                          state.userName,
+                          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Role: ${state.userRole} • KSRCE ERP Auditor Portal',
+                          style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
                               ),
-                            ],
-                          ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.verified_user_rounded, color: Color(0xFF10B981), size: 14),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Authorized Independent Auditor',
+                                    style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              // Action Button on right of banner
-              ElevatedButton.icon(
-                onPressed: () => state.showToast('Opening account settings...'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                icon: const Icon(Icons.settings_rounded, size: 18),
-                label: const Text('Settings'),
-              ),
-            ],
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () => state.showToast('Opening account settings...'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    icon: const Icon(Icons.settings_rounded, size: 18),
+                    label: const Text('Settings'),
+                  ),
+                ],
+              );
+            },
           ),
         ),
 
         const SizedBox(height: 24),
 
         // KPI Cards
-        Row(
+        ResponsiveRow(
           children: [
             _buildKpiCard('Total Actions', '8,452', Icons.task_alt_rounded, Colors.blue),
-            const SizedBox(width: 16),
             _buildKpiCard('Pending Tasks', '14', Icons.pending_actions_rounded, Colors.orange),
-            const SizedBox(width: 16),
             _buildKpiCard('Accuracy Score', '99.8%', Icons.track_changes_rounded, Colors.green),
-            const SizedBox(width: 16),
             _buildKpiCard('Audit Level', 'Tier-1', Icons.shield_rounded, Colors.purple),
           ],
         ),
@@ -212,44 +253,42 @@ class ProfileView extends StatelessWidget {
   }
 
   Widget _buildKpiCard(String title, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 4),
+                Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 4),
-                  Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -4,6 +4,8 @@ import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/evidence_modal.dart';
 
+import '../widgets/responsive_row.dart';
+
 class EvidenceRepositoryView extends StatefulWidget {
   final AuditState state;
 
@@ -37,7 +39,10 @@ class _EvidenceRepositoryViewState extends State<EvidenceRepositoryView> {
       padding: const EdgeInsets.all(20),
       children: [
         // Title Bar & Action Trigger
-        Row(
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: 12,
+          runSpacing: 12,
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +63,6 @@ class _EvidenceRepositoryViewState extends State<EvidenceRepositoryView> {
                 ),
               ],
             ),
-            const Spacer(),
             ElevatedButton.icon(
               onPressed: widget.state.canVerify ? () => widget.state.showToast('Re-verifying AWS S3 document hashes...') : null,
               icon: const Icon(Icons.security_rounded, size: 15),
@@ -78,14 +82,11 @@ class _EvidenceRepositoryViewState extends State<EvidenceRepositoryView> {
         const SizedBox(height: 16),
 
         // KPI Summary Cards Row
-        Row(
+        ResponsiveRow(
           children: [
             _buildKpiCard('Total Documents Stored', '14,250 Files', Icons.folder_zip_outlined, const Color(0xFF4F46E5), const Color(0xFFEEF2FF)),
-            const SizedBox(width: 12),
             _buildKpiCard('AWS S3 Hashes Verified', '14,180 Files', Icons.verified_user_rounded, const Color(0xFF10B981), const Color(0xFFECFDF5)),
-            const SizedBox(width: 12),
             _buildKpiCard('Corrupted Hash Alerts', '12 Flags', Icons.error_outline_rounded, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
-            const SizedBox(width: 12),
             _buildKpiCard('Version Control Active', 'v1.0 - v2.4', Icons.history_toggle_off_rounded, const Color(0xFF8B5CF6), const Color(0xFFF5F3FF)),
           ],
         ),
@@ -361,35 +362,33 @@ class _EvidenceRepositoryViewState extends State<EvidenceRepositoryView> {
   }
 
   Widget _buildKpiCard(String label, String value, IconData icon, Color color, Color bgColor) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppColors.cardShadow,
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(8)),
-              child: Icon(icon, color: color, size: 18),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(8)),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 2),
+                Text(value, style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+              ],
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 2),
-                  Text(value, style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
