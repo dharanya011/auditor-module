@@ -31,10 +31,13 @@ class _ActionModalState extends State<ActionModal> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
     return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 40, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
-        width: 520,
+        width: isMobile ? double.infinity : 520,
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -48,12 +51,14 @@ class _ActionModalState extends State<ActionModal> {
                   size: 24,
                 ),
                 const SizedBox(width: 10),
-                Text(
-                  '${widget.actionType} — Record: ${widget.recordId}',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    '${widget.actionType} — Record: ${widget.recordId}',
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const Spacer(),
@@ -70,22 +75,21 @@ class _ActionModalState extends State<ActionModal> {
             if (widget.actionType == 'Flag Issue') ...[
               const Text('Severity Level', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
               const SizedBox(height: 8),
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: ['Low', 'Medium', 'High', 'Critical'].map((s) {
                   final isSel = _selectedSeverity == s;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(s),
-                      selected: isSel,
-                      onSelected: (val) {
-                        if (val) setState(() => _selectedSeverity = s);
-                      },
-                      selectedColor: Colors.red.shade100,
-                      labelStyle: TextStyle(
-                        color: isSel ? Colors.red.shade900 : AppColors.textPrimary,
-                        fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                      ),
+                  return ChoiceChip(
+                    label: Text(s),
+                    selected: isSel,
+                    onSelected: (val) {
+                      if (val) setState(() => _selectedSeverity = s);
+                    },
+                    selectedColor: Colors.red.shade100,
+                    labelStyle: TextStyle(
+                      color: isSel ? Colors.red.shade900 : AppColors.textPrimary,
+                      fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
                     ),
                   );
                 }).toList(),

@@ -94,53 +94,94 @@ class _EvidenceRepositoryViewState extends State<EvidenceRepositoryView> {
         const SizedBox(height: 16),
 
         // Filter Toolbar Card
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
-            boxShadow: AppColors.cardShadow,
-          ),
-          child: Row(
-            children: [
-              // Search Input
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 18),
-                    hintText: 'Search by Evidence ID, Record Reference, File Name, Uploader...',
-                    hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-                    isDense: true,
-                    filled: true,
-                    fillColor: AppColors.background,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                  ),
-                  onChanged: (val) => setState(() => _searchQuery = val),
-                ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            return Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+                boxShadow: AppColors.cardShadow,
               ),
-              const SizedBox(width: 12),
-
-              // Filter Chips
-              Row(
-                children: [
-                  _buildFilterChip('All Files', 'All'),
-                  const SizedBox(width: 6),
-                  _buildFilterChip('PDF Submissions', 'PDF'),
-                  const SizedBox(width: 6),
-                  _buildFilterChip('Scans & Certificates', 'Scan'),
-                ],
-              ),
-            ],
-          ),
+              child: isMobile
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 18),
+                            hintText: 'Search evidence...',
+                            hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                            isDense: true,
+                            filled: true,
+                            fillColor: AppColors.background,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: AppColors.border),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: AppColors.border),
+                            ),
+                          ),
+                          onChanged: (val) => setState(() => _searchQuery = val),
+                        ),
+                        const SizedBox(height: 10),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildFilterChip('All Files', 'All'),
+                              const SizedBox(width: 6),
+                              _buildFilterChip('PDF Submissions', 'PDF'),
+                              const SizedBox(width: 6),
+                              _buildFilterChip('Scans & Certificates', 'Scan'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 18),
+                              hintText: 'Search by Evidence ID, Record Reference, File Name, Uploader...',
+                              hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                              isDense: true,
+                              filled: true,
+                              fillColor: AppColors.background,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: AppColors.border),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: AppColors.border),
+                              ),
+                            ),
+                            onChanged: (val) => setState(() => _searchQuery = val),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Row(
+                          children: [
+                            _buildFilterChip('All Files', 'All'),
+                            const SizedBox(width: 6),
+                            _buildFilterChip('PDF Submissions', 'PDF'),
+                            const SizedBox(width: 6),
+                            _buildFilterChip('Scans & Certificates', 'Scan'),
+                          ],
+                        ),
+                      ],
+                    ),
+            );
+          },
         ),
 
         const SizedBox(height: 16),

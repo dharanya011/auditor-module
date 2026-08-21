@@ -11,11 +11,15 @@ class EvidenceModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isMobile = screenWidth < 600;
     return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 40, vertical: isMobile ? 16 : 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
-        width: 700,
-        height: 580,
+        width: isMobile ? double.infinity : 700,
+        height: isMobile ? screenHeight * 0.85 : 580,
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,15 +76,26 @@ class EvidenceModal extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: AppColors.border),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildMetaCol('Document Type', item.documentType),
-                  _buildMetaCol('Uploaded By', item.uploadedBy),
-                  _buildMetaCol('Upload Timestamp', item.uploadDate),
-                  _buildMetaCol('File Size / Version', '${item.fileSize} (${item.version})'),
-                ],
-              ),
+              child: isMobile
+                  ? Wrap(
+                      spacing: 16,
+                      runSpacing: 12,
+                      children: [
+                        _buildMetaCol('Document Type', item.documentType),
+                        _buildMetaCol('Uploaded By', item.uploadedBy),
+                        _buildMetaCol('Upload Timestamp', item.uploadDate),
+                        _buildMetaCol('File Size / Version', '${item.fileSize} (${item.version})'),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildMetaCol('Document Type', item.documentType),
+                        _buildMetaCol('Uploaded By', item.uploadedBy),
+                        _buildMetaCol('Upload Timestamp', item.uploadDate),
+                        _buildMetaCol('File Size / Version', '${item.fileSize} (${item.version})'),
+                      ],
+                    ),
             ),
 
             const SizedBox(height: 16),
@@ -125,15 +140,16 @@ class EvidenceModal extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Action Footer
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 OutlinedButton.icon(
                   onPressed: onClose,
                   icon: const Icon(Icons.close, size: 16),
                   label: const Text('Close Preview'),
                 ),
-                const SizedBox(width: 12),
                 ElevatedButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.download_rounded, size: 16),

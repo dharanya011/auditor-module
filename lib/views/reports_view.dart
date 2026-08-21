@@ -22,13 +22,14 @@ class ReportsView extends StatelessWidget {
         LayoutBuilder(
           builder: (context, constraints) {
             final count = constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 600 ? 2 : 1);
+            final childAspectRatio = count == 4 ? 2.6 : (count == 2 ? 2.4 : 2.8);
             return GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: count,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 2.6,
+              childAspectRatio: childAspectRatio,
               children: [
                 _buildKpiCard('Total Generated', '1,420', Icons.analytics_rounded, Colors.blue),
                 _buildKpiCard('Scheduled Jobs', '8 Active', Icons.schedule_rounded, Colors.orange),
@@ -42,45 +43,90 @@ class ReportsView extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Toolbar
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search report templates...',
-                    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
-                    prefixIcon: const Icon(Icons.search, size: 18, color: Colors.grey),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            if (isMobile) {
+              return Column(
+                children: [
+                  Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search report templates...',
+                        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
+                        prefixIcon: const Icon(Icons.search, size: 18, color: Colors.grey),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    height: 40,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.filter_list, size: 18, color: AppColors.textSecondary),
+                        SizedBox(width: 8),
+                        Text('All Categories', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search report templates...',
+                        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
+                        prefixIcon: const Icon(Icons.search, size: 18, color: Colors.grey),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.filter_list, size: 18, color: AppColors.textSecondary),
-                  SizedBox(width: 8),
-                  Text('All Categories', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                ],
-              ),
-            ),
-          ],
+                const SizedBox(width: 12),
+                Container(
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.filter_list, size: 18, color: AppColors.textSecondary),
+                      SizedBox(width: 8),
+                      Text('All Categories', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         
         const SizedBox(height: 16),
@@ -95,7 +141,7 @@ class ReportsView extends StatelessWidget {
           crossAxisCount: count,
           crossAxisSpacing: 20,
           mainAxisSpacing: 20,
-          childAspectRatio: 1.3,
+          childAspectRatio: count == 3 ? 1.3 : (count == 2 ? 1.2 : 1.5),
           children: [
             _buildReportCard(context, 'Student Audit Report', 'Student-wise, department-wise, and semester-wise verification status.', Icons.school_rounded, Colors.blue),
             _buildReportCard(context, 'Academic Marks Audit Report', 'Internal CAT marks, assignment marks, and CoE ledger verification summary.', Icons.analytics_rounded, Colors.purple),

@@ -46,12 +46,15 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.search_rounded, color: Color(0xFF38BDF8), size: 28),
                   SizedBox(width: 12),
-                  Text(
-                    'Global Audit Search Engine',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                  Expanded(
+                    child: Text(
+                      'Global Audit Search Engine',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
