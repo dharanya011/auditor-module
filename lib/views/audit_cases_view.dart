@@ -2,16 +2,50 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
-
 import '../widgets/responsive_row.dart';
 
-class AuditCasesView extends StatelessWidget {
+class AuditCasesView extends StatefulWidget {
   final AuditState state;
 
   const AuditCasesView({super.key, required this.state});
 
   @override
+  State<AuditCasesView> createState() => _AuditCasesViewState();
+}
+
+class _AuditCasesViewState extends State<AuditCasesView> {
+  String _searchQuery = '';
+  String _selectedCategory = 'All Cases';
+
+  final List<String> _categories = [
+    'All Cases',
+    'High Severity',
+    'Under Review',
+    'Correction Requested',
+    'Closed',
+  ];
+
+  @override
   Widget build(BuildContext context) {
+    final filteredCases = widget.state.auditCases.where((c) {
+      final matchesSearch = _searchQuery.isEmpty ||
+          c.caseId.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          c.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          c.targetRecordId.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          c.assignedTo.toLowerCase().contains(_searchQuery.toLowerCase());
+
+      final matchesCategory = _selectedCategory == 'All Cases' ||
+          c.severity.toLowerCase() == _selectedCategory.toLowerCase() ||
+          c.lifecycleStage.toLowerCase() == _selectedCategory.toLowerCase();
+
+      return matchesSearch && matchesCategory;
+    }).toList();
+
+    final totalCases = widget.state.auditCases.length;
+    final highSeverity = widget.state.auditCases.where((c) => c.severity.toLowerCase() == 'high' || c.severity.toLowerCase() == 'critical').length;
+    final underReview = widget.state.auditCases.where((c) => c.lifecycleStage.toLowerCase() == 'under review').length;
+    final correctionReq = widget.state.auditCases.where((c) => c.lifecycleStage.toLowerCase() == 'correction requested').length;
+
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -24,10 +58,10 @@ class AuditCasesView extends StatelessWidget {
         // KPI Cards
         ResponsiveRow(
           children: [
-            _buildKpiCard('Total Active Cases', '3', Icons.folder_open, Colors.blue),
-            _buildKpiCard('High Severity', '1', Icons.warning_amber_rounded, Colors.red),
-            _buildKpiCard('Under Review', '1', Icons.pending_actions, Colors.orange),
-            _buildKpiCard('Correction Requested', '1', Icons.edit_note, Colors.purple),
+            _buildKpiCard('Total Active Cases', '$totalCases', Icons.folder_open, Colors.blue),
+            _buildKpiCard('High Severity', '$highSeverity', Icons.warning_amber_rounded, Colors.red),
+            _buildKpiCard('Under Review', '$underReview', Icons.pending_actions, Colors.orange),
+            _buildKpiCard('Correction Requested', '$correctionReq', Icons.edit_note, Colors.purple),
           ],
         ),
 
@@ -45,12 +79,13 @@ class AuditCasesView extends StatelessWidget {
                   border: Border.all(color: AppColors.border),
                 ),
                 child: TextField(
+                  onChanged: (val) => setState(() => _searchQuery = val),
                   decoration: InputDecoration(
                     hintText: 'Search by Case ID, Target Record, Assigned To...',
                     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
                     prefixIcon: const Icon(Icons.search, size: 18, color: Colors.grey),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 11),
                   ),
                 ),
               ),
@@ -58,17 +93,32 @@ class AuditCasesView extends StatelessWidget {
             const SizedBox(width: 12),
             Container(
               height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.border),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.filter_list, size: 18, color: AppColors.textSecondary),
-                  SizedBox(width: 8),
-                  Text('All Cases', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                  const Icon(Icons.filter_list, size: 18, color: AppColors.textSecondary),
+                  const SizedBox(width: 8),
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedCategory,
+                      isDense: true,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                      items: _categories.map((cat) {
+                        return DropdownMenuItem(
+                          value: cat,
+                          child: Text(cat),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedCategory = val);
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -106,7 +156,7 @@ class AuditCasesView extends StatelessWidget {
                 DataColumn(label: SizedBox(width: 100, child: Text('CREATED DATE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)))),
                 DataColumn(label: SizedBox(width: 120, child: Text('ACTION', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)))),
               ],
-              rows: state.auditCases.map((c) {
+              rows: filteredCases.map((c) {
                 return DataRow(
                   cells: [
                     DataCell(
@@ -157,7 +207,7 @@ class AuditCasesView extends StatelessWidget {
                           alignment: Alignment.centerLeft,
                           child: TextButton.icon(
                             onPressed: () {
-                              state.showToast('Inspecting Audit Case timeline for ${c.caseId}');
+                              widget.state.showToast('Inspecting Audit Case timeline for ${c.caseId}');
                             },
                             style: TextButton.styleFrom(
                               backgroundColor: AppColors.accentLight,

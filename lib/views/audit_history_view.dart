@@ -1,16 +1,50 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
-
 import '../widgets/responsive_row.dart';
 
-class AuditHistoryView extends StatelessWidget {
+class AuditHistoryView extends StatefulWidget {
   final AuditState state;
 
   const AuditHistoryView({super.key, required this.state});
 
   @override
+  State<AuditHistoryView> createState() => _AuditHistoryViewState();
+}
+
+class _AuditHistoryViewState extends State<AuditHistoryView> {
+  String _searchQuery = '';
+  String _selectedDateFilter = 'All Time';
+  String _selectedActionFilter = 'All Actions';
+
+  final List<String> _dateFilters = ['All Time', 'Last 7 Days', 'Today'];
+  final List<String> _actionFilters = [
+    'All Actions',
+    'VERIFY_RECORD',
+    'FLAG_DISCREPANCY',
+    'CORRECTION_REQ',
+    'LOG_SYSTEM',
+  ];
+
+  @override
   Widget build(BuildContext context) {
+    final filteredLogs = widget.state.auditLogs.where((l) {
+      final matchesSearch = _searchQuery.isEmpty ||
+          l.id.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          l.auditorName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          l.ipAddress.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          l.action.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          l.recordId.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          l.details.toLowerCase().contains(_searchQuery.toLowerCase());
+
+      final matchesAction = _selectedActionFilter == 'All Actions' ||
+          l.action.toLowerCase() == _selectedActionFilter.toLowerCase();
+
+      return matchesSearch && matchesAction;
+    }).toList();
+
+    final totalLogsCount = widget.state.auditLogs.length;
+
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -29,7 +63,7 @@ class AuditHistoryView extends StatelessWidget {
         // KPI Cards
         ResponsiveRow(
           children: [
-            _buildKpiCard('Total Audit Logs', '14,250+', Icons.history_rounded, Colors.blue),
+            _buildKpiCard('Total Audit Logs', '$totalLogsCount Logs', Icons.history_rounded, Colors.blue),
             _buildKpiCard('Security Level', 'AES-256 Secured', Icons.security_rounded, Colors.green),
             _buildKpiCard('Last Sync', '2 Mins Ago', Icons.sync_rounded, Colors.orange),
             _buildKpiCard('Active Auditors', '12 Online', Icons.admin_panel_settings_rounded, Colors.purple),
@@ -50,12 +84,13 @@ class AuditHistoryView extends StatelessWidget {
                   border: Border.all(color: AppColors.border),
                 ),
                 child: TextField(
+                  onChanged: (val) => setState(() => _searchQuery = val),
                   decoration: InputDecoration(
                     hintText: 'Search by Log ID, Target Record, IP Address, Action Code...',
                     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
                     prefixIcon: const Icon(Icons.search, size: 18, color: Colors.grey),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 11),
                   ),
                 ),
               ),
@@ -63,34 +98,64 @@ class AuditHistoryView extends StatelessWidget {
             const SizedBox(width: 12),
             Container(
               height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.border),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.date_range, size: 18, color: AppColors.textSecondary),
-                  SizedBox(width: 8),
-                  Text('Last 7 Days', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                  const Icon(Icons.date_range, size: 18, color: AppColors.textSecondary),
+                  const SizedBox(width: 8),
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedDateFilter,
+                      isDense: true,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                      items: _dateFilters.map((df) {
+                        return DropdownMenuItem(
+                          value: df,
+                          child: Text(df),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedDateFilter = val);
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
             const SizedBox(width: 12),
             Container(
               height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.border),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.filter_list, size: 18, color: AppColors.textSecondary),
-                  SizedBox(width: 8),
-                  Text('Filters', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                  const Icon(Icons.filter_list, size: 18, color: AppColors.textSecondary),
+                  const SizedBox(width: 8),
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedActionFilter,
+                      isDense: true,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                      items: _actionFilters.map((af) {
+                        return DropdownMenuItem(
+                          value: af,
+                          child: Text(af),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedActionFilter = val);
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -128,7 +193,7 @@ class AuditHistoryView extends StatelessWidget {
                 DataColumn(label: SizedBox(width: 130, child: Text('TARGET RECORD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)))),
                 DataColumn(label: SizedBox(width: 320, child: Text('AUDIT DETAILS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)))),
               ],
-              rows: state.auditLogs.map((l) {
+              rows: filteredLogs.map((l) {
                 return DataRow(
                   cells: [
                     DataCell(
