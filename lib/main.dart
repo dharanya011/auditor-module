@@ -20,6 +20,7 @@ import 'views/audit_cases_view.dart';
 import 'views/audit_history_view.dart';
 import 'views/ai_audit_view.dart';
 import 'views/reports_view.dart';
+import 'views/audit_full_report_view.dart';
 import 'views/profile_view.dart';
 
 void main() {
@@ -156,6 +157,8 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
         return AIAuditView(state: state);
       case 'Audit Reports':
         return ReportsView(state: state);
+      case 'Audit Full Report':
+        return AuditFullReportView(state: state);
       case 'Auditor Profile':
       case 'Account Settings':
         return ProfileView(state: state);
