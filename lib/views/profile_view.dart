@@ -60,7 +60,7 @@ class ProfileView extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
-                      onPressed: () => state.showToast('Opening account settings...'),
+                      onPressed: () => _showAccountSettingsDialog(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accent,
                         foregroundColor: Colors.white,
@@ -132,7 +132,7 @@ class ProfileView extends StatelessWidget {
                     ),
                   ),
                   ElevatedButton.icon(
-                    onPressed: () => state.showToast('Opening account settings...'),
+                    onPressed: () => _showAccountSettingsDialog(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent,
                       foregroundColor: Colors.white,
@@ -252,6 +252,13 @@ class ProfileView extends StatelessWidget {
     );
   }
 
+  void _showAccountSettingsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => _AccountSettingsModal(state: state),
+    );
+  }
+
   Widget _buildKpiCard(String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -289,6 +296,217 @@ class ProfileView extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AccountSettingsModal extends StatefulWidget {
+  final AuditState state;
+
+  const _AccountSettingsModal({required this.state});
+
+  @override
+  State<_AccountSettingsModal> createState() => _AccountSettingsModalState();
+}
+
+class _AccountSettingsModalState extends State<_AccountSettingsModal> {
+  bool _emailAlerts = true;
+  bool _dailyDigest = true;
+  bool _compactMode = false;
+  late String _selectedRole;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedRole = widget.state.userRole;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final dialogWidth = screenWidth > 650 ? 600.0 : screenWidth * 0.92;
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        width: dialogWidth,
+        padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.settings_applications_rounded, color: AppColors.accent, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Auditor Account Settings',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Configure portal preferences, alerts, and security options.',
+                          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+
+              const Divider(height: 28),
+
+              // Profile Credentials Section
+              const Text('ACCOUNT INFORMATION', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 0.8)),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.person_outline_rounded, size: 18, color: AppColors.accent),
+                        const SizedBox(width: 10),
+                        const Text('Auditor Name:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        const SizedBox(width: 8),
+                        Text(widget.state.userName, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.badge_outlined, size: 18, color: AppColors.accent),
+                        const SizedBox(width: 10),
+                        const Text('Auditor Role:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        const SizedBox(width: 8),
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _selectedRole,
+                            isDense: true,
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary, fontSize: 12),
+                            items: const [
+                              DropdownMenuItem(value: 'Lead Auditor', child: Text('Lead Auditor')),
+                              DropdownMenuItem(value: 'Department Auditor', child: Text('Department Auditor')),
+                              DropdownMenuItem(value: 'Read-Only Inspector', child: Text('Read-Only Inspector')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedRole = val);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Row(
+                      children: [
+                        Icon(Icons.email_outlined, size: 18, color: AppColors.accent),
+                        SizedBox(width: 10),
+                        Text('Official Email:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        SizedBox(width: 8),
+                        Text('auditor.admin@ksrce.ac.in', style: TextStyle(fontSize: 12, fontFamily: 'monospace', color: AppColors.textSecondary)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              // Notification Toggles
+              const Text('AUDIT NOTIFICATION ALERTS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 0.8)),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                title: const Text('Email Alerts on Critical Discrepancies', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                subtitle: const Text('Receive instant notifications when high-priority flags are raised.', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                value: _emailAlerts,
+                activeColor: AppColors.accent,
+                onChanged: (val) => setState(() => _emailAlerts = val),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                title: const Text('Daily Work Queue Digest', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                subtitle: const Text('Daily summary email of pending audit verifications.', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                value: _dailyDigest,
+                activeColor: AppColors.accent,
+                onChanged: (val) => setState(() => _dailyDigest = val),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Interface Settings
+              const Text('DISPLAY & PREFERENCES', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 0.8)),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                title: const Text('Compact Table Rows', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                subtitle: const Text('Reduce padding in data tables to view more audit rows at once.', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                value: _compactMode,
+                activeColor: AppColors.accent,
+                onChanged: (val) => setState(() => _compactMode = val),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Action Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('Cancel', style: TextStyle(fontSize: 12)),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      widget.state.setUserRole(_selectedRole);
+                      widget.state.showToast('Account settings saved successfully!');
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.check_circle_rounded, size: 16),
+                    label: const Text('Save Settings', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

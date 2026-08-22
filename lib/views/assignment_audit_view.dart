@@ -36,8 +36,11 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
       return true;
     }).toList();
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobileScreen = screenWidth < 700;
+
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobileScreen ? 16 : 24),
       children: [
         // Header Title Bar
         Wrap(
@@ -46,24 +49,27 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
           spacing: 16,
           runSpacing: 12,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Assignment & Continuous Assessment Audit',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.5,
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: isMobileScreen ? screenWidth - 32 : 650),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Assignment & Continuous Assessment Audit',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Independent verification of internal rubrics, student submissions, and LMS digital evidence hashes.',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                ),
-              ],
+                  SizedBox(height: 4),
+                  Text(
+                    'Independent verification of internal rubrics, student submissions, and LMS digital evidence hashes.',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
             ElevatedButton.icon(
               onPressed: widget.state.canVerify ? () => widget.state.showToast('Re-verifying LMS submission hashes...') : null,
@@ -110,9 +116,9 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
             runSpacing: 12,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              // Search Input
+              // Search Input (Adaptive width to prevent mobile overflow)
               SizedBox(
-                width: 320,
+                width: screenWidth < 420 ? double.infinity : 300,
                 child: TextField(
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 20),
@@ -154,7 +160,7 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
         // Data Table Container (Responsive: horizontal scroll desktop / tablet, cards on mobile)
         LayoutBuilder(
           builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 600;
+            final isMobile = constraints.maxWidth < 650;
             if (isMobile) {
               return Column(
                 children: assignments.map((a) => _buildMobileCard(a)).toList(),
@@ -170,15 +176,15 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
               ),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: 1250,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
                   child: DataTable(
                     headingRowColor: WidgetStateProperty.all(AppColors.tableHeaderBg),
                     headingRowHeight: 52,
-                    dataRowMinHeight: 72,
-                    dataRowMaxHeight: 72,
-                    horizontalMargin: 24,
-                    columnSpacing: 28,
+                    dataRowMinHeight: 68,
+                    dataRowMaxHeight: 68,
+                    horizontalMargin: 20,
+                    columnSpacing: 20,
                     columns: const [
                       DataColumn(label: Text('ASSIGNMENT ID & TITLE', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.8, color: AppColors.textSecondary))),
                       DataColumn(label: Text('STUDENT NAME & REG', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.8, color: AppColors.textSecondary))),
@@ -196,7 +202,7 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                           // ID & Title
                           DataCell(
                             SizedBox(
-                              width: 200,
+                              width: 190,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +226,7 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                           // Student Name & Reg
                           DataCell(
                             SizedBox(
-                              width: 180,
+                              width: 170,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,7 +249,7 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                           // Subject
                           DataCell(
                             SizedBox(
-                              width: 160,
+                              width: 150,
                               child: Text(
                                 a.subject,
                                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
@@ -256,13 +262,14 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                           // Marks
                           DataCell(
                             SizedBox(
-                              width: 90,
+                              width: 85,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(6)),
                                 child: Text(
                                   '${a.marksObtained}/${a.totalMarks}',
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.accent),
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
@@ -271,7 +278,7 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                           // Evidence File
                           DataCell(
                             SizedBox(
-                              width: 180,
+                              width: 190,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
@@ -280,6 +287,7 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                                   border: Border.all(color: isMissing ? const Color(0xFFEF4444) : AppColors.border),
                                 ),
                                 child: Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
                                       isMissing ? Icons.link_off_rounded : Icons.insert_drive_file_outlined,
@@ -308,7 +316,7 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                           // Date
                           DataCell(
                             SizedBox(
-                              width: 100,
+                              width: 95,
                               child: Text(a.submissionDate, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                             ),
                           ),
@@ -316,7 +324,7 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                           // Audit Status
                           DataCell(
                             SizedBox(
-                              width: 130,
+                              width: 135,
                               child: StatusBadge(status: a.status, isCompact: true),
                             ),
                           ),
@@ -324,7 +332,7 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                           // Action Button
                           DataCell(
                             SizedBox(
-                              width: 110,
+                              width: 120,
                               child: ElevatedButton.icon(
                                 onPressed: (isMissing ? widget.state.canFlagIssue : widget.state.canVerify)
                                     ? () {
@@ -396,6 +404,33 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
           _mobileRow('Marks', '${a.marksObtained} / ${a.totalMarks}'),
           _mobileRow('Evidence', a.evidenceFile, highlight: isMissing),
           _mobileRow('Submitted On', a.submissionDate),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: (isMissing ? widget.state.canFlagIssue : widget.state.canVerify)
+                  ? () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => ActionModal(
+                          recordId: a.id,
+                          actionType: isMissing ? 'Flag Issue' : 'Verify',
+                          state: widget.state,
+                        ),
+                      );
+                    }
+                  : null,
+              icon: Icon(isMissing ? Icons.flag_rounded : Icons.check_circle_rounded, size: 14),
+              label: Text(isMissing ? 'Flag Discrepancy' : 'Verify Assignment'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isMissing ? const Color(0xFFDC2626) : AppColors.accent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -445,9 +480,19 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
+                Text(
+                  label,
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 2),
-                Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  value,
+                  style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),

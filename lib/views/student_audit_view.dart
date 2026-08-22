@@ -144,11 +144,11 @@ class _StudentAuditViewState extends State<StudentAuditView> {
             ],
           ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 12),
 
         // Executive Student Profile Header Card
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
@@ -415,7 +415,7 @@ class _StudentAuditViewState extends State<StudentAuditView> {
                 ),
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 12),
 
         // Navigation Tabs Bar
         SingleChildScrollView(
@@ -445,7 +445,7 @@ class _StudentAuditViewState extends State<StudentAuditView> {
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
         // Active Tab View Content
         _buildActiveTabContent(student),
@@ -468,74 +468,129 @@ class _StudentAuditViewState extends State<StudentAuditView> {
   }
 
   Widget _buildModulesGrid(StudentAuditRecord student) {
+    final modules = [
+      {
+        'title': 'Personal & Institutional Records',
+        'subtitle': 'Aadhaar, Birth Certificate, Admission Quota, and Caste Category records verified with registrar database.',
+        'status': 'Verified',
+        'icon': Icons.badge_outlined,
+        'iconBg': const Color(0xFFEEF2FF),
+        'iconColor': const Color(0xFF4F46E5),
+        'evidenceName': 'EVD-8890_Identity_Verification.pdf',
+      },
+      {
+        'title': 'Biometric Attendance Logs',
+        'subtitle': '${student.attendance}% biometric classroom attendance matched with hostel & institutional gate logs.',
+        'status': student.attendance >= 75 ? 'Verified' : 'Discrepancy',
+        'icon': Icons.fingerprint_rounded,
+        'iconBg': student.attendance >= 75 ? const Color(0xFFECFDF5) : const Color(0xFFFEE2E2),
+        'iconColor': student.attendance >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+        'evidenceName': 'EVD-8892_Biometric_Log_S5.pdf',
+      },
+      {
+        'title': 'Internal Assessment Marks (CAT 1 & 2)',
+        'subtitle': 'CAT 1 & CAT 2 internal marks cross-checked with scanned raw answer sheets and COE mark registers.',
+        'status': 'Verified',
+        'icon': Icons.analytics_outlined,
+        'iconBg': const Color(0xFFEFF6FF),
+        'iconColor': const Color(0xFF3B82F6),
+        'evidenceName': 'EVD-8891_CAT1_AnswerSheet_Scan.pdf',
+      },
+      {
+        'title': 'Assignments & Laboratory Reports',
+        'subtitle': '5 of 5 assignment submissions evaluated with cryptographic S3 file hash verification.',
+        'status': student.registerNo == '23IT045' ? 'Discrepancy' : 'Verified',
+        'icon': Icons.assignment_turned_in_outlined,
+        'iconBg': student.registerNo == '23IT045' ? const Color(0xFFFEE2E2) : const Color(0xFFECFDF5),
+        'iconColor': student.registerNo == '23IT045' ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+        'evidenceName': 'EVD-8894_Assignment_Submissions.pdf',
+      },
+      {
+        'title': 'Semester End Results & CoE Ledger',
+        'subtitle': 'Controller of Examinations result ledger verified against published grade sheet and university portal.',
+        'status': 'Verified',
+        'icon': Icons.description_outlined,
+        'iconBg': const Color(0xFFFEF3C7),
+        'iconColor': const Color(0xFFD97706),
+        'evidenceName': 'EVD-8895_CoE_GradeLedger.pdf',
+      },
+      {
+        'title': 'Mini Projects & Certificates',
+        'subtitle': 'Mini project source code repository, viva evaluation report, and industry internship certificates.',
+        'status': 'Verified',
+        'icon': Icons.folder_zip_outlined,
+        'iconBg': const Color(0xFFF5F3FF),
+        'iconColor': const Color(0xFF8B5CF6),
+        'evidenceName': 'EVD-8896_MiniProject_CodeReport.pdf',
+      },
+    ];
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = constraints.maxWidth > 900;
-        final isSmallMobile = constraints.maxWidth < 550;
-        return GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: isWide ? 2 : 1,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: isWide ? 1.85 : (isSmallMobile ? 1.45 : 1.95),
-          children: [
-            _buildModuleCard(
-              title: 'Personal & Institutional Records',
-              subtitle: 'Aadhaar, Birth Certificate, Admission Quota, and Caste Category records.',
-              status: 'Verified',
-              icon: Icons.badge_outlined,
-              iconBg: const Color(0xFFEEF2FF),
-              iconColor: const Color(0xFF4F46E5),
-              evidenceName: 'EVD-8890_Identity_Verification.pdf',
-            ),
-            _buildModuleCard(
-              title: 'Biometric Attendance Logs',
-              subtitle: '${student.attendance}% biometric classroom attendance matched with hostel & Gate logs.',
-              status: student.attendance >= 75 ? 'Verified' : 'Discrepancy',
-              icon: Icons.fingerprint_rounded,
-              iconBg: student.attendance >= 75 ? const Color(0xFFECFDF5) : const Color(0xFFFEE2E2),
-              iconColor: student.attendance >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-              evidenceName: 'EVD-8892_Biometric_Log_S5.pdf',
-            ),
-            _buildModuleCard(
-              title: 'Internal Assessment Marks (CAT 1 & 2)',
-              subtitle: 'CAT 1 & CAT 2 internal marks cross-checked with scanned raw answer sheets.',
-              status: 'Verified',
-              icon: Icons.analytics_outlined,
-              iconBg: const Color(0xFFEFF6FF),
-              iconColor: const Color(0xFF3B82F6),
-              evidenceName: 'EVD-8891_CAT1_AnswerSheet_Scan.pdf',
-            ),
-            _buildModuleCard(
-              title: 'Assignments & Laboratory Reports',
-              subtitle: '5 of 5 assignment submissions evaluated with cryptographic S3 file hashes.',
-              status: student.registerNo == '23IT045' ? 'Discrepancy' : 'Verified',
-              icon: Icons.assignment_turned_in_outlined,
-              iconBg: student.registerNo == '23IT045' ? const Color(0xFFFEE2E2) : const Color(0xFFECFDF5),
-              iconColor: student.registerNo == '23IT045' ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-              evidenceName: 'EVD-8894_Assignment_Submissions.pdf',
-            ),
-            _buildModuleCard(
-              title: 'Semester End Results & CoE Ledger',
-              subtitle: 'Controller of Examinations result ledger verified against published grade sheet.',
-              status: 'Verified',
-              icon: Icons.description_outlined,
-              iconBg: const Color(0xFFFEF3C7),
-              iconColor: const Color(0xFFD97706),
-              evidenceName: 'EVD-8895_CoE_GradeLedger.pdf',
-            ),
-            _buildModuleCard(
-              title: 'Mini Projects & Certificates',
-              subtitle: 'Mini project source code repository, viva report, and internship certificates.',
-              status: 'Verified',
-              icon: Icons.folder_zip_outlined,
-              iconBg: const Color(0xFFF5F3FF),
-              iconColor: const Color(0xFF8B5CF6),
-              evidenceName: 'EVD-8896_MiniProject_CodeReport.pdf',
-            ),
-          ],
-        );
+        final isWide = constraints.maxWidth > 850;
+        if (isWide) {
+          // 2-Column Responsive Layout with tight content height
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    for (int i = 0; i < modules.length; i += 2) ...[
+                      _buildModuleCard(
+                        title: modules[i]['title'] as String,
+                        subtitle: modules[i]['subtitle'] as String,
+                        status: modules[i]['status'] as String,
+                        icon: modules[i]['icon'] as IconData,
+                        iconBg: modules[i]['iconBg'] as Color,
+                        iconColor: modules[i]['iconColor'] as Color,
+                        evidenceName: modules[i]['evidenceName'] as String,
+                      ),
+                      if (i + 2 < modules.length) const SizedBox(height: 12),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  children: [
+                    for (int i = 1; i < modules.length; i += 2) ...[
+                      _buildModuleCard(
+                        title: modules[i]['title'] as String,
+                        subtitle: modules[i]['subtitle'] as String,
+                        status: modules[i]['status'] as String,
+                        icon: modules[i]['icon'] as IconData,
+                        iconBg: modules[i]['iconBg'] as Color,
+                        iconColor: modules[i]['iconColor'] as Color,
+                        evidenceName: modules[i]['evidenceName'] as String,
+                      ),
+                      if (i + 2 < modules.length) const SizedBox(height: 12),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          );
+        } else {
+          // 1-Column Responsive Mobile/Tablet Layout
+          return Column(
+            children: [
+              for (int i = 0; i < modules.length; i++) ...[
+                _buildModuleCard(
+                  title: modules[i]['title'] as String,
+                  subtitle: modules[i]['subtitle'] as String,
+                  status: modules[i]['status'] as String,
+                  icon: modules[i]['icon'] as IconData,
+                  iconBg: modules[i]['iconBg'] as Color,
+                  iconColor: modules[i]['iconColor'] as Color,
+                  evidenceName: modules[i]['evidenceName'] as String,
+                ),
+                if (i < modules.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          );
+        }
       },
     );
   }
@@ -749,17 +804,25 @@ class _StudentAuditViewState extends State<StudentAuditView> {
     required String evidenceName,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
-        boxShadow: AppColors.cardShadow,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
@@ -774,26 +837,25 @@ class _StudentAuditViewState extends State<StudentAuditView> {
                     Text(
                       title,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     StatusBadge(status: status, isCompact: true),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             subtitle,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, height: 1.3),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, height: 1.35),
           ),
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               OutlinedButton.icon(
                 onPressed: () {
@@ -816,7 +878,7 @@ class _StudentAuditViewState extends State<StudentAuditView> {
                     ),
                   );
                 },
-                icon: const Icon(Icons.folder_open_rounded, size: 14),
+                icon: const Icon(Icons.picture_as_pdf_rounded, size: 14),
                 label: const Text('View Evidence PDF', style: TextStyle(fontSize: 11)),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -828,12 +890,11 @@ class _StudentAuditViewState extends State<StudentAuditView> {
                     ? () => widget.state.showToast('$title verified successfully!')
                     : null,
                 icon: const Icon(Icons.check_circle_outline_rounded, size: 14),
-                label: const Text('Verify Module'),
+                label: const Text('Verify Module', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                 ),
               ),

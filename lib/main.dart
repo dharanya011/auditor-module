@@ -157,6 +157,7 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
       case 'Audit Reports':
         return ReportsView(state: state);
       case 'Auditor Profile':
+      case 'Account Settings':
         return ProfileView(state: state);
       default:
         return DashboardView(state: state);

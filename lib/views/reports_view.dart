@@ -131,26 +131,98 @@ class ReportsView extends StatelessWidget {
         
         const SizedBox(height: 16),
 
-        // Report Cards Grid (Responsive: 1 col mobile, 2 tablet, 3 desktop)
+        // Report Cards Grid (Responsive 3-col desktop, 2-col tablet, 1-col mobile)
         LayoutBuilder(
           builder: (context, constraints) {
-            final count = constraints.maxWidth > 900 ? 3 : (constraints.maxWidth > 600 ? 2 : 1);
-            return GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: count,
-          crossAxisSpacing: 20,
-          mainAxisSpacing: 20,
-          childAspectRatio: count == 3 ? 1.3 : (count == 2 ? 1.2 : 1.5),
-          children: [
-            _buildReportCard(context, 'Student Audit Report', 'Student-wise, department-wise, and semester-wise verification status.', Icons.school_rounded, Colors.blue),
-            _buildReportCard(context, 'Academic Marks Audit Report', 'Internal CAT marks, assignment marks, and CoE ledger verification summary.', Icons.analytics_rounded, Colors.purple),
-            _buildReportCard(context, 'Faculty Audit Report', 'Faculty submitted course completion reports, mentoring logs, and attendance checks.', Icons.badge_rounded, Colors.orange),
-            _buildReportCard(context, 'Research & Publication Report', 'Faculty and student publications, DOI verifications, grants, and patents.', Icons.science_rounded, Colors.teal),
-            _buildReportCard(context, 'Issue & Discrepancy Report', 'Critical, high, medium, and low severity findings and HOD resolution status.', Icons.warning_amber_rounded, Colors.red),
-            _buildReportCard(context, 'Audit Completion Report', 'Overall audit completion progress by department, module, and academic year.', Icons.pie_chart_rounded, Colors.green),
-          ],
-        );
+            final isDesktop = constraints.maxWidth > 950;
+            final isTablet = constraints.maxWidth > 600 && constraints.maxWidth <= 950;
+
+            final cards = [
+              _buildReportCard(context, 'Student Audit Report', 'Student-wise, department-wise, and semester-wise verification status.', Icons.school_rounded, Colors.blue),
+              _buildReportCard(context, 'Academic Marks Audit Report', 'Internal CAT marks, assignment marks, and CoE ledger verification summary.', Icons.analytics_rounded, Colors.purple),
+              _buildReportCard(context, 'Faculty Audit Report', 'Faculty submitted course completion reports, mentoring logs, and attendance checks.', Icons.badge_rounded, Colors.orange),
+              _buildReportCard(context, 'Research & Publication Report', 'Faculty and student publications, DOI verifications, grants, and patents.', Icons.science_rounded, Colors.teal),
+              _buildReportCard(context, 'Issue & Discrepancy Report', 'Critical, high, medium, and low severity findings and HOD resolution status.', Icons.warning_amber_rounded, Colors.red),
+              _buildReportCard(context, 'Audit Completion Report', 'Overall audit completion progress by department, module, and academic year.', Icons.pie_chart_rounded, Colors.green),
+            ];
+
+            if (isDesktop) {
+              // 3 Columns Layout with natural content height
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        cards[0],
+                        const SizedBox(height: 14),
+                        cards[3],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        cards[1],
+                        const SizedBox(height: 14),
+                        cards[4],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        cards[2],
+                        const SizedBox(height: 14),
+                        cards[5],
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            } else if (isTablet) {
+              // 2 Columns Layout
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        cards[0],
+                        const SizedBox(height: 14),
+                        cards[2],
+                        const SizedBox(height: 14),
+                        cards[4],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        cards[1],
+                        const SizedBox(height: 14),
+                        cards[3],
+                        const SizedBox(height: 14),
+                        cards[5],
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            } else {
+              // 1 Column Layout (Mobile)
+              return Column(
+                children: [
+                  for (int i = 0; i < cards.length; i++) ...[
+                    cards[i],
+                    if (i < cards.length - 1) const SizedBox(height: 14),
+                  ],
+                ],
+              );
+            }
           },
         ),
       ],
@@ -159,37 +231,50 @@ class ReportsView extends StatelessWidget {
 
   Widget _buildKpiCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            color: Color(0x05000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
-                const SizedBox(height: 4),
-                Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
+                Text(
+                  title,
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             ),
           ),
@@ -200,43 +285,53 @@ class ReportsView extends StatelessWidget {
 
   Widget _buildReportCard(BuildContext context, String title, String desc, IconData icon, Color accentColor) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Color(0x05000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: accentColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                child: Icon(icon, color: accentColor, size: 22),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: accentColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+                child: Icon(icon, color: accentColor, size: 20),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                child: Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(desc, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-          const Spacer(),
+          const SizedBox(height: 8),
+          Text(
+            desc,
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 11.5, height: 1.35),
+          ),
+          const SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
             decoration: BoxDecoration(
               color: AppColors.background,
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -255,10 +350,12 @@ class ReportsView extends StatelessWidget {
   Widget _buildExportBtn(IconData icon, String label, Color color, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(6),
+      hoverColor: color.withValues(alpha: 0.1),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 14, color: color),
             const SizedBox(width: 4),

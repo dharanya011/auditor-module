@@ -2,13 +2,59 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
+import '../models/models.dart';
 import '../widgets/kpi_card.dart';
 import '../widgets/responsive_row.dart';
+import '../widgets/audit_detail_modal.dart';
 
 class DashboardView extends StatelessWidget {
   final AuditState state;
 
   const DashboardView({super.key, required this.state});
+
+  void _openKpiDetailModal(BuildContext context, int index, AuditKPI kpi) {
+    String title = kpi.title;
+    String subtitle = 'All auditable records belonging to ${kpi.title}';
+    String statusCategory = 'ALL';
+
+    if (index == 0) {
+      title = 'Total Records Audited';
+      subtitle = 'Complete 360° audit ledger across all ERP modules';
+      statusCategory = 'ALL';
+    } else if (index == 1) {
+      title = 'Pending Verification Records';
+      subtitle = 'Auditable entries currently awaiting auditor verification & sign-off';
+      statusCategory = 'PENDING';
+    } else if (index == 2) {
+      title = 'Verified Records';
+      subtitle = 'Auditable entries with 100% verified integrity & digital signature';
+      statusCategory = 'VERIFIED';
+    } else if (index == 3) {
+      title = 'Discrepancies & Issues Found';
+      subtitle = 'Records flagged with data mismatches or validation errors';
+      statusCategory = 'ISSUES';
+    } else if (index == 4) {
+      title = 'High-Priority Critical Issues';
+      subtitle = 'Urgent audit cases requiring immediate escalation & HOD action';
+      statusCategory = 'CRITICAL';
+    } else if (index == 5) {
+      title = 'Corrections Pending Verification';
+      subtitle = 'Records sent back for department correction and re-audit';
+      statusCategory = 'CORRECTIONS';
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AuditDetailModal(
+        state: state,
+        title: title,
+        subtitle: subtitle,
+        icon: kpi.icon,
+        themeColor: kpi.color,
+        statusCategory: statusCategory,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +67,8 @@ class DashboardView extends StatelessWidget {
             final count = constraints.maxWidth > 1200 ? 6 : (constraints.maxWidth > 800 ? 3 : 2);
             final double cellWidth = (constraints.maxWidth - (count - 1) * 16) / count;
             final double aspectRatio = count == 6
-                ? 1.55
-                : (count == 3 ? cellWidth / 135 : cellWidth / 128);
+                ? (cellWidth / 115)
+                : (count == 3 ? cellWidth / 125 : cellWidth / 120);
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -33,7 +79,13 @@ class DashboardView extends StatelessWidget {
                 childAspectRatio: aspectRatio,
               ),
               itemCount: state.kpis.length,
-              itemBuilder: (context, index) => KPICard(kpi: state.kpis[index]),
+              itemBuilder: (context, index) {
+                final kpi = state.kpis[index];
+                return KPICard(
+                  kpi: kpi,
+                  onTap: () => _openKpiDetailModal(context, index, kpi),
+                );
+              },
             );
           },
         ),
@@ -120,56 +172,167 @@ class DashboardView extends StatelessWidget {
 
                     const SizedBox(height: 24),
 
-                    // Module completion table
+                    // Module completion table — custom layout (zero overflow)
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        columnSpacing: 24,
-                        headingRowHeight: 40,
-                        dataRowMinHeight: 40,
-                        dataRowMaxHeight: 40,
-                        columns: const [
-                          DataColumn(label: Text('Module', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Verified', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Pending', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Issues', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Progress', style: TextStyle(fontWeight: FontWeight.bold))),
-                        ],
-                        rows: state.moduleProgress.map((m) {
-                          return DataRow(
-                            cells: [
-                              DataCell(Text(m.name, style: const TextStyle(fontWeight: FontWeight.w600))),
-                              DataCell(Text(m.verified.toString(), style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold))),
-                              DataCell(Text(m.pending.toString(), style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold))),
-                              DataCell(Text(m.issues.toString(), style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold))),
-                              DataCell(
-                                SizedBox(
-                                  width: 100,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(4),
-                                          child: LinearProgressIndicator(
-                                            value: m.percentage,
-                                            backgroundColor: AppColors.background,
-                                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
-                                            minHeight: 6,
-                                          ),
+                      child: SizedBox(
+                        width: 580,
+                        child: Column(
+                          children: [
+                            // Header Row
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.background,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: const Row(
+                                children: [
+                                  SizedBox(width: 160, child: Text('Module', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textSecondary))),
+                                  SizedBox(width: 70, child: Text('Verified', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF10B981)))),
+                                  SizedBox(width: 70, child: Text('Pending', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFF59E0B)))),
+                                  SizedBox(width: 70, child: Text('Issues', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFEF4444)))),
+                                  Expanded(child: Text('Progress', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textSecondary))),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            // Data Rows
+                            ...state.moduleProgress.map((m) => Container(
+                              margin: const EdgeInsets.only(bottom: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 160,
+                                    child: Text(m.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                                  ),
+                                  // Interactive Verified
+                                  SizedBox(
+                                    width: 70,
+                                    child: GestureDetector(
+                                      onTap: () => showDialog(
+                                        context: context,
+                                        builder: (ctx) => AuditDetailModal(
+                                          state: state,
+                                          title: '${m.name} — Verified Records',
+                                          subtitle: 'Verified records in ${m.name} module',
+                                          icon: Icons.check_circle_rounded,
+                                          themeColor: const Color(0xFF10B981),
+                                          targetModule: m.name,
+                                          statusCategory: 'VERIFIED',
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '${(m.percentage * 100).toInt()}%',
-                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                      child: Tooltip(
+                                        message: 'Click to view ${m.verified} verified records',
+                                        child: Text(
+                                          m.verified.toString(),
+                                          style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 13, decoration: TextDecoration.underline),
+                                        ),
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                ),
+                                  // Interactive Pending
+                                  SizedBox(
+                                    width: 70,
+                                    child: GestureDetector(
+                                      onTap: () => showDialog(
+                                        context: context,
+                                        builder: (ctx) => AuditDetailModal(
+                                          state: state,
+                                          title: '${m.name} — Pending Verification',
+                                          subtitle: 'Pending entries in ${m.name} module',
+                                          icon: Icons.hourglass_top_rounded,
+                                          themeColor: const Color(0xFFF59E0B),
+                                          targetModule: m.name,
+                                          statusCategory: 'PENDING',
+                                        ),
+                                      ),
+                                      child: Tooltip(
+                                        message: 'Click to view ${m.pending} pending records',
+                                        child: Text(
+                                          m.pending.toString(),
+                                          style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 13, decoration: TextDecoration.underline),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Interactive Issues
+                                  SizedBox(
+                                    width: 70,
+                                    child: GestureDetector(
+                                      onTap: () => showDialog(
+                                        context: context,
+                                        builder: (ctx) => AuditDetailModal(
+                                          state: state,
+                                          title: '${m.name} — Flagged Issues',
+                                          subtitle: 'Discrepancy flags in ${m.name} module',
+                                          icon: Icons.error_rounded,
+                                          themeColor: const Color(0xFFEF4444),
+                                          targetModule: m.name,
+                                          statusCategory: 'ISSUES',
+                                        ),
+                                      ),
+                                      child: Tooltip(
+                                        message: 'Click to view ${m.issues} issue flags',
+                                        child: Text(
+                                          m.issues.toString(),
+                                          style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold, fontSize: 13, decoration: TextDecoration.underline),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Interactive Progress Bar
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () => showDialog(
+                                        context: context,
+                                        builder: (ctx) => AuditDetailModal(
+                                          state: state,
+                                          title: '${m.name} — All Records',
+                                          subtitle: 'Complete audit records in ${m.name} (${(m.percentage * 100).toInt()}% done)',
+                                          icon: Icons.bar_chart_rounded,
+                                          themeColor: const Color(0xFF4F46E5),
+                                          targetModule: m.name,
+                                          statusCategory: 'ALL',
+                                        ),
+                                      ),
+                                      child: Tooltip(
+                                        message: 'Click to inspect all ${m.name} records',
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(4),
+                                                child: LinearProgressIndicator(
+                                                  value: m.percentage,
+                                                  backgroundColor: AppColors.background,
+                                                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                                                  minHeight: 6,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              '${(m.percentage * 100).toInt()}%',
+                                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary, decoration: TextDecoration.underline),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          );
-                        }).toList(),
+                            )),
+                          ],
+                        ),
                       ),
                     ),
                   ],
