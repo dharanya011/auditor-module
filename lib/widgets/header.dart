@@ -38,25 +38,25 @@ class Header extends StatelessWidget {
             const SizedBox(width: 4),
           ],
 
-          // View title & welcome subtitle
-          Flexible(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    state.activeModule,
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: isMobile ? 16 : 20,
-                      fontWeight: FontWeight.bold,
+          // View title & welcome subtitle (Desktop & Laptop only; omitted on mobile to prevent title truncation)
+          if (!isMobile)
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      state.activeModule,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (!isMobile) ...[
                     const SizedBox(height: 2),
                     const Text(
                       'Welcome back, Auditor',
@@ -66,10 +66,9 @@ class Header extends StatelessWidget {
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
             ),
-          ),
 
           // Center Search Bar (Prominent & Wider on Desktop / Tablet)
           if (!isMobile)

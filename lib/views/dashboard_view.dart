@@ -176,8 +176,8 @@ class DashboardView extends StatelessWidget {
             final count = constraints.maxWidth > 1200 ? 6 : (constraints.maxWidth > 700 ? 3 : (constraints.maxWidth > 380 ? 2 : 1));
             final double cellWidth = (constraints.maxWidth - (count - 1) * 16) / count;
             final double aspectRatio = count == 6
-                ? (cellWidth / 125)
-                : (count == 3 ? cellWidth / 115 : (count == 2 ? cellWidth / 115 : cellWidth / 95));
+                ? (cellWidth / 128)
+                : (count == 3 ? cellWidth / 120 : (count == 2 ? cellWidth / 118 : cellWidth / 100));
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
