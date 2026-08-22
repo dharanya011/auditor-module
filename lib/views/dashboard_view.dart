@@ -61,14 +61,123 @@ class DashboardView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
+        // Dashboard Header & Academic Year Selector
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            if (isMobile) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Auditor Dashboard',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Real-time academic audit compliance & verification summary',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.accent),
+                        const SizedBox(width: 8),
+                        const Text('Academic Year: ', style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: state.selectedAcademicYear,
+                            isDense: true,
+                            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12),
+                            items: const [
+                              DropdownMenuItem(value: '2025 - 2026', child: Text('2025 - 2026')),
+                              DropdownMenuItem(value: '2024 - 2025', child: Text('2024 - 2025')),
+                              DropdownMenuItem(value: '2023 - 2024', child: Text('2023 - 2024')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) state.setSelectedAcademicYear(val);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Auditor Dashboard',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Real-time academic audit compliance & verification summary',
+                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: const [
+                      BoxShadow(color: Color(0x05000000), blurRadius: 4, offset: Offset(0, 2)),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.accent),
+                      const SizedBox(width: 8),
+                      const Text('Academic Year: ', style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                      DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: state.selectedAcademicYear,
+                          isDense: true,
+                          style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12),
+                          items: const [
+                            DropdownMenuItem(value: '2025 - 2026', child: Text('2025 - 2026')),
+                            DropdownMenuItem(value: '2024 - 2025', child: Text('2024 - 2025')),
+                            DropdownMenuItem(value: '2023 - 2024', child: Text('2023 - 2024')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) state.setSelectedAcademicYear(val);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+
+        const SizedBox(height: 20),
+
         // 6 Top KPI Cards Row
         LayoutBuilder(
           builder: (context, constraints) {
-            final count = constraints.maxWidth > 1200 ? 6 : (constraints.maxWidth > 800 ? 3 : 2);
+            final count = constraints.maxWidth > 1200 ? 6 : (constraints.maxWidth > 700 ? 3 : (constraints.maxWidth > 380 ? 2 : 1));
             final double cellWidth = (constraints.maxWidth - (count - 1) * 16) / count;
             final double aspectRatio = count == 6
-                ? (cellWidth / 115)
-                : (count == 3 ? cellWidth / 125 : cellWidth / 120);
+                ? (cellWidth / 125)
+                : (count == 3 ? cellWidth / 115 : (count == 2 ? cellWidth / 115 : cellWidth / 95));
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -107,29 +216,13 @@ class DashboardView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Audit Progress Overview',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: () => state.setActiveModule('Audit Full Report'),
-                          icon: const Icon(Icons.assessment_outlined, size: 14),
-                          label: const Text('View Full Report', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            side: const BorderSide(color: AppColors.accent),
-                            foregroundColor: AppColors.accent,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                      ],
+                    const Text(
+                      'Audit Progress Overview',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 20),
 

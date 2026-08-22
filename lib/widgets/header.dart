@@ -71,62 +71,63 @@ class Header extends StatelessWidget {
             ),
           ),
 
-          const Spacer(),
+          // Center Search Bar (Prominent & Wider on Desktop / Tablet)
+          if (!isMobile)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Center(
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 360),
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: InkWell(
+                      onTap: () => state.setActiveModule('Global Search'),
+                      borderRadius: BorderRadius.circular(20),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 14),
+                        child: Row(
+                          children: [
+                            Icon(Icons.search_rounded, size: 18, color: AppColors.accent),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Search audit records, student ID, subjects...',
+                                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Icon(Icons.tune_rounded, size: 14, color: AppColors.textSecondary),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else
+            const Spacer(),
 
-          // Right-side controls (responsive, no horizontal scrolling required)
+          // Right-side controls
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 1. Academic Year Dropdown
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12, vertical: 5),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.border),
+              // Mobile Search Trigger Button
+              if (isMobile)
+                IconButton(
+                  onPressed: () {
+                    state.setActiveModule('Global Search');
+                  },
+                  icon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+                  tooltip: 'Global Search',
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      isMobile ? 'AY: ' : 'Academic Year : ',
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                    ),
-                    DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: state.selectedAcademicYear,
-                        isDense: true,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                        items: const [
-                          DropdownMenuItem(value: '2025 - 2026', child: Text('2025 - 2026')),
-                          DropdownMenuItem(value: '2024 - 2025', child: Text('2024 - 2025')),
-                          DropdownMenuItem(value: '2023 - 2024', child: Text('2023 - 2024')),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) state.setSelectedAcademicYear(val);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              SizedBox(width: isMobile ? 4 : 10),
-
-              // 2. Search button trigger
-              IconButton(
-                onPressed: () {
-                  state.setActiveModule('Global Search');
-                },
-                icon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
-                tooltip: 'Global Search',
-              ),
-
-              // 3. Notifications Bell Popover
+              // Notifications Bell Popover
               PopupMenuButton<String>(
                 tooltip: 'Audit Notifications',
                 offset: const Offset(0, 50),
