@@ -3,12 +3,22 @@ name: Deploy Flutter Web to GitHub Pages
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
     steps:
@@ -25,9 +35,18 @@ jobs:
         run: flutter pub get
 
       - name: Build Flutter Web
-        run: flutter build web --release --base-href "/auditor-module/"
+        run: flutter build web --release --base-href "/auditor-module/" --no-tree-shake-icons
 
-      - name: Deploy to GitHub Pages
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./build/web
+
+      - name: Deploy to GitHub Pages (Actions Native)
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Deploy to gh-pages branch (Legacy Fallback)
         uses: PeaceIris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
