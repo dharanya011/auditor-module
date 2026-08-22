@@ -70,7 +70,7 @@ class Header extends StatelessWidget {
               ),
             ),
 
-          // Center Search Bar (Prominent & Wider on Desktop / Tablet)
+          // Center Search Control (Desktop: full bar; Mobile: centered search trigger)
           if (!isMobile)
             Expanded(
               child: Padding(
@@ -110,22 +110,39 @@ class Header extends StatelessWidget {
               ),
             )
           else
-            const Spacer(),
+            // Mobile: Centered Search Trigger between left Hamburger and right controls
+            Expanded(
+              child: Center(
+                child: InkWell(
+                  onTap: () => state.setActiveModule('Global Search'),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.search_rounded, size: 16, color: AppColors.accent),
+                        SizedBox(width: 6),
+                        Text(
+                          'Search...',
+                          style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
-          // Right-side controls
+          // Right-side controls (Notifications & Auditor User Profile)
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Mobile Search Trigger Button
-              if (isMobile)
-                IconButton(
-                  onPressed: () {
-                    state.setActiveModule('Global Search');
-                  },
-                  icon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
-                  tooltip: 'Global Search',
-                ),
-
               // Notifications Bell Popover
               PopupMenuButton<String>(
                 tooltip: 'Audit Notifications',
