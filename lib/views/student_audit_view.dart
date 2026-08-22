@@ -19,9 +19,240 @@ class _StudentAuditViewState extends State<StudentAuditView> {
   int _selectedStudentIndex = 0;
   String _activeTab = '360° Verification Modules';
 
+  // 5 Student Audit Filters
+  String _selectedDept = 'All Departments';
+  String _selectedYear = 'All Years';
+  String _selectedSem = 'All Semesters';
+  String _selectedDocType = 'All Documents';
+  String _selectedVerType = 'All Verification Types';
+
+  List<StudentAuditRecord> get _filteredStudents {
+    return widget.state.studentRecords.where((s) {
+      if (_selectedDept != 'All Departments') {
+        if (_selectedDept == 'CSE' && !s.department.toLowerCase().contains('computer science')) return false;
+        if (_selectedDept == 'IT' && !s.department.toLowerCase().contains('information tech')) return false;
+        if (_selectedDept == 'ECE' && !s.department.toLowerCase().contains('electronics')) return false;
+        if (_selectedDept == 'EEE' && !s.department.toLowerCase().contains('electrical')) return false;
+        if (_selectedDept == 'MECH' && !s.department.toLowerCase().contains('mechanical')) return false;
+      }
+      if (_selectedSem != 'All Semesters') {
+        final semNum = int.tryParse(_selectedSem.replaceAll(RegExp(r'[^0-9]'), ''));
+        if (semNum != null && s.semester != semNum) return false;
+      }
+      if (_selectedYear != 'All Years') {
+        final yearNum = int.tryParse(_selectedYear.replaceAll(RegExp(r'[^0-9]'), ''));
+        if (yearNum != null) {
+          final expectedSemMin = (yearNum - 1) * 2 + 1;
+          final expectedSemMax = yearNum * 2;
+          if (s.semester < expectedSemMin || s.semester > expectedSemMax) return false;
+        }
+      }
+      return true;
+    }).toList();
+  }
+
+  Widget _buildFilterCard(bool isMobile) {
+    Widget buildFilterField({
+      required String label,
+      required String value,
+      required List<String> options,
+      required ValueChanged<String?> onChanged,
+      required IconData icon,
+    }) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 12, color: AppColors.accent),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: value,
+                isDense: true,
+                isExpanded: true,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                items: options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt, overflow: TextOverflow.ellipsis))).toList(),
+                onChanged: onChanged,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final deptField = buildFilterField(
+      label: 'Department',
+      value: _selectedDept,
+      icon: Icons.business_rounded,
+      options: const ['All Departments', 'CSE', 'IT', 'ECE', 'EEE', 'MECH'],
+      onChanged: (v) => setState(() {
+        _selectedDept = v!;
+        _selectedStudentIndex = 0;
+      }),
+    );
+
+    final yearField = buildFilterField(
+      label: 'Year',
+      value: _selectedYear,
+      icon: Icons.calendar_today_rounded,
+      options: const ['All Years', '1st Year', '2nd Year', '3rd Year', '4th Year'],
+      onChanged: (v) => setState(() {
+        _selectedYear = v!;
+        _selectedStudentIndex = 0;
+      }),
+    );
+
+    final semField = buildFilterField(
+      label: 'Semester',
+      value: _selectedSem,
+      icon: Icons.school_rounded,
+      options: const ['All Semesters', 'Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'],
+      onChanged: (v) => setState(() {
+        _selectedSem = v!;
+        _selectedStudentIndex = 0;
+      }),
+    );
+
+    final docTypeField = buildFilterField(
+      label: 'Document Type',
+      value: _selectedDocType,
+      icon: Icons.description_rounded,
+      options: const ['All Documents', 'Aadhaar / ID Proof', '10th / 12th Marksheet', 'Attendance Logs', 'Internal Assessment', 'End-Sem Ledger', 'Project Evidence'],
+      onChanged: (v) => setState(() {
+        _selectedDocType = v!;
+        _selectedStudentIndex = 0;
+      }),
+    );
+
+    final verTypeField = buildFilterField(
+      label: 'Verification Type',
+      value: _selectedVerType,
+      icon: Icons.verified_user_rounded,
+      options: const ['All Verification Types', '360° Verification', 'Biometric Attendance', 'Internal Marks Audit', 'CoE Ledger Match', 'Project Sign-off'],
+      onChanged: (v) => setState(() {
+        _selectedVerType = v!;
+        _selectedStudentIndex = 0;
+      }),
+    );
+
+    final bool hasActiveFilters = _selectedDept != 'All Departments' ||
+        _selectedYear != 'All Years' ||
+        _selectedSem != 'All Semesters' ||
+        _selectedDocType != 'All Documents' ||
+        _selectedVerType != 'All Verification Types';
+
+    return Container(
+      margin: const EdgeInsets.only(top: 14, bottom: 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [BoxShadow(color: Color(0x05000000), blurRadius: 4, offset: Offset(0, 2))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.filter_alt_rounded, size: 16, color: AppColors.accent),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Student Audit Filters (${hasActiveFilters ? "Active" : "All"})',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                  ),
+                ],
+              ),
+              if (hasActiveFilters)
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedDept = 'All Departments';
+                      _selectedYear = 'All Years';
+                      _selectedSem = 'All Semesters';
+                      _selectedDocType = 'All Documents';
+                      _selectedVerType = 'All Verification Types';
+                      _selectedStudentIndex = 0;
+                    });
+                  },
+                  child: const Row(
+                    children: [
+                      Icon(Icons.refresh_rounded, size: 12, color: AppColors.accent),
+                      SizedBox(width: 4),
+                      Text('Reset Filters', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.accent)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (isMobile) ...[
+            // Mobile View: Clean 2-column & stacked responsive layout
+            Row(
+              children: [
+                Expanded(child: deptField),
+                const SizedBox(width: 8),
+                Expanded(child: yearField),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: semField),
+                const SizedBox(width: 8),
+                Expanded(child: docTypeField),
+              ],
+            ),
+            const SizedBox(height: 8),
+            verTypeField,
+          ] else ...[
+            // Desktop View: Responsive 5-column row
+            Row(
+              children: [
+                Expanded(child: deptField),
+                const SizedBox(width: 8),
+                Expanded(child: yearField),
+                const SizedBox(width: 8),
+                Expanded(child: semField),
+                const SizedBox(width: 8),
+                Expanded(child: docTypeField),
+                const SizedBox(width: 8),
+                Expanded(child: verTypeField),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final student = widget.state.studentRecords[_selectedStudentIndex];
+    final activeStudents = _filteredStudents;
+    final int safeIndex = activeStudents.isEmpty ? 0 : _selectedStudentIndex.clamp(0, activeStudents.length - 1);
+    final student = activeStudents.isNotEmpty ? activeStudents[safeIndex] : null;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 850;
 
@@ -76,19 +307,23 @@ class _StudentAuditViewState extends State<StudentAuditView> {
                     const Text('Select Student: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textSecondary)),
                     DropdownButtonHideUnderline(
                       child: DropdownButton<int>(
-                        value: _selectedStudentIndex,
+                        value: activeStudents.isEmpty ? 0 : safeIndex,
                         isDense: true,
                         style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary, fontSize: 12),
-                        items: List.generate(widget.state.studentRecords.length, (idx) {
-                          final s = widget.state.studentRecords[idx];
-                          return DropdownMenuItem(
-                            value: idx,
-                            child: Text('${s.registerNo} - ${s.name}'),
-                          );
-                        }),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedStudentIndex = val);
-                        },
+                        items: activeStudents.isEmpty
+                            ? const [DropdownMenuItem(value: 0, child: Text('No students'))]
+                            : List.generate(activeStudents.length, (idx) {
+                                final s = activeStudents[idx];
+                                return DropdownMenuItem(
+                                  value: idx,
+                                  child: Text('${s.registerNo} - ${s.name}'),
+                                );
+                              }),
+                        onChanged: activeStudents.isEmpty
+                            ? null
+                            : (val) {
+                                if (val != null) setState(() => _selectedStudentIndex = val);
+                              },
                       ),
                     ),
                   ],
@@ -121,20 +356,24 @@ class _StudentAuditViewState extends State<StudentAuditView> {
                     Expanded(
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<int>(
-                          value: _selectedStudentIndex,
+                          value: activeStudents.isEmpty ? 0 : safeIndex,
                           isDense: true,
                           isExpanded: true,
                           style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary, fontSize: 12),
-                          items: List.generate(widget.state.studentRecords.length, (idx) {
-                            final s = widget.state.studentRecords[idx];
-                            return DropdownMenuItem(
-                              value: idx,
-                              child: Text('${s.registerNo} - ${s.name}', overflow: TextOverflow.ellipsis),
-                            );
-                          }),
-                          onChanged: (val) {
-                            if (val != null) setState(() => _selectedStudentIndex = val);
-                          },
+                          items: activeStudents.isEmpty
+                              ? const [DropdownMenuItem(value: 0, child: Text('No matching students'))]
+                              : List.generate(activeStudents.length, (idx) {
+                                  final s = activeStudents[idx];
+                                  return DropdownMenuItem(
+                                    value: idx,
+                                    child: Text('${s.registerNo} - ${s.name}', overflow: TextOverflow.ellipsis),
+                                  );
+                                }),
+                          onChanged: activeStudents.isEmpty
+                              ? null
+                              : (val) {
+                                  if (val != null) setState(() => _selectedStudentIndex = val);
+                                },
                         ),
                       ),
                     ),
@@ -143,11 +382,59 @@ class _StudentAuditViewState extends State<StudentAuditView> {
               ),
             ],
           ),
+        // 5 Student Audit Dropdown Filters Card
+        _buildFilterCard(isMobile),
 
-        const SizedBox(height: 12),
-
-        // Executive Student Profile Header Card
-        Container(
+        // Executive Student Profile Header Card or Empty Fallback State
+        if (student == null)
+          Container(
+            padding: const EdgeInsets.all(36),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+              boxShadow: AppColors.cardShadow,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.filter_alt_off_rounded, size: 44, color: AppColors.textSecondary),
+                const SizedBox(height: 12),
+                const Text(
+                  'No Student Records Found',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'No student records match the selected Department, Year, Semester, Document Type, or Verification Type filters.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _selectedDept = 'All Departments';
+                      _selectedYear = 'All Years';
+                      _selectedSem = 'All Semesters';
+                      _selectedDocType = 'All Documents';
+                      _selectedVerType = 'All Verification Types';
+                      _selectedStudentIndex = 0;
+                    });
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('Reset All Filters'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else ...[
+          // Executive Student Profile Header Card
+          Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -448,10 +735,11 @@ class _StudentAuditViewState extends State<StudentAuditView> {
         const SizedBox(height: 12),
 
         // Active Tab View Content
-        _buildActiveTabContent(student),
+        _buildActiveTabContent(student!),
       ],
-    );
-  }
+    ],
+  );
+}
 
   Widget _buildActiveTabContent(StudentAuditRecord student) {
     switch (_activeTab) {

@@ -97,24 +97,74 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
 
         const SizedBox(height: 20),
 
-        // Faceted Filters (Responsive Wrap)
-        Wrap(
-          spacing: 16,
-          runSpacing: 12,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            DropdownButton<String>(
-              value: _selectedDept,
+        // Responsive Faceted Filters: Role & Record Type Dropdowns
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 650;
+            
+            Widget buildDropdownCard({
+              required String label,
+              required String value,
+              required List<DropdownMenuItem<String>> items,
+              required ValueChanged<String?> onChanged,
+              required IconData icon,
+            }) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: const [
+                    BoxShadow(color: Color(0x05000000), blurRadius: 4, offset: Offset(0, 2)),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(icon, size: 18, color: AppColors.accent),
+                    const SizedBox(width: 10),
+                    Text(
+                      '$label: ',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textSecondary),
+                    ),
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: value,
+                          isDense: true,
+                          isExpanded: true,
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary, fontSize: 12),
+                          items: items,
+                          onChanged: onChanged,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            final roleDropdown = buildDropdownCard(
+              label: 'Role',
+              value: widget.state.userRole,
+              icon: Icons.admin_panel_settings_rounded,
               items: const [
-                DropdownMenuItem(value: 'All Departments', child: Text('All Departments')),
-                DropdownMenuItem(value: 'CSE', child: Text('Computer Science')),
-                DropdownMenuItem(value: 'IT', child: Text('Information Tech')),
-                DropdownMenuItem(value: 'ECE', child: Text('Electronics & Comm')),
+                DropdownMenuItem(value: 'Lead Auditor', child: Text('Lead Auditor')),
+                DropdownMenuItem(value: 'Department Auditor', child: Text('Department Auditor')),
+                DropdownMenuItem(value: 'HOD', child: Text('HOD')),
+                DropdownMenuItem(value: 'Dean Academics', child: Text('Dean Academics')),
+                DropdownMenuItem(value: 'System Admin', child: Text('System Admin')),
+                DropdownMenuItem(value: 'Read-Only Inspector', child: Text('Read-Only Inspector')),
               ],
-              onChanged: (v) => setState(() => _selectedDept = v!),
-            ),
-            DropdownButton<String>(
+              onChanged: (v) {
+                if (v != null) widget.state.setUserRole(v);
+              },
+            );
+
+            final recordTypeDropdown = buildDropdownCard(
+              label: 'Record Type',
               value: _selectedRecordType,
+              icon: Icons.category_rounded,
               items: const [
                 DropdownMenuItem(value: 'All Records', child: Text('All Record Types')),
                 DropdownMenuItem(value: 'Students', child: Text('Students')),
@@ -124,9 +174,29 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
                 DropdownMenuItem(value: 'Question Papers', child: Text('Question Papers')),
                 DropdownMenuItem(value: 'Research', child: Text('Research Publications')),
               ],
-              onChanged: (v) => setState(() => _selectedRecordType = v!),
-            ),
-          ],
+              onChanged: (v) {
+                if (v != null) setState(() => _selectedRecordType = v);
+              },
+            );
+
+            if (isMobile) {
+              return Column(
+                children: [
+                  roleDropdown,
+                  const SizedBox(height: 12),
+                  recordTypeDropdown,
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(child: roleDropdown),
+                const SizedBox(width: 16),
+                Expanded(child: recordTypeDropdown),
+              ],
+            );
+          },
         ),
 
         const SizedBox(height: 20),
