@@ -21,8 +21,8 @@ class Header extends StatelessWidget {
       height: 70,
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
+        color: AppColors.sidebarBg,
+        border: Border(bottom: BorderSide(color: Color(0xFF1E293B))),
       ),
       child: Row(
         children: [
@@ -30,7 +30,7 @@ class Header extends StatelessWidget {
           if (showHamburger) ...[
             Builder(
               builder: (context) => IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
+                icon: const Icon(Icons.menu_rounded, color: Colors.white),
                 onPressed: () => Scaffold.of(context).openDrawer(),
                 tooltip: 'Open Navigation Drawer',
               ),
@@ -50,7 +50,7 @@ class Header extends StatelessWidget {
                     Text(
                       state.activeModule,
                       style: const TextStyle(
-                        color: AppColors.textPrimary,
+                        color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -61,7 +61,7 @@ class Header extends StatelessWidget {
                     const Text(
                       'Welcome back, Auditor',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: Color(0xFF94A3B8),
                         fontSize: 12,
                       ),
                     ),
@@ -80,9 +80,9 @@ class Header extends StatelessWidget {
                     constraints: const BoxConstraints(maxWidth: 360),
                     height: 38,
                     decoration: BoxDecoration(
-                      color: AppColors.background,
+                      color: const Color(0xFF1E293B),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: const Color(0xFF334155)),
                     ),
                     child: InkWell(
                       onTap: () => state.setActiveModule('Global Search'),
@@ -91,16 +91,16 @@ class Header extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 14),
                         child: Row(
                           children: [
-                            Icon(Icons.search_rounded, size: 18, color: AppColors.accent),
+                            Icon(Icons.search_rounded, size: 18, color: Color(0xFF38BDF8)),
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Search audit records, student ID, subjects...',
-                                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                                style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            Icon(Icons.tune_rounded, size: 14, color: AppColors.textSecondary),
+                            Icon(Icons.tune_rounded, size: 14, color: Color(0xFF94A3B8)),
                           ],
                         ),
                       ),
@@ -119,18 +119,18 @@ class Header extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.background,
+                      color: const Color(0xFF1E293B),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: const Color(0xFF334155)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.search_rounded, size: 16, color: AppColors.accent),
+                        Icon(Icons.search_rounded, size: 16, color: Color(0xFF38BDF8)),
                         SizedBox(width: 6),
                         Text(
                           'Search...',
-                          style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
+                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -153,7 +153,7 @@ class Header extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(8),
-                      child: const Icon(Icons.notifications_none_rounded, color: AppColors.textSecondary),
+                      child: const Icon(Icons.notifications_none_rounded, color: Colors.white),
                     ),
                     Positioned(
                       right: 4,
@@ -269,13 +269,13 @@ class Header extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: state.activeModule == 'Auditor Profile'
-                          ? AppColors.accent.withValues(alpha: 0.1)
-                          : AppColors.background,
+                          ? const Color(0xFF4F46E5)
+                          : const Color(0xFF1E293B),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: state.activeModule == 'Auditor Profile'
-                            ? AppColors.accent
-                            : AppColors.border,
+                            ? const Color(0xFF6366F1)
+                            : const Color(0xFF334155),
                       ),
                     ),
                     child: Row(
@@ -298,7 +298,7 @@ class Header extends StatelessWidget {
                               Text(
                                 state.userName,
                                 style: const TextStyle(
-                                  color: AppColors.textPrimary,
+                                  color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12,
                                 ),
@@ -306,14 +306,14 @@ class Header extends StatelessWidget {
                               Text(
                                 state.userRole,
                                 style: const TextStyle(
-                                  color: AppColors.textSecondary,
+                                  color: Color(0xFF94A3B8),
                                   fontSize: 10,
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(width: 4),
-                          const Icon(Icons.keyboard_arrow_right_rounded, size: 16, color: AppColors.textSecondary),
+                          const Icon(Icons.keyboard_arrow_right_rounded, size: 16, color: Color(0xFF94A3B8)),
                         ],
                       ],
                     ),
