@@ -20,10 +20,10 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
   // 5 Audit Pattern Filters
   String _selectedDept = 'All Departments';
-  String _selectedRegulation = 'All Regulations';
-  String _selectedAcademicYear = 'All Academic Years';
+  String _selectedYear = 'All Years';
   String _selectedSem = 'All Semesters';
-  String _selectedVerStatus = 'All Statuses';
+  String _selectedDocType = 'All Document Types';
+  String _selectedVerType = 'All Verification Types';
 
   String _getRoleBasedPrompt(String role) {
     switch (role) {
@@ -104,18 +104,18 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
     final regField = buildFilterField(
       label: 'Regulation',
-      value: _selectedRegulation,
+      value: _selectedDocType,
       icon: Icons.gavel_rounded,
-      options: const ['All Regulations', 'R2021', 'R2023'],
-      onChanged: (v) => setState(() => _selectedRegulation = v!),
+      options: const ['All Document Types', 'R2021', 'R2023'],
+      onChanged: (v) => setState(() => _selectedDocType = v!),
     );
 
     final yearField = buildFilterField(
       label: 'Academic Year',
-      value: _selectedAcademicYear,
+      value: _selectedYear,
       icon: Icons.calendar_today_rounded,
-      options: const ['All Academic Years', '2024 - 2025', '2025 - 2026', '2026 - 2027'],
-      onChanged: (v) => setState(() => _selectedAcademicYear = v!),
+      options: const ['All Years', '2024 - 2025', '2025 - 2026', '2026 - 2027'],
+      onChanged: (v) => setState(() => _selectedYear = v!),
     );
 
     final semField = buildFilterField(
@@ -128,17 +128,17 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
     final verStatusField = buildFilterField(
       label: 'Verification Status',
-      value: _selectedVerStatus,
+      value: _selectedVerType,
       icon: Icons.verified_user_rounded,
-      options: const ['All Statuses', 'Verified', 'Rejected', 'Under Review'],
-      onChanged: (v) => setState(() => _selectedVerStatus = v!),
+      options: const ['All Verification Types', 'Verified', 'Rejected', 'Under Review'],
+      onChanged: (v) => setState(() => _selectedVerType = v!),
     );
 
     final bool hasActiveFilters = _selectedDept != 'All Departments' ||
-        _selectedRegulation != 'All Regulations' ||
-        _selectedAcademicYear != 'All Academic Years' ||
+        _selectedDocType != 'All Document Types' ||
+        _selectedYear != 'All Years' ||
         _selectedSem != 'All Semesters' ||
-        _selectedVerStatus != 'All Statuses';
+        _selectedVerType != 'All Verification Types';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
@@ -170,10 +170,10 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
                   onTap: () {
                     setState(() {
                       _selectedDept = 'All Departments';
-                      _selectedRegulation = 'All Regulations';
-                      _selectedAcademicYear = 'All Academic Years';
+                      _selectedDocType = 'All Document Types';
+                      _selectedYear = 'All Years';
                       _selectedSem = 'All Semesters';
-                      _selectedVerStatus = 'All Statuses';
+                      _selectedVerType = 'All Verification Types';
                     });
                   },
                   child: const Row(
@@ -249,13 +249,13 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
         if (d == 'MECH' && !dept.contains('mechanical') && !dept.contains('mech')) return false;
       }
       
-      if (_selectedRegulation != 'All Regulations') {
-        if (f.regulation != _selectedRegulation) return false;
+      if (_selectedDocType != 'All Document Types') {
+        if (f.regulation != _selectedDocType) return false;
       }
 
-      if (_selectedAcademicYear != 'All Academic Years') {
+      if (_selectedYear != 'All Years') {
         final ayClean = f.academicYear.replaceAll(' ', '');
-        final selAyClean = _selectedAcademicYear.replaceAll(' ', '');
+        final selAyClean = _selectedYear.replaceAll(' ', '');
         if (!ayClean.contains(selAyClean) && !selAyClean.contains(ayClean)) return false;
       }
 
@@ -264,10 +264,10 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
         if (semNum != null && f.semester != semNum) return false;
       }
       
-      if (_selectedVerStatus != 'All Statuses') {
-        if (_selectedVerStatus == 'Verified' && f.status != 'Verified') return false;
-        if (_selectedVerStatus == 'Rejected' && f.status != 'Rejected') return false;
-        if (_selectedVerStatus == 'Under Review' && f.status != 'Under Review' && f.status != 'Pending') return false;
+      if (_selectedVerType != 'All Verification Types') {
+        if (_selectedVerType == 'Verified' && f.status != 'Verified') return false;
+        if (_selectedVerType == 'Rejected' && f.status != 'Rejected') return false;
+        if (_selectedVerType == 'Under Review' && f.status != 'Under Review' && f.status != 'Pending') return false;
       }
 
       if (_searchQuery.isNotEmpty) {

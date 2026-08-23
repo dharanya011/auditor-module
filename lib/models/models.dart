@@ -216,6 +216,8 @@ class QuestionPaperRecord {
   final String courseTitle;
   final String regulation;
   final String department;
+  final int semester;
+  final String academicYear;
   final bool bloomTaxonomyCompliant;
   final bool syllabusMapped;
   final bool hodApproved;
@@ -228,6 +230,8 @@ class QuestionPaperRecord {
     required this.courseTitle,
     required this.regulation,
     required this.department,
+    this.semester = 1,
+    this.academicYear = '2025 - 2026',
     required this.bloomTaxonomyCompliant,
     required this.syllabusMapped,
     required this.hodApproved,
