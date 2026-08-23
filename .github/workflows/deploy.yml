@@ -45,10 +45,3 @@ jobs:
       - name: Deploy to GitHub Pages (Actions Native)
         id: deployment
         uses: actions/deploy-pages@v4
-        continue-on-error: true
-
-      - name: Deploy to gh-pages branch (Legacy Fallback)
-        uses: PeaceIris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
