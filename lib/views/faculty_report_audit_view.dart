@@ -18,22 +18,31 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
   String _filterStatus = 'All';
   String _searchQuery = '';
 
-  // 5 Student Audit Pattern Filters
+  // 5 Standard Dropdown Filters
   String _selectedDept = 'All Departments';
-  String _selectedYear = 'All Years';
+  String _selectedRegulation = 'All Regulations';
+  String _selectedYear = 'All Academic Years';
   String _selectedSem = 'All Semesters';
-  String _selectedDocType = 'All Document Types';
-  String _selectedVerType = 'All Verification Types';
+  String _selectedStatus = 'All Statuses';
 
   String _getRoleBasedPrompt(String role) {
     switch (role) {
-      case 'Lead Auditor': return 'Review audit records across departments and monitor pending and completed verification activities.';
-      case 'Department Auditor': return 'Review and verify audit records for your assigned department and resolve pending issues.';
-      case 'HOD': return 'Monitor department-level audit progress and review records requiring attention.';
-      case 'Dean': return 'Monitor overall academic audit compliance and review department-level audit status.';
-      case 'Inspector': return 'Inspect audit records, verification status and compliance-related issues.';
-      case 'System Admin': return 'Monitor the complete audit system and manage audit records across all roles and departments.';
-      default: return 'Review and verify audit records.';
+      case 'Lead Auditor':
+        return 'Review faculty reports and question papers across departments, monitor compliance with regulations, and verify pending audit records.';
+      case 'Department Auditor':
+        return 'Review faculty reports and question papers for your assigned department and verify records that are pending audit.';
+      case 'HOD':
+        return 'Monitor faculty report and question paper audits for your department and review records requiring verification or corrective action.';
+      case 'Dean':
+      case 'Dean Academics':
+        return 'Monitor faculty report and question paper compliance across departments and review overall audit progress.';
+      case 'Inspector':
+      case 'Read-Only Inspector':
+        return 'Inspect faculty reports and question papers for regulatory compliance, quality standards, and verification status.';
+      case 'System Admin':
+        return 'Monitor the complete Faculty Audit system, manage audit records, and review verification activity across departments.';
+      default:
+        return 'Review faculty reports and question papers for compliance and verification status.';
     }
   }
 
@@ -89,15 +98,23 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
       label: 'Department',
       value: _selectedDept,
       icon: Icons.business_rounded,
-      options: const ['All Departments', 'CSE', 'IT', 'ECE', 'EEE', 'MECH'],
+      options: const ['All Departments', 'CSE', 'ECE', 'MECH', 'EEE', 'IT'],
       onChanged: (v) => setState(() => _selectedDept = v!),
     );
 
+    final regField = buildFilterField(
+      label: 'Regulation',
+      value: _selectedRegulation,
+      icon: Icons.gavel_rounded,
+      options: const ['All Regulations', 'R2021', 'R2023'],
+      onChanged: (v) => setState(() => _selectedRegulation = v!),
+    );
+
     final yearField = buildFilterField(
-      label: 'Year',
+      label: 'Academic Year',
       value: _selectedYear,
       icon: Icons.calendar_today_rounded,
-      options: const ['All Years', '1st Year', '2nd Year', '3rd Year', '4th Year'],
+      options: const ['All Academic Years', '2024–2025', '2025–2026', '2026–2027'],
       onChanged: (v) => setState(() => _selectedYear = v!),
     );
 
@@ -105,31 +122,23 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
       label: 'Semester',
       value: _selectedSem,
       icon: Icons.school_rounded,
-      options: const ['All Semesters', 'Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'],
+      options: const ['All Semesters', 'Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'],
       onChanged: (v) => setState(() => _selectedSem = v!),
     );
 
-    final docTypeField = buildFilterField(
-      label: 'Document Type',
-      value: _selectedDocType,
-      icon: Icons.description_rounded,
-      options: const ['All Document Types', 'Course Completion Report', 'Academic Performance Report', 'Mentoring Record'],
-      onChanged: (v) => setState(() => _selectedDocType = v!),
-    );
-
-    final verTypeField = buildFilterField(
-      label: 'Verification Type',
-      value: _selectedVerType,
+    final statusField = buildFilterField(
+      label: 'Verification Status',
+      value: _selectedStatus,
       icon: Icons.verified_user_rounded,
-      options: const ['All Verification Types', 'Verified', 'Rejected', 'Under Review'],
-      onChanged: (v) => setState(() => _selectedVerType = v!),
+      options: const ['All Statuses', 'Verified', 'Rejected', 'Under Review'],
+      onChanged: (v) => setState(() => _selectedStatus = v!),
     );
 
     final bool hasActiveFilters = _selectedDept != 'All Departments' ||
-        _selectedYear != 'All Years' ||
+        _selectedRegulation != 'All Regulations' ||
+        _selectedYear != 'All Academic Years' ||
         _selectedSem != 'All Semesters' ||
-        _selectedDocType != 'All Document Types' ||
-        _selectedVerType != 'All Verification Types';
+        _selectedStatus != 'All Statuses';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
@@ -161,17 +170,17 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
                   onTap: () {
                     setState(() {
                       _selectedDept = 'All Departments';
-                      _selectedYear = 'All Years';
+                      _selectedRegulation = 'All Regulations';
+                      _selectedYear = 'All Academic Years';
                       _selectedSem = 'All Semesters';
-                      _selectedDocType = 'All Document Types';
-                      _selectedVerType = 'All Verification Types';
+                      _selectedStatus = 'All Statuses';
                     });
                   },
                   child: const Row(
                     children: [
                       Icon(Icons.refresh_rounded, size: 12, color: AppColors.accent),
                       SizedBox(width: 4),
-                      Text('Reset Filters', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.accent)),
+                      Text('Clear Filters', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.accent)),
                     ],
                   ),
                 ),
@@ -183,31 +192,31 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
               children: [
                 Expanded(child: deptField),
                 const SizedBox(width: 8),
-                Expanded(child: yearField),
+                Expanded(child: regField),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                Expanded(child: semField),
+                Expanded(child: yearField),
                 const SizedBox(width: 8),
-                Expanded(child: docTypeField),
+                Expanded(child: semField),
               ],
             ),
             const SizedBox(height: 8),
-            verTypeField,
+            statusField,
           ] else ...[
             Row(
               children: [
                 Expanded(child: deptField),
                 const SizedBox(width: 8),
+                Expanded(child: regField),
+                const SizedBox(width: 8),
                 Expanded(child: yearField),
                 const SizedBox(width: 8),
                 Expanded(child: semField),
                 const SizedBox(width: 8),
-                Expanded(child: docTypeField),
-                const SizedBox(width: 8),
-                Expanded(child: verTypeField),
+                Expanded(child: statusField),
               ],
             ),
           ],
@@ -221,7 +230,7 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
     // Filter records
     final reports = widget.state.facultyReports.where((f) {
       if (widget.state.departmentScope != null) {
-        if (!f.department.contains(widget.state.departmentScope!)) {
+        if (!f.department.toLowerCase().contains(widget.state.departmentScope!.toLowerCase())) {
           return false;
         }
       }
@@ -231,30 +240,22 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
       if (_selectedDept != 'All Departments') {
         final d = _selectedDept.toUpperCase();
-        if (d == 'CSE' && !f.department.contains('Computer Science')) return false;
-        if (d == 'IT' && !f.department.contains('Information Tech')) return false;
-        if (d == 'ECE' && !f.department.contains('Electronics')) return false;
-        if (d == 'EEE' && !f.department.contains('Electrical')) return false;
-        if (d == 'MECH' && !f.department.contains('Mechanical')) return false;
+        if (d == 'CSE' && !f.department.toLowerCase().contains('computer science') && !f.department.contains('CSE')) return false;
+        if (d == 'IT' && !f.department.toLowerCase().contains('information tech') && !f.department.contains('IT')) return false;
+        if (d == 'ECE' && !f.department.toLowerCase().contains('electronics') && !f.department.contains('ECE')) return false;
+        if (d == 'EEE' && !f.department.toLowerCase().contains('electrical') && !f.department.contains('EEE')) return false;
+        if (d == 'MECH' && !f.department.toLowerCase().contains('mechanical') && !f.department.contains('MECH')) return false;
       }
       
-      if (_selectedYear != 'All Years') {
-        // Faculty lack specific year logic beside academic_year string
-      }
-      if (_selectedSem != 'All Semesters') {
-        // Faculty lack specific sem logic
+      if (_selectedYear != 'All Academic Years') {
+        final cleanYear = _selectedYear.replaceAll('–', '-').split('-')[0];
+        if (!f.academicYear.contains(cleanYear)) return false;
       }
       
-      if (_selectedDocType != 'All Document Types') {
-         if (_selectedDocType == 'Course Completion Report' && f.reportType != 'Course Completion Report') return false;
-         if (_selectedDocType == 'Academic Performance Report' && f.reportType != 'Academic Performance Report') return false;
-         if (_selectedDocType == 'Mentoring Record' && f.reportType != 'Mentoring Record') return false;
-      }
-      
-      if (_selectedVerType != 'All Verification Types') {
-         if (_selectedVerType == 'Verified' && f.status != 'Verified') return false;
-         if (_selectedVerType == 'Rejected' && f.status != 'Rejected') return false;
-         if (_selectedVerType == 'Under Review' && f.status != 'Under Review') return false;
+      if (_selectedStatus != 'All Statuses') {
+        if (_selectedStatus == 'Verified' && f.status != 'Verified') return false;
+        if (_selectedStatus == 'Rejected' && f.status != 'Rejected') return false;
+        if (_selectedStatus == 'Under Review' && f.status != 'Under Review' && f.status != 'Pending') return false;
       }
 
       if (_searchQuery.isNotEmpty) {
@@ -388,16 +389,64 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
         const SizedBox(height: 20),
 
-        // Data Table — Desktop scroll table; Mobile card-per-record
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 600;
-            if (isMobile) {
-              return Column(
-                children: reports.map((f) => _buildMobileCard(f)).toList(),
-              );
-            }
-            return Container(
+        if (reports.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(36),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+              boxShadow: AppColors.cardShadow,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.filter_alt_off_rounded, size: 44, color: AppColors.textSecondary),
+                const SizedBox(height: 12),
+                const Text(
+                  'No Faculty Audit Records Found',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'No faculty report records match the selected Department, Regulation, Academic Year, Semester, Verification Status, or Search query.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _selectedDept = 'All Departments';
+                      _selectedRegulation = 'All Regulations';
+                      _selectedYear = 'All Academic Years';
+                      _selectedSem = 'All Semesters';
+                      _selectedStatus = 'All Statuses';
+                      _searchQuery = '';
+                      _filterStatus = 'All';
+                    });
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('Reset All Filters'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          // Data Table — Desktop scroll table; Mobile card-per-record
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 600;
+              if (isMobile) {
+                return Column(
+                  children: reports.map((f) => _buildMobileCard(f)).toList(),
+                );
+              }
+              return Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),

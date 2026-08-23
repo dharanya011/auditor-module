@@ -17,10 +17,243 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
   String _filterDept = 'All';
   String _searchQuery = '';
 
+  // 5 Standard Dropdown Filters
+  String _selectedDept = 'All Departments';
+  String _selectedRegulation = 'All Regulations';
+  String _selectedYear = 'All Academic Years';
+  String _selectedSem = 'All Semesters';
+  String _selectedStatus = 'All Statuses';
+
+  String _getRoleBasedPrompt(String role) {
+    switch (role) {
+      case 'Lead Auditor':
+        return 'Review faculty reports and question papers across departments, monitor compliance with regulations, and verify pending audit records.';
+      case 'Department Auditor':
+        return 'Review faculty reports and question papers for your assigned department and verify records that are pending audit.';
+      case 'HOD':
+        return 'Monitor faculty report and question paper audits for your department and review records requiring verification or corrective action.';
+      case 'Dean':
+      case 'Dean Academics':
+        return 'Monitor faculty report and question paper compliance across departments and review overall audit progress.';
+      case 'Inspector':
+      case 'Read-Only Inspector':
+        return 'Inspect faculty reports and question papers for regulatory compliance, quality standards, and verification status.';
+      case 'System Admin':
+        return 'Monitor the complete Faculty Audit system, manage audit records, and review verification activity across departments.';
+      default:
+        return 'Review faculty reports and question papers for compliance and verification status.';
+    }
+  }
+
+  Widget _buildFilterCard(bool isMobile) {
+    Widget buildFilterField({
+      required String label,
+      required String value,
+      required List<String> options,
+      required ValueChanged<String?> onChanged,
+      required IconData icon,
+    }) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 12, color: AppColors.accent),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: value,
+                isDense: true,
+                isExpanded: true,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                items: options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt, overflow: TextOverflow.ellipsis))).toList(),
+                onChanged: onChanged,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final deptField = buildFilterField(
+      label: 'Department',
+      value: _selectedDept,
+      icon: Icons.business_rounded,
+      options: const ['All Departments', 'CSE', 'ECE', 'MECH', 'EEE', 'IT'],
+      onChanged: (v) => setState(() => _selectedDept = v!),
+    );
+
+    final regField = buildFilterField(
+      label: 'Regulation',
+      value: _selectedRegulation,
+      icon: Icons.gavel_rounded,
+      options: const ['All Regulations', 'R2021', 'R2023'],
+      onChanged: (v) => setState(() => _selectedRegulation = v!),
+    );
+
+    final yearField = buildFilterField(
+      label: 'Academic Year',
+      value: _selectedYear,
+      icon: Icons.calendar_today_rounded,
+      options: const ['All Academic Years', '2024–2025', '2025–2026', '2026–2027'],
+      onChanged: (v) => setState(() => _selectedYear = v!),
+    );
+
+    final semField = buildFilterField(
+      label: 'Semester',
+      value: _selectedSem,
+      icon: Icons.school_rounded,
+      options: const ['All Semesters', 'Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'],
+      onChanged: (v) => setState(() => _selectedSem = v!),
+    );
+
+    final statusField = buildFilterField(
+      label: 'Verification Status',
+      value: _selectedStatus,
+      icon: Icons.verified_user_rounded,
+      options: const ['All Statuses', 'Verified', 'Rejected', 'Under Review'],
+      onChanged: (v) => setState(() => _selectedStatus = v!),
+    );
+
+    final bool hasActiveFilters = _selectedDept != 'All Departments' ||
+        _selectedRegulation != 'All Regulations' ||
+        _selectedYear != 'All Academic Years' ||
+        _selectedSem != 'All Semesters' ||
+        _selectedStatus != 'All Statuses';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [BoxShadow(color: Color(0x05000000), blurRadius: 4, offset: Offset(0, 2))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.filter_alt_rounded, size: 16, color: AppColors.accent),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Question Paper Audit Filters (${hasActiveFilters ? "Active" : "All"})',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                  ),
+                ],
+              ),
+              if (hasActiveFilters)
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedDept = 'All Departments';
+                      _selectedRegulation = 'All Regulations';
+                      _selectedYear = 'All Academic Years';
+                      _selectedSem = 'All Semesters';
+                      _selectedStatus = 'All Statuses';
+                    });
+                  },
+                  child: const Row(
+                    children: [
+                      Icon(Icons.refresh_rounded, size: 12, color: AppColors.accent),
+                      SizedBox(width: 4),
+                      Text('Clear Filters', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.accent)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (isMobile) ...[
+            Row(
+              children: [
+                Expanded(child: deptField),
+                const SizedBox(width: 8),
+                Expanded(child: regField),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: yearField),
+                const SizedBox(width: 8),
+                Expanded(child: semField),
+              ],
+            ),
+            const SizedBox(height: 8),
+            statusField,
+          ] else ...[
+            Row(
+              children: [
+                Expanded(child: deptField),
+                const SizedBox(width: 8),
+                Expanded(child: regField),
+                const SizedBox(width: 8),
+                Expanded(child: yearField),
+                const SizedBox(width: 8),
+                Expanded(child: semField),
+                const SizedBox(width: 8),
+                Expanded(child: statusField),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final papers = widget.state.questionPapers.where((q) {
+      if (widget.state.departmentScope != null) {
+        if (!q.department.toUpperCase().contains(widget.state.departmentScope!.toUpperCase())) {
+          return false;
+        }
+      }
+
       if (_filterDept != 'All' && q.department != _filterDept) return false;
+
+      if (_selectedDept != 'All Departments') {
+        final d = _selectedDept.toUpperCase();
+        if (d == 'CSE' && !q.department.toUpperCase().contains('CSE') && !q.department.toLowerCase().contains('computer science')) return false;
+        if (d == 'IT' && !q.department.toUpperCase().contains('IT') && !q.department.toLowerCase().contains('information tech')) return false;
+        if (d == 'ECE' && !q.department.toUpperCase().contains('ECE') && !q.department.toLowerCase().contains('electronics')) return false;
+        if (d == 'EEE' && !q.department.toUpperCase().contains('EEE') && !q.department.toLowerCase().contains('electrical')) return false;
+        if (d == 'MECH' && !q.department.toUpperCase().contains('MECH') && !q.department.toLowerCase().contains('mechanical')) return false;
+      }
+
+      if (_selectedRegulation != 'All Regulations') {
+        if (q.regulation != _selectedRegulation) return false;
+      }
+
+      if (_selectedStatus != 'All Statuses') {
+        if (_selectedStatus == 'Verified' && q.status != 'Verified') return false;
+        if (_selectedStatus == 'Rejected' && q.status != 'Rejected' && q.status != 'Missing Approval') return false;
+        if (_selectedStatus == 'Under Review' && q.status != 'Under Review' && q.status != 'Pending' && q.status != 'Missing Approval') return false;
+      }
+
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
         final match = q.id.toLowerCase().contains(query) ||
@@ -41,8 +274,8 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     'Question Paper & Exam Document Audit',
                     style: TextStyle(
                       fontSize: 22,
@@ -53,10 +286,10 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
-                    'Auditing course codes, R2023 regulation compliance, Bloom Taxonomy distribution, and CoE/HOD approvals.',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    _getRoleBasedPrompt(widget.state.userRole),
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -94,6 +327,9 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
         ),
 
         const SizedBox(height: 20),
+
+        // 5 Standard Dropdown Filters
+        LayoutBuilder(builder: (context, constraints) => _buildFilterCard(constraints.maxWidth < 600)),
 
         // Filter Toolbar Card (Responsive Wrap)
         Container(
@@ -148,16 +384,64 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
 
         const SizedBox(height: 20),
 
-        // Data Table — Desktop scroll table; Mobile card-per-record
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 600;
-            if (isMobile) {
-              return Column(
-                children: papers.map((q) => _buildMobileCard(q)).toList(),
-              );
-            }
-            return Container(
+        if (papers.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(36),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+              boxShadow: AppColors.cardShadow,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.filter_alt_off_rounded, size: 44, color: AppColors.textSecondary),
+                const SizedBox(height: 12),
+                const Text(
+                  'No Question Paper Records Found',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'No question paper records match the selected Department, Regulation, Academic Year, Semester, Verification Status, or Search query.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _selectedDept = 'All Departments';
+                      _selectedRegulation = 'All Regulations';
+                      _selectedYear = 'All Academic Years';
+                      _selectedSem = 'All Semesters';
+                      _selectedStatus = 'All Statuses';
+                      _searchQuery = '';
+                      _filterDept = 'All';
+                    });
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('Reset All Filters'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          // Data Table — Desktop scroll table; Mobile card-per-record
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 600;
+              if (isMobile) {
+                return Column(
+                  children: papers.map((q) => _buildMobileCard(q)).toList(),
+                );
+              }
+              return Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
