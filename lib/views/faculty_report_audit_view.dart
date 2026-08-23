@@ -240,12 +240,13 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
       if (_filterStatus == 'Verified' && f.status != 'Verified') return false;
 
       if (_selectedDept != 'All Departments') {
+        final dept = f.department.toLowerCase();
         final d = _selectedDept.toUpperCase();
-        if (d == 'CSE' && !f.department.toLowerCase().contains('computer science') && !f.department.toUpperCase().contains('CSE')) return false;
-        if (d == 'IT' && !f.department.toLowerCase().contains('information tech') && !f.department.toUpperCase().contains('IT')) return false;
-        if (d == 'ECE' && !f.department.toLowerCase().contains('electronics') && !f.department.toUpperCase().contains('ECE')) return false;
-        if (d == 'EEE' && !f.department.toLowerCase().contains('electrical') && !f.department.toUpperCase().contains('EEE')) return false;
-        if (d == 'MECH' && !f.department.toLowerCase().contains('mechanical') && !f.department.toUpperCase().contains('MECH')) return false;
+        if (d == 'CSE' && !dept.contains('computer science') && !dept.contains('cse')) return false;
+        if (d == 'IT' && !dept.contains('information tech') && !dept.contains(' it')) return false;
+        if (d == 'ECE' && !dept.contains('communication') && !dept.contains('ece')) return false;
+        if (d == 'EEE' && !dept.contains('electrical') && !dept.contains('eee')) return false;
+        if (d == 'MECH' && !dept.contains('mechanical') && !dept.contains('mech')) return false;
       }
       
       if (_selectedRegulation != 'All Regulations') {
