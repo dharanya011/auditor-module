@@ -18,12 +18,12 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
   String _filterStatus = 'All';
   String _searchQuery = '';
 
-  // 5 Standard Dropdown Filters
+  // 5 Audit Pattern Filters
   String _selectedDept = 'All Departments';
   String _selectedRegulation = 'All Regulations';
-  String _selectedYear = 'All Academic Years';
+  String _selectedAcademicYear = 'All Academic Years';
   String _selectedSem = 'All Semesters';
-  String _selectedStatus = 'All Statuses';
+  String _selectedVerStatus = 'All Statuses';
 
   String _getRoleBasedPrompt(String role) {
     switch (role) {
@@ -42,7 +42,7 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
       case 'System Admin':
         return 'Monitor the complete Faculty Audit system, manage audit records, and review verification activity across departments.';
       default:
-        return 'Review faculty reports and question papers for compliance and verification status.';
+        return 'Review faculty reports and question papers across departments and verify records that are pending audit.';
     }
   }
 
@@ -112,33 +112,33 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
     final yearField = buildFilterField(
       label: 'Academic Year',
-      value: _selectedYear,
+      value: _selectedAcademicYear,
       icon: Icons.calendar_today_rounded,
-      options: const ['All Academic Years', '2024–2025', '2025–2026', '2026–2027'],
-      onChanged: (v) => setState(() => _selectedYear = v!),
+      options: const ['All Academic Years', '2024 - 2025', '2025 - 2026', '2026 - 2027'],
+      onChanged: (v) => setState(() => _selectedAcademicYear = v!),
     );
 
     final semField = buildFilterField(
       label: 'Semester',
       value: _selectedSem,
       icon: Icons.school_rounded,
-      options: const ['All Semesters', 'Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'],
+      options: const ['All Semesters', 'Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'],
       onChanged: (v) => setState(() => _selectedSem = v!),
     );
 
-    final statusField = buildFilterField(
+    final verStatusField = buildFilterField(
       label: 'Verification Status',
-      value: _selectedStatus,
+      value: _selectedVerStatus,
       icon: Icons.verified_user_rounded,
       options: const ['All Statuses', 'Verified', 'Rejected', 'Under Review'],
-      onChanged: (v) => setState(() => _selectedStatus = v!),
+      onChanged: (v) => setState(() => _selectedVerStatus = v!),
     );
 
     final bool hasActiveFilters = _selectedDept != 'All Departments' ||
         _selectedRegulation != 'All Regulations' ||
-        _selectedYear != 'All Academic Years' ||
+        _selectedAcademicYear != 'All Academic Years' ||
         _selectedSem != 'All Semesters' ||
-        _selectedStatus != 'All Statuses';
+        _selectedVerStatus != 'All Statuses';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
@@ -171,16 +171,16 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
                     setState(() {
                       _selectedDept = 'All Departments';
                       _selectedRegulation = 'All Regulations';
-                      _selectedYear = 'All Academic Years';
+                      _selectedAcademicYear = 'All Academic Years';
                       _selectedSem = 'All Semesters';
-                      _selectedStatus = 'All Statuses';
+                      _selectedVerStatus = 'All Statuses';
                     });
                   },
                   child: const Row(
                     children: [
                       Icon(Icons.refresh_rounded, size: 12, color: AppColors.accent),
                       SizedBox(width: 4),
-                      Text('Clear Filters', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.accent)),
+                      Text('Reset Filters', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.accent)),
                     ],
                   ),
                 ),
@@ -204,7 +204,7 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
               ],
             ),
             const SizedBox(height: 8),
-            statusField,
+            verStatusField,
           ] else ...[
             Row(
               children: [
@@ -216,7 +216,7 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
                 const SizedBox(width: 8),
                 Expanded(child: semField),
                 const SizedBox(width: 8),
-                Expanded(child: statusField),
+                Expanded(child: verStatusField),
               ],
             ),
           ],
@@ -230,7 +230,8 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
     // Filter records
     final reports = widget.state.facultyReports.where((f) {
       if (widget.state.departmentScope != null) {
-        if (!f.department.toLowerCase().contains(widget.state.departmentScope!.toLowerCase())) {
+        if (!f.department.toLowerCase().contains(widget.state.departmentScope!.toLowerCase()) &&
+            !f.department.toUpperCase().contains(widget.state.departmentScope!.toUpperCase())) {
           return false;
         }
       }
@@ -240,22 +241,32 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
       if (_selectedDept != 'All Departments') {
         final d = _selectedDept.toUpperCase();
-        if (d == 'CSE' && !f.department.toLowerCase().contains('computer science') && !f.department.contains('CSE')) return false;
-        if (d == 'IT' && !f.department.toLowerCase().contains('information tech') && !f.department.contains('IT')) return false;
-        if (d == 'ECE' && !f.department.toLowerCase().contains('electronics') && !f.department.contains('ECE')) return false;
-        if (d == 'EEE' && !f.department.toLowerCase().contains('electrical') && !f.department.contains('EEE')) return false;
-        if (d == 'MECH' && !f.department.toLowerCase().contains('mechanical') && !f.department.contains('MECH')) return false;
+        if (d == 'CSE' && !f.department.toLowerCase().contains('computer science') && !f.department.toUpperCase().contains('CSE')) return false;
+        if (d == 'IT' && !f.department.toLowerCase().contains('information tech') && !f.department.toUpperCase().contains('IT')) return false;
+        if (d == 'ECE' && !f.department.toLowerCase().contains('electronics') && !f.department.toUpperCase().contains('ECE')) return false;
+        if (d == 'EEE' && !f.department.toLowerCase().contains('electrical') && !f.department.toUpperCase().contains('EEE')) return false;
+        if (d == 'MECH' && !f.department.toLowerCase().contains('mechanical') && !f.department.toUpperCase().contains('MECH')) return false;
       }
       
-      if (_selectedYear != 'All Academic Years') {
-        final cleanYear = _selectedYear.replaceAll('–', '-').split('-')[0];
-        if (!f.academicYear.contains(cleanYear)) return false;
+      if (_selectedRegulation != 'All Regulations') {
+        if (f.regulation != _selectedRegulation) return false;
+      }
+
+      if (_selectedAcademicYear != 'All Academic Years') {
+        final ayClean = f.academicYear.replaceAll(' ', '');
+        final selAyClean = _selectedAcademicYear.replaceAll(' ', '');
+        if (!ayClean.contains(selAyClean) && !selAyClean.contains(ayClean)) return false;
+      }
+
+      if (_selectedSem != 'All Semesters') {
+        final semNum = int.tryParse(_selectedSem.replaceAll(RegExp(r'[^0-9]'), ''));
+        if (semNum != null && f.semester != semNum) return false;
       }
       
-      if (_selectedStatus != 'All Statuses') {
-        if (_selectedStatus == 'Verified' && f.status != 'Verified') return false;
-        if (_selectedStatus == 'Rejected' && f.status != 'Rejected') return false;
-        if (_selectedStatus == 'Under Review' && f.status != 'Under Review' && f.status != 'Pending') return false;
+      if (_selectedVerStatus != 'All Statuses') {
+        if (_selectedVerStatus == 'Verified' && f.status != 'Verified') return false;
+        if (_selectedVerStatus == 'Rejected' && f.status != 'Rejected') return false;
+        if (_selectedVerStatus == 'Under Review' && f.status != 'Under Review' && f.status != 'Pending') return false;
       }
 
       if (_searchQuery.isNotEmpty) {
@@ -263,7 +274,8 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
         final match = f.id.toLowerCase().contains(q) ||
             f.facultyName.toLowerCase().contains(q) ||
             f.department.toLowerCase().contains(q) ||
-            f.reportType.toLowerCase().contains(q);
+            f.reportType.toLowerCase().contains(q) ||
+            f.academicYear.toLowerCase().contains(q);
         if (!match) return false;
       }
       return true;
@@ -389,64 +401,16 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
         const SizedBox(height: 20),
 
-        if (reports.isEmpty)
-          Container(
-            padding: const EdgeInsets.all(36),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border),
-              boxShadow: AppColors.cardShadow,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.filter_alt_off_rounded, size: 44, color: AppColors.textSecondary),
-                const SizedBox(height: 12),
-                const Text(
-                  'No Faculty Audit Records Found',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'No faculty report records match the selected Department, Regulation, Academic Year, Semester, Verification Status, or Search query.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _selectedDept = 'All Departments';
-                      _selectedRegulation = 'All Regulations';
-                      _selectedYear = 'All Academic Years';
-                      _selectedSem = 'All Semesters';
-                      _selectedStatus = 'All Statuses';
-                      _searchQuery = '';
-                      _filterStatus = 'All';
-                    });
-                  },
-                  icon: const Icon(Icons.refresh_rounded, size: 16),
-                  label: const Text('Reset All Filters'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          )
-        else
-          // Data Table — Desktop scroll table; Mobile card-per-record
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isMobile = constraints.maxWidth < 600;
-              if (isMobile) {
-                return Column(
-                  children: reports.map((f) => _buildMobileCard(f)).toList(),
-                );
-              }
-              return Container(
+        // Data Table — Desktop scroll table; Mobile card-per-record
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            if (isMobile) {
+              return Column(
+                children: reports.map((f) => _buildMobileCard(f)).toList(),
+              );
+            }
+            return Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
