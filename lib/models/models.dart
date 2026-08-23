@@ -182,6 +182,8 @@ class FacultyReportRecord {
   final String department;
   final String reportType;
   final String academicYear;
+  final String regulation;
+  final int semester;
   final double reportedAttendance;
   final double actualAttendance;
   final int syllabusCompletionPercent;
@@ -196,6 +198,8 @@ class FacultyReportRecord {
     required this.department,
     required this.reportType,
     required this.academicYear,
+    this.regulation = 'R2023',
+    this.semester = 1,
     required this.reportedAttendance,
     required this.actualAttendance,
     required this.syllabusCompletionPercent,
