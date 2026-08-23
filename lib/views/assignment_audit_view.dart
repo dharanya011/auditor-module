@@ -18,12 +18,258 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
   String _filterStatus = 'All';
   String _searchQuery = '';
 
+  // 5 Student Audit Pattern Filters
+  String _selectedDept = 'All Departments';
+  String _selectedYear = 'All Years';
+  String _selectedSem = 'All Semesters';
+  String _selectedDocType = 'All Document Types';
+  String _selectedVerType = 'All Verification Types';
+
+  String _getRoleBasedPrompt(String role) {
+    switch (role) {
+      case 'Lead Auditor': return 'Review audit records across departments and monitor pending and completed verification activities.';
+      case 'Department Auditor': return 'Review and verify audit records for your assigned department and resolve pending issues.';
+      case 'HOD': return 'Monitor department-level audit progress and review records requiring attention.';
+      case 'Dean': return 'Monitor overall academic audit compliance and review department-level audit status.';
+      case 'Inspector': return 'Inspect audit records, verification status and compliance-related issues.';
+      case 'System Admin': return 'Monitor the complete audit system and manage audit records across all roles and departments.';
+      default: return 'Review and verify audit records.';
+    }
+  }
+
+  Widget _buildFilterCard(bool isMobile) {
+    Widget buildFilterField({
+      required String label,
+      required String value,
+      required List<String> options,
+      required ValueChanged<String?> onChanged,
+      required IconData icon,
+    }) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 12, color: AppColors.accent),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: value,
+                isDense: true,
+                isExpanded: true,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                items: options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt, overflow: TextOverflow.ellipsis))).toList(),
+                onChanged: onChanged,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final deptField = buildFilterField(
+      label: 'Department',
+      value: _selectedDept,
+      icon: Icons.business_rounded,
+      options: const ['All Departments', 'CSE', 'IT', 'ECE', 'EEE', 'MECH'],
+      onChanged: (v) => setState(() => _selectedDept = v!),
+    );
+
+    final yearField = buildFilterField(
+      label: 'Year',
+      value: _selectedYear,
+      icon: Icons.calendar_today_rounded,
+      options: const ['All Years', '1st Year', '2nd Year', '3rd Year', '4th Year'],
+      onChanged: (v) => setState(() => _selectedYear = v!),
+    );
+
+    final semField = buildFilterField(
+      label: 'Semester',
+      value: _selectedSem,
+      icon: Icons.school_rounded,
+      options: const ['All Semesters', 'Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'],
+      onChanged: (v) => setState(() => _selectedSem = v!),
+    );
+
+    final docTypeField = buildFilterField(
+      label: 'Document Type',
+      value: _selectedDocType,
+      icon: Icons.description_rounded,
+      options: const ['All Document Types', 'Assignments', 'Continuous Assessment', 'Project Evidence'],
+      onChanged: (v) => setState(() => _selectedDocType = v!),
+    );
+
+    final verTypeField = buildFilterField(
+      label: 'Verification Type',
+      value: _selectedVerType,
+      icon: Icons.verified_user_rounded,
+      options: const ['All Verification Types', 'Verified', 'Missing Evidence', 'Submitted Late'],
+      onChanged: (v) => setState(() => _selectedVerType = v!),
+    );
+
+    final bool hasActiveFilters = _selectedDept != 'All Departments' ||
+        _selectedYear != 'All Years' ||
+        _selectedSem != 'All Semesters' ||
+        _selectedDocType != 'All Document Types' ||
+        _selectedVerType != 'All Verification Types';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [BoxShadow(color: Color(0x05000000), blurRadius: 4, offset: Offset(0, 2))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.filter_alt_rounded, size: 16, color: AppColors.accent),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Assignment Audit Filters (${hasActiveFilters ? "Active" : "All"})',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                  ),
+                ],
+              ),
+              if (hasActiveFilters)
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedDept = 'All Departments';
+                      _selectedYear = 'All Years';
+                      _selectedSem = 'All Semesters';
+                      _selectedDocType = 'All Document Types';
+                      _selectedVerType = 'All Verification Types';
+                    });
+                  },
+                  child: const Row(
+                    children: [
+                      Icon(Icons.refresh_rounded, size: 12, color: AppColors.accent),
+                      SizedBox(width: 4),
+                      Text('Reset Filters', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.accent)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (isMobile) ...[
+            Row(
+              children: [
+                Expanded(child: deptField),
+                const SizedBox(width: 8),
+                Expanded(child: yearField),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: semField),
+                const SizedBox(width: 8),
+                Expanded(child: docTypeField),
+              ],
+            ),
+            const SizedBox(height: 8),
+            verTypeField,
+          ] else ...[
+            Row(
+              children: [
+                Expanded(child: deptField),
+                const SizedBox(width: 8),
+                Expanded(child: yearField),
+                const SizedBox(width: 8),
+                Expanded(child: semField),
+                const SizedBox(width: 8),
+                Expanded(child: docTypeField),
+                const SizedBox(width: 8),
+                Expanded(child: verTypeField),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Filter assignments using actual AssignmentRecord fields
     final assignments = widget.state.assignmentRecords.where((a) {
+      if (widget.state.departmentScope != null) {
+        if (!a.subject.contains(widget.state.departmentScope!) && !a.studentRegNo.contains(widget.state.departmentScope!)) {
+          return false;
+        }
+      }
+
       if (_filterStatus == 'Missing Evidence' && !a.isMissingFile) return false;
       if (_filterStatus == 'Verified' && a.status != 'Verified') return false;
+
+      final student = widget.state.studentRecords.where((s) => s.registerNo == a.studentRegNo).firstOrNull;
+      if (student != null) {
+        if (_selectedDept != 'All Departments') {
+          if (_selectedDept == 'CSE' && !student.department.toLowerCase().contains('computer science')) return false;
+          if (_selectedDept == 'IT' && !student.department.toLowerCase().contains('information tech')) return false;
+          if (_selectedDept == 'ECE' && !student.department.toLowerCase().contains('electronics')) return false;
+          if (_selectedDept == 'EEE' && !student.department.toLowerCase().contains('electrical')) return false;
+          if (_selectedDept == 'MECH' && !student.department.toLowerCase().contains('mechanical')) return false;
+        }
+        if (_selectedSem != 'All Semesters') {
+          final semNum = int.tryParse(_selectedSem.replaceAll(RegExp(r'[^0-9]'), ''));
+          if (semNum != null && student.semester != semNum) return false;
+        }
+        if (_selectedYear != 'All Years') {
+          final yearNum = int.tryParse(_selectedYear.replaceAll(RegExp(r'[^0-9]'), ''));
+          if (yearNum != null) {
+            final expectedSemMin = (yearNum - 1) * 2 + 1;
+            final expectedSemMax = yearNum * 2;
+            if (student.semester < expectedSemMin || student.semester > expectedSemMax) return false;
+          }
+        }
+      } else {
+        if (_selectedDept != 'All Departments') {
+          final d = _selectedDept.toUpperCase();
+          if (d == 'CSE' && !a.subject.contains('CS') && !a.studentRegNo.contains('CS')) return false;
+          if (d == 'IT' && !a.subject.contains('IT') && !a.studentRegNo.contains('IT')) return false;
+          if (d == 'ECE' && !a.subject.contains('EC') && !a.studentRegNo.contains('EC')) return false;
+        }
+      }
+
+      if (_selectedDocType != 'All Document Types') {
+         if (_selectedDocType == 'Assignments' && !a.title.toLowerCase().contains('assignment')) return false;
+         if (_selectedDocType == 'Continuous Assessment' && !a.title.toLowerCase().contains('assessment')) return false;
+      }
+
+      if (_selectedVerType != 'All Verification Types') {
+         if (_selectedVerType == 'Verified' && a.status != 'Verified') return false;
+         if (_selectedVerType == 'Missing Evidence' && !a.isMissingFile) return false;
+         if (_selectedVerType == 'Submitted Late' && a.status != 'Submitted Late') return false;
+      }
+
       if (_searchQuery.isNotEmpty) {
         final q = _searchQuery.toLowerCase();
         final match = a.id.toLowerCase().contains(q) ||
@@ -65,8 +311,8 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    'Independent verification of internal rubrics, student submissions, and LMS digital evidence hashes.',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    _getRoleBasedPrompt(widget.state.userRole),
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                   ),
                 ],
               ),
@@ -101,6 +347,9 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
         ),
 
         const SizedBox(height: 20),
+
+        // 5 Pattern Filters
+        _buildFilterCard(isMobileScreen),
 
         // Filter Toolbar Card
         Container(
