@@ -289,8 +289,8 @@ class _MarksAuditViewState extends State<MarksAuditView> {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     'Marks Audit — Multi-Stage Verification Pipeline',
                     style: TextStyle(
                       fontSize: 22,
@@ -301,7 +301,7 @@ class _MarksAuditViewState extends State<MarksAuditView> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     _getRoleBasedPrompt(widget.state.userRole),
                     style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),

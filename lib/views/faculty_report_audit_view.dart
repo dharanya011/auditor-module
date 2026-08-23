@@ -277,8 +277,8 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     'Faculty Report & Performance Audit',
                     style: TextStyle(
                       fontSize: 22,
@@ -289,7 +289,7 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     _getRoleBasedPrompt(widget.state.userRole),
                     style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),

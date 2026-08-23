@@ -299,8 +299,8 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
               constraints: BoxConstraints(maxWidth: isMobileScreen ? screenWidth - 32 : 650),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     'Assignment & Continuous Assessment Audit',
                     style: TextStyle(
                       fontSize: 22,
@@ -309,7 +309,7 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
                       letterSpacing: -0.5,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     _getRoleBasedPrompt(widget.state.userRole),
                     style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
