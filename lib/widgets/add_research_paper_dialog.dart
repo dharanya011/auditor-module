@@ -503,10 +503,34 @@ class _AddResearchPaperDialogState extends State<AddResearchPaperDialog> {
               value: options.contains(currentValue) ? currentValue : options.first,
               isExpanded: true,
               style: const TextStyle(fontSize: 12, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
-              onChanged: onChanged,
+              selectedItemBuilder: (BuildContext context) {
+                return options.map((opt) {
+                  return Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      opt,
+                      style: const TextStyle(fontSize: 12, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList();
+              },
               items: options.map((opt) {
-                return DropdownMenuItem(value: opt, child: Text(opt, overflow: TextOverflow.ellipsis));
+                return DropdownMenuItem<String>(
+                  value: opt,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Text(
+                      opt,
+                      style: const TextStyle(fontSize: 12, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                      softWrap: false,
+                    ),
+                  ),
+                );
               }).toList(),
+              onChanged: onChanged,
             ),
           ),
         ),

@@ -85,7 +85,33 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
                 isDense: true,
                 isExpanded: true,
                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                items: options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt, overflow: TextOverflow.ellipsis))).toList(),
+                selectedItemBuilder: (BuildContext context) {
+                  return options.map((opt) {
+                    return Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        opt,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList();
+                },
+                items: options.map((opt) {
+                  return DropdownMenuItem<String>(
+                    value: opt,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Text(
+                        opt,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                        softWrap: false,
+                      ),
+                    ),
+                  );
+                }).toList(),
                 onChanged: onChanged,
               ),
             ),

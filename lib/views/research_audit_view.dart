@@ -921,13 +921,34 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
                 isExpanded: true,
                 icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: AppColors.textSecondary),
                 style: const TextStyle(fontSize: 11, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
-                onChanged: onChanged,
+                selectedItemBuilder: (BuildContext context) {
+                  return options.map((opt) {
+                    return Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        opt,
+                        style: const TextStyle(fontSize: 11, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList();
+                },
                 items: options.map((opt) {
-                  return DropdownMenuItem(
+                  return DropdownMenuItem<String>(
                     value: opt,
-                    child: Text(opt, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Text(
+                        opt,
+                        style: const TextStyle(fontSize: 11, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                        softWrap: false,
+                      ),
+                    ),
                   );
                 }).toList(),
+                onChanged: onChanged,
               ),
             ),
           ),
