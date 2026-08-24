@@ -716,28 +716,131 @@ class AuditState extends ChangeNotifier {
   final List<ResearchRecord> researchRecords = [
     ResearchRecord(
       id: 'RES-2025-01',
+      organization: 'KSR College of Engineering',
+      department: 'Computer Science and Engineering',
+      facultyName: 'Dr. R. Kumar',
+      title: 'Automated ERP Ledger Audit Framework using Distributed Immutable Systems',
+      authors: 'Dr. R. Kumar, Prof. P. Anand',
+      type: 'Conference Paper',
+      doi: '10.1109/ICERP.2025.998231',
+      journalName: 'International Conference on ERP Technologies (IEEE)',
+      indexing: 'Scopus',
+      year: '2025',
+      description: 'Presents a immutable ledger validation framework for automated ERP transaction auditing in educational institutions.',
+      documentName: 'paper_kumar.pdf',
+      documentType: 'PDF Document',
+      documentSize: '1.24 MB',
+      documentStatus: 'Uploaded',
+      metadataMatch: false,
+      duplicateFlag: false,
+      status: 'Pending Examination',
+      verificationChecklist: {
+        'Paper Title': 'Pending',
+        'Authors': 'Pending',
+        'Faculty Affiliation': 'Pending',
+        'Department': 'Pending',
+        'Publication Details': 'Pending',
+        'DOI': 'Pending',
+        'Journal / Conference': 'Pending',
+        'Indexing Information': 'Pending',
+      },
+      auditorRemarks: '',
+    ),
+    ResearchRecord(
+      id: 'RES-2025-02',
+      organization: 'KSR College of Engineering',
+      department: 'Information Technology',
+      facultyName: 'Dr. S. Meena',
       title: 'AI in Higher Education: Machine Learning Models for Student Performance Prediction',
       authors: 'Dr. S. Meena, Adithya V',
-      type: 'Journal Publication',
+      type: 'Journal Article',
       doi: '10.1016/j.compedu.2025.104921',
       journalName: 'IEEE Transactions on Learning Technologies',
       indexing: 'Scopus / Web of Science',
       year: '2025',
+      description: 'Comprehensive study on multi-parameter predictive analytics for student academic retention.',
+      documentName: 'IEEE_AI_Education_Final.pdf',
+      documentType: 'PDF Document',
+      documentSize: '2.80 MB',
+      documentStatus: 'Verified',
       metadataMatch: true,
+      duplicateFlag: false,
       status: 'Verified',
+      verificationChecklist: {
+        'Paper Title': 'Verified',
+        'Authors': 'Verified',
+        'Faculty Affiliation': 'Verified',
+        'Department': 'Verified',
+        'Publication Details': 'Verified',
+        'DOI': 'Verified',
+        'Journal / Conference': 'Verified',
+        'Indexing Information': 'Verified',
+      },
+      auditorRemarks: 'Verified against IEEE Xplore DOI registry. All faculty credentials confirmed.',
     ),
     ResearchRecord(
-      id: 'RES-2025-02',
-      title: 'Automated ERP Ledger Audit Framework using Distributed Immutable Systems',
-      authors: 'Dr. R. Kumar',
-      type: 'Conference Proceeding',
-      doi: '10.1109/ICERP.2025.998231',
-      journalName: 'International Conference on ERP Technologies',
-      indexing: 'Scopus',
+      id: 'RES-2025-03',
+      organization: 'KSR College of Engineering',
+      department: 'Electronics and Communication Engineering',
+      facultyName: 'Dr. A. Priya',
+      title: 'Low Power VLSI Architecture for Real-Time Biomedical Signal Processing',
+      authors: 'Dr. A. Priya, Prof. M. Rajan',
+      type: 'Journal Article',
+      doi: '10.1109/TVLSI.2025.334102',
+      journalName: 'IEEE Transactions on VLSI Systems',
+      indexing: 'Web of Science',
       year: '2025',
-      metadataMatch: false,
-      duplicateFlag: true,
-      status: 'Discrepancy Flagged',
+      description: 'Novel low-power hardware accelerator design for edge biomedical monitoring sensors.',
+      documentName: 'paper_priya_ece.pdf',
+      documentType: 'PDF Document',
+      documentSize: '1.85 MB',
+      documentStatus: 'Uploaded',
+      metadataMatch: true,
+      duplicateFlag: false,
+      status: 'Pending Examination',
+      verificationChecklist: {
+        'Paper Title': 'Pending',
+        'Authors': 'Pending',
+        'Faculty Affiliation': 'Pending',
+        'Department': 'Pending',
+        'Publication Details': 'Pending',
+        'DOI': 'Pending',
+        'Journal / Conference': 'Pending',
+        'Indexing Information': 'Pending',
+      },
+      auditorRemarks: '',
+    ),
+    ResearchRecord(
+      id: 'RES-2025-04',
+      organization: 'KSR College of Engineering',
+      department: 'Mechanical Engineering',
+      facultyName: 'Dr. M. Arun',
+      title: 'Thermal Stress Analysis in Additive Manufactured Titanium Alloys for Aerospace Applications',
+      authors: 'Dr. M. Arun, Dr. K. Suresh',
+      type: 'Book Chapter',
+      doi: '10.1007/978-3-031-12345-6_12',
+      journalName: 'Springer Series in Advanced Manufacturing',
+      indexing: 'Scopus',
+      year: '2024',
+      description: 'Experimental evaluation of residual thermal stresses in laser powder bed fusion 3D printing.',
+      documentName: 'paper_arun_mech.pdf',
+      documentType: 'PDF Document',
+      documentSize: '3.40 MB',
+      documentStatus: 'Under Examination',
+      metadataMatch: true,
+      duplicateFlag: false,
+      status: 'Under Review',
+      verificationChecklist: {
+        'Paper Title': 'Verified',
+        'Authors': 'Verified',
+        'Faculty Affiliation': 'Needs Correction',
+        'Department': 'Verified',
+        'Publication Details': 'Pending',
+        'DOI': 'Verified',
+        'Journal / Conference': 'Pending',
+        'Indexing Information': 'Pending',
+      },
+      auditorRemarks: 'Faculty affiliation format requires departmental designation update.',
     ),
   ];
 
@@ -936,5 +1039,22 @@ class AuditState extends ChangeNotifier {
       recordId: recordId,
       details: details,
     ));
+  }
+
+  void addResearchRecord(ResearchRecord record) {
+    researchRecords.insert(0, record);
+    addAuditLog('RESEARCH_SUBMITTED', record.id, 'New research paper "${record.title}" submitted by ${record.facultyName} (${record.department})');
+    showToast('Research paper submitted successfully! Status: Pending Examination');
+    notifyListeners();
+  }
+
+  void updateResearchRecord(ResearchRecord updated) {
+    final idx = researchRecords.indexWhere((r) => r.id == updated.id);
+    if (idx != -1) {
+      researchRecords[idx] = updated;
+      addAuditLog('RESEARCH_AUDITED', updated.id, 'Audited research paper ${updated.id}. Status: ${updated.status}');
+      showToast('Research details saved successfully!');
+      notifyListeners();
+    }
   }
 }

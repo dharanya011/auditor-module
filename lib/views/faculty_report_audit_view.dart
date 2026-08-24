@@ -102,11 +102,20 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
       onChanged: (v) => setState(() => _selectedDept = v!),
     );
 
-    final regField = buildFilterField(
-      label: 'Regulation',
+    final docTypeField = buildFilterField(
+      label: 'Document Type',
       value: _selectedDocType,
-      icon: Icons.gavel_rounded,
-      options: const ['All Document Types', 'R2021', 'R2023'],
+      icon: Icons.description_rounded,
+      options: const [
+        'All Document Types',
+        'Faculty Report',
+        'Course Completion Report',
+        'Academic Performance Report',
+        'Question Paper',
+        'Syllabus Document',
+        'Research/Publication Report',
+        'Other',
+      ],
       onChanged: (v) => setState(() => _selectedDocType = v!),
     );
 
@@ -192,7 +201,7 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
               children: [
                 Expanded(child: deptField),
                 const SizedBox(width: 8),
-                Expanded(child: regField),
+                Expanded(child: docTypeField),
               ],
             ),
             const SizedBox(height: 8),
@@ -210,7 +219,7 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
               children: [
                 Expanded(child: deptField),
                 const SizedBox(width: 8),
-                Expanded(child: regField),
+                Expanded(child: docTypeField),
                 const SizedBox(width: 8),
                 Expanded(child: yearField),
                 const SizedBox(width: 8),
@@ -250,7 +259,25 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
       }
       
       if (_selectedDocType != 'All Document Types') {
-        if (f.regulation != _selectedDocType) return false;
+        final sel = _selectedDocType.toLowerCase();
+        final rep = f.reportType.toLowerCase();
+        if (_selectedDocType == 'Course Completion Report') {
+          if (!rep.contains('course completion') && !rep.contains('completion')) return false;
+        } else if (_selectedDocType == 'Academic Performance Report') {
+          if (!rep.contains('academic performance') && !rep.contains('performance')) return false;
+        } else if (_selectedDocType == 'Faculty Report') {
+          if (!rep.contains('report') && !rep.contains('faculty')) return false;
+        } else if (_selectedDocType == 'Research/Publication Report') {
+          if (!rep.contains('research') && !rep.contains('publication')) return false;
+        } else if (_selectedDocType == 'Question Paper') {
+          if (!rep.contains('question') && !rep.contains('paper')) return false;
+        } else if (_selectedDocType == 'Syllabus Document') {
+          if (!rep.contains('syllabus')) return false;
+        } else if (_selectedDocType == 'Other') {
+          if (rep.contains('completion') || rep.contains('performance') || rep.contains('research')) return false;
+        } else {
+          if (!rep.contains(sel) && !sel.contains(rep)) return false;
+        }
       }
 
       if (_selectedYear != 'All Years') {

@@ -244,14 +244,30 @@ class ResearchRecord {
   final String id;
   final String title;
   final String authors;
-  final String type; // Journal, Conference, Patent, Grant
+  final String type; // Journal Article, Conference Paper, Book Chapter, Other
   final String doi;
   final String journalName;
-  final String indexing; // Scopus, WoS, UGC Care
+  final String indexing; // Scopus, Web of Science, Scopus / Web of Science, Other
   final String year;
   final bool metadataMatch;
   final bool duplicateFlag;
   final String status;
+
+  // Faculty & Department Information
+  final String organization;
+  final String department;
+  final String facultyName;
+  final String description;
+
+  // Document Information
+  final String documentName;
+  final String documentType;
+  final String documentSize;
+  final String documentStatus; // Not Uploaded, Uploaded, Under Examination, Verified, Needs Correction
+
+  // Auditor Verification & Remarks
+  final Map<String, String> verificationChecklist;
+  final String auditorRemarks;
 
   ResearchRecord({
     required this.id,
@@ -265,7 +281,26 @@ class ResearchRecord {
     required this.metadataMatch,
     this.duplicateFlag = false,
     required this.status,
-  });
+    this.organization = 'KSR College of Engineering',
+    this.department = 'Computer Science & Engineering',
+    this.facultyName = 'Dr. R. Kumar',
+    this.description = 'Research paper submitted for academic performance and ERP audit verification.',
+    this.documentName = 'paper_kumar.pdf',
+    this.documentType = 'PDF Document',
+    this.documentSize = '1.24 MB',
+    this.documentStatus = 'Uploaded',
+    Map<String, String>? verificationChecklist,
+    this.auditorRemarks = '',
+  }) : verificationChecklist = verificationChecklist ?? {
+          'Paper Title': 'Pending',
+          'Authors': 'Pending',
+          'Faculty Affiliation': 'Pending',
+          'Department': 'Pending',
+          'Publication Details': 'Pending',
+          'DOI': 'Pending',
+          'Journal / Conference': 'Pending',
+          'Indexing Information': 'Pending',
+        };
 }
 
 class EvidenceItem {
