@@ -160,12 +160,12 @@ class _AddResearchPaperDialogState extends State<AddResearchPaperDialog> {
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      insetPadding: EdgeInsets.all(isMobile ? 12 : 24),
+      insetPadding: EdgeInsets.all(isMobile ? 8 : 24),
       backgroundColor: Colors.white,
       child: Container(
-        width: 780,
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
-        padding: EdgeInsets.all(isMobile ? 16 : 24),
+        width: isMobile ? double.infinity : 780,
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
+        padding: EdgeInsets.all(isMobile ? 14 : 24),
         child: Form(
           key: _formKey,
           child: Column(

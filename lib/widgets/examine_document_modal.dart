@@ -106,9 +106,9 @@ class _ExamineDocumentModalState extends State<ExamineDocumentModal> {
       insetPadding: EdgeInsets.all(isMobile ? 8 : 24),
       backgroundColor: Colors.white,
       child: Container(
-        width: 1100,
+        width: isMobile ? double.infinity : 1100,
         constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
-        padding: EdgeInsets.all(isMobile ? 14 : 20),
+        padding: EdgeInsets.all(isMobile ? 12 : 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,37 +183,77 @@ class _ExamineDocumentModalState extends State<ExamineDocumentModal> {
 
             const Divider(height: 20),
 
-            // Bottom Action Footer
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Record ID: ${widget.record.id} • DOI: ${widget.record.doi}',
-                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'monospace'),
-                ),
-                Row(
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton.icon(
-                      onPressed: _saveDetails,
-                      icon: const Icon(Icons.save_rounded, size: 16),
-                      label: const Text('Save Research Details'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        elevation: 1,
+            // Bottom Action Footer (Responsive for Mobile)
+            if (isMobile) ...[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Record ID: ${widget.record.id} • DOI: ${widget.record.doi}',
+                    style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontFamily: 'monospace'),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: _saveDetails,
+                          icon: const Icon(Icons.save_rounded, size: 16),
+                          label: const Text('Save Research Details'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.accent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            elevation: 1,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ] else ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Record ID: ${widget.record.id} • DOI: ${widget.record.doi}',
+                    style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'monospace'),
+                  ),
+                  Row(
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton.icon(
+                        onPressed: _saveDetails,
+                        icon: const Icon(Icons.save_rounded, size: 16),
+                        label: const Text('Save Research Details'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          elevation: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
