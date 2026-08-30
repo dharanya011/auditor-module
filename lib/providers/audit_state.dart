@@ -123,10 +123,24 @@ class AuditState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Data Lists
-  List<AuditKPI> kpis = [];
+  // Data Lists — initialized with zero-value defaults so cards always render
+  List<AuditKPI> kpis = [
+    AuditKPI(title: 'Total Records Audited', value: '0', change: '—', isPositive: true, icon: Icons.analytics_rounded, color: const Color(0xFF4F46E5)),
+    AuditKPI(title: 'Pending Verification', value: '0', change: '—', isPositive: false, icon: Icons.hourglass_top_rounded, color: const Color(0xFFF59E0B)),
+    AuditKPI(title: 'Verified Records', value: '0', change: '—', isPositive: true, icon: Icons.check_circle_rounded, color: const Color(0xFF10B981)),
+    AuditKPI(title: 'Discrepancies Found', value: '0', change: '—', isPositive: false, icon: Icons.error_rounded, color: const Color(0xFFEF4444)),
+    AuditKPI(title: 'Critical Issues', value: '0', change: '—', isPositive: false, icon: Icons.warning_amber_rounded, color: const Color(0xFFDC2626)),
+    AuditKPI(title: 'Corrections Pending', value: '0', change: '—', isPositive: false, icon: Icons.published_with_changes_rounded, color: const Color(0xFF8B5CF6)),
+  ];
 
-  List<ModuleProgress> moduleProgress = [];
+  List<ModuleProgress> moduleProgress = [
+    ModuleProgress(name: 'Student Records', verified: 0, pending: 0, issues: 0, percentage: 0.0),
+    ModuleProgress(name: 'Assignments', verified: 0, pending: 0, issues: 0, percentage: 0.0),
+    ModuleProgress(name: 'Marks', verified: 0, pending: 0, issues: 0, percentage: 0.0),
+    ModuleProgress(name: 'Faculty Reports', verified: 0, pending: 0, issues: 0, percentage: 0.0),
+    ModuleProgress(name: 'Question Papers', verified: 0, pending: 0, issues: 0, percentage: 0.0),
+    ModuleProgress(name: 'Research & Publications', verified: 0, pending: 0, issues: 0, percentage: 0.0),
+  ];
 
   List<AuditActivity> recentActivities = [];
 
