@@ -408,9 +408,12 @@ class _AccountSettingsModalState extends State<_AccountSettingsModal> {
                             isDense: true,
                             style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary, fontSize: 12),
                             items: const [
-                              DropdownMenuItem(value: 'Lead Auditor', child: Text('Lead Auditor')),
-                              DropdownMenuItem(value: 'Department Auditor', child: Text('Department Auditor')),
-                              DropdownMenuItem(value: 'Read-Only Inspector', child: Text('Read-Only Inspector')),
+                              DropdownMenuItem(value: 'Lead_Auditor', child: Text('Lead Auditor')),
+                              DropdownMenuItem(value: 'Department_Auditor', child: Text('Department Auditor')),
+                              DropdownMenuItem(value: 'HOD', child: Text('HOD')),
+                              DropdownMenuItem(value: 'Dean_Academics', child: Text('Dean Academics')),
+                              DropdownMenuItem(value: 'System_Admin', child: Text('System Admin')),
+                              DropdownMenuItem(value: 'Read_Only_Inspector', child: Text('Read-Only Inspector')),
                             ],
                             onChanged: (val) {
                               if (val != null) setState(() => _selectedRole = val);
@@ -444,7 +447,7 @@ class _AccountSettingsModalState extends State<_AccountSettingsModal> {
                 title: const Text('Email Alerts on Critical Discrepancies', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                 subtitle: const Text('Receive instant notifications when high-priority flags are raised.', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                 value: _emailAlerts,
-                activeColor: AppColors.accent,
+                activeThumbColor: AppColors.accent,
                 onChanged: (val) => setState(() => _emailAlerts = val),
               ),
               SwitchListTile(
@@ -453,7 +456,7 @@ class _AccountSettingsModalState extends State<_AccountSettingsModal> {
                 title: const Text('Daily Work Queue Digest', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                 subtitle: const Text('Daily summary email of pending audit verifications.', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                 value: _dailyDigest,
-                activeColor: AppColors.accent,
+                activeThumbColor: AppColors.accent,
                 onChanged: (val) => setState(() => _dailyDigest = val),
               ),
 
@@ -468,7 +471,7 @@ class _AccountSettingsModalState extends State<_AccountSettingsModal> {
                 title: const Text('Compact Table Rows', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                 subtitle: const Text('Reduce padding in data tables to view more audit rows at once.', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                 value: _compactMode,
-                activeColor: AppColors.accent,
+                activeThumbColor: AppColors.accent,
                 onChanged: (val) => setState(() => _compactMode = val),
               ),
 

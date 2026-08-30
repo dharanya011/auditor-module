@@ -23,6 +23,8 @@ import 'views/reports_view.dart';
 import 'views/audit_full_report_view.dart';
 import 'views/profile_view.dart';
 
+import 'views/login_view.dart';
+
 void main() {
   runApp(const KSRCEAuditorApp());
 }
@@ -36,6 +38,24 @@ class KSRCEAuditorApp extends StatefulWidget {
 
 class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
   final AuditState _auditState = AuditState();
+  bool _isInitializing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    if (_auditState.isAuthenticated) {
+      await _auditState.loadAllData();
+    }
+    if (mounted) {
+      setState(() {
+        _isInitializing = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +74,21 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
             textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
             scaffoldBackgroundColor: AppColors.background,
           ),
-          home: LayoutBuilder(
+          home: _isInitializing
+              ? const Scaffold(
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(color: AppColors.accent),
+                        SizedBox(height: 16),
+                        Text('Loading Auditor Dashboard...', style: TextStyle(color: AppColors.textSecondary)),
+                      ],
+                    ),
+                  ),
+                )
+              : _auditState.isAuthenticated
+                  ? LayoutBuilder(
             builder: (context, constraints) {
               final isDesktop = constraints.maxWidth >= 900;
               return Scaffold(
@@ -121,7 +155,8 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
                 ),
               );
             },
-          ),
+          )
+        : LoginView(state: _auditState),
         );
       },
     );

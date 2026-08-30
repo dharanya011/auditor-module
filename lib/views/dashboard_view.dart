@@ -236,29 +236,31 @@ class DashboardView extends StatelessWidget {
                             PieChartData(
                               sectionsSpace: 2,
                               centerSpaceRadius: 40,
-                              sections: [
-                                PieChartSectionData(
-                                  color: const Color(0xFF10B981),
-                                  value: 92,
-                                  title: '92%',
-                                  radius: 26,
-                                  titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
-                                ),
-                                PieChartSectionData(
-                                  color: const Color(0xFFF59E0B),
-                                  value: 8,
-                                  title: '8%',
-                                  radius: 24,
-                                  titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
-                                ),
-                                PieChartSectionData(
-                                  color: const Color(0xFFEF4444),
-                                  value: 5,
-                                  title: '5%',
-                                  radius: 22,
-                                  titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
-                                ),
-                              ],
+                              sections: state.moduleProgress.isEmpty
+                                  ? []
+                                  : [
+                                      PieChartSectionData(
+                                        color: const Color(0xFF10B981),
+                                        value: state.moduleProgress.fold(0, (sum, m) => sum + m.verified).toDouble(),
+                                        title: state.moduleProgress.fold(0, (sum, m) => sum + m.verified).toString(),
+                                        radius: 26,
+                                        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                                      ),
+                                      PieChartSectionData(
+                                        color: const Color(0xFFF59E0B),
+                                        value: state.moduleProgress.fold(0, (sum, m) => sum + m.pending).toDouble(),
+                                        title: state.moduleProgress.fold(0, (sum, m) => sum + m.pending).toString(),
+                                        radius: 24,
+                                        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
+                                      ),
+                                      PieChartSectionData(
+                                        color: const Color(0xFFEF4444),
+                                        value: state.moduleProgress.fold(0, (sum, m) => sum + m.issues).toDouble(),
+                                        title: state.moduleProgress.fold(0, (sum, m) => sum + m.issues).toString(),
+                                        radius: 22,
+                                        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
+                                      ),
+                                    ],
                             ),
                           ),
                         ),
@@ -632,15 +634,15 @@ class DashboardView extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildQueueItem(Icons.hourglass_top_rounded, 'Pending Verification', 124, Colors.amber),
+                  _buildQueueItem(Icons.hourglass_top_rounded, 'Pending Verification', null, Colors.amber),
                   const Divider(height: 16),
-                  _buildQueueItem(Icons.find_in_page_rounded, 'In Review', 32, Colors.blue),
+                  _buildQueueItem(Icons.find_in_page_rounded, 'In Review', null, Colors.blue),
                   const Divider(height: 16),
-                  _buildQueueItem(Icons.published_with_changes_rounded, 'Correction Requested', 18, Colors.purple),
+                  _buildQueueItem(Icons.published_with_changes_rounded, 'Correction Requested', null, Colors.purple),
                   const Divider(height: 16),
-                  _buildQueueItem(Icons.autorenew_rounded, 'Re-verification', 11, Colors.orange),
+                  _buildQueueItem(Icons.autorenew_rounded, 'Re-verification', null, Colors.orange),
                   const Divider(height: 16),
-                  _buildQueueItem(Icons.check_circle_rounded, 'Completed', 458, Colors.green),
+                  _buildQueueItem(Icons.check_circle_rounded, 'Completed', null, Colors.green),
                 ],
               ),
             ),
@@ -682,16 +684,9 @@ class DashboardView extends StatelessWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: ['23CS001', 'Dr. Kumar', 'AI in Education', 'Data Structures', '23IT045', 'Analog Electronics'].map((tag) {
-                      return ActionChip(
-                        label: Text(tag, style: const TextStyle(fontSize: 11)),
-                        backgroundColor: AppColors.background,
-                        onPressed: () {
-                          state.setGlobalSearchQuery(tag);
-                          state.setActiveModule('Global Search');
-                        },
-                      );
-                    }).toList(),
+                    children: const [
+                      Text('No recent searches', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                    ],
                   ),
                 ],
               ),
@@ -724,13 +719,13 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  Widget _buildQueueItem(IconData icon, String title, int count, Color color) {
+  Widget _buildQueueItem(IconData icon, String title, int? count, Color color) {
     return Row(
       children: [
         Icon(icon, color: color, size: 20),
         const SizedBox(width: 12),
         Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
-        Text(count.toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        Text(count?.toString() ?? '—', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       ],
     );
   }

@@ -735,7 +735,7 @@ class _StudentAuditViewState extends State<StudentAuditView> {
         const SizedBox(height: 12),
 
         // Active Tab View Content
-        _buildActiveTabContent(student!),
+        _buildActiveTabContent(student),
       ],
     ],
   );
@@ -760,11 +760,11 @@ class _StudentAuditViewState extends State<StudentAuditView> {
       {
         'title': 'Personal & Institutional Records',
         'subtitle': 'Aadhaar, Birth Certificate, Admission Quota, and Caste Category records verified with registrar database.',
-        'status': 'Verified',
+        'status': 'Pending',
         'icon': Icons.badge_outlined,
         'iconBg': const Color(0xFFEEF2FF),
         'iconColor': const Color(0xFF4F46E5),
-        'evidenceName': 'EVD-8890_Identity_Verification.pdf',
+        'evidenceName': '',
       },
       {
         'title': 'Biometric Attendance Logs',
@@ -773,43 +773,43 @@ class _StudentAuditViewState extends State<StudentAuditView> {
         'icon': Icons.fingerprint_rounded,
         'iconBg': student.attendance >= 75 ? const Color(0xFFECFDF5) : const Color(0xFFFEE2E2),
         'iconColor': student.attendance >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-        'evidenceName': 'EVD-8892_Biometric_Log_S5.pdf',
+        'evidenceName': '',
       },
       {
         'title': 'Internal Assessment Marks (CAT 1 & 2)',
         'subtitle': 'CAT 1 & CAT 2 internal marks cross-checked with scanned raw answer sheets and COE mark registers.',
-        'status': 'Verified',
+        'status': 'Pending',
         'icon': Icons.analytics_outlined,
         'iconBg': const Color(0xFFEFF6FF),
         'iconColor': const Color(0xFF3B82F6),
-        'evidenceName': 'EVD-8891_CAT1_AnswerSheet_Scan.pdf',
+        'evidenceName': '',
       },
       {
         'title': 'Assignments & Laboratory Reports',
-        'subtitle': '5 of 5 assignment submissions evaluated with cryptographic S3 file hash verification.',
-        'status': student.registerNo == '23IT045' ? 'Discrepancy' : 'Verified',
+        'subtitle': 'Assignment submissions evaluated with cryptographic S3 file hash verification.',
+        'status': 'Pending',
         'icon': Icons.assignment_turned_in_outlined,
-        'iconBg': student.registerNo == '23IT045' ? const Color(0xFFFEE2E2) : const Color(0xFFECFDF5),
-        'iconColor': student.registerNo == '23IT045' ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-        'evidenceName': 'EVD-8894_Assignment_Submissions.pdf',
+        'iconBg': const Color(0xFFECFDF5),
+        'iconColor': const Color(0xFF10B981),
+        'evidenceName': '',
       },
       {
         'title': 'Semester End Results & CoE Ledger',
         'subtitle': 'Controller of Examinations result ledger verified against published grade sheet and university portal.',
-        'status': 'Verified',
+        'status': 'Pending',
         'icon': Icons.description_outlined,
         'iconBg': const Color(0xFFFEF3C7),
         'iconColor': const Color(0xFFD97706),
-        'evidenceName': 'EVD-8895_CoE_GradeLedger.pdf',
+        'evidenceName': '',
       },
       {
         'title': 'Mini Projects & Certificates',
         'subtitle': 'Mini project source code repository, viva evaluation report, and industry internship certificates.',
-        'status': 'Verified',
+        'status': 'Pending',
         'icon': Icons.folder_zip_outlined,
         'iconBg': const Color(0xFFF5F3FF),
         'iconColor': const Color(0xFF8B5CF6),
-        'evidenceName': 'EVD-8896_MiniProject_CodeReport.pdf',
+        'evidenceName': '',
       },
     ];
 
@@ -884,12 +884,7 @@ class _StudentAuditViewState extends State<StudentAuditView> {
   }
 
   Widget _buildAttendanceTab(StudentAuditRecord student) {
-    final logs = [
-      {'month': 'August 2026', 'held': 48, 'attended': 46, 'pct': '95.8%', 'status': 'Verified'},
-      {'month': 'July 2026', 'held': 52, 'attended': 49, 'pct': '94.2%', 'status': 'Verified'},
-      {'month': 'June 2026', 'held': 44, 'attended': 41, 'pct': '93.1%', 'status': 'Verified'},
-      {'month': 'May 2026', 'held': 50, 'attended': 47, 'pct': '94.0%', 'status': 'Verified'},
-    ];
+    final logs = <Map<String, String>>[];
 
     return Container(
       decoration: BoxDecoration(
@@ -929,12 +924,7 @@ class _StudentAuditViewState extends State<StudentAuditView> {
   }
 
   Widget _buildMarksTab(StudentAuditRecord student) {
-    final marks = [
-      {'subject': '23CS501 Data Structures', 'cat1': '88 / 100', 'cat2': '92 / 100', 'assignment': '10 / 10', 'grade': 'O (Outstanding)', 'status': 'Verified'},
-      {'subject': '23CS502 Database Systems', 'cat1': '82 / 100', 'cat2': '85 / 100', 'assignment': '9 / 10', 'grade': 'A+ (Excellent)', 'status': 'Verified'},
-      {'subject': '23CS503 Operating Systems', 'cat1': '78 / 100', 'cat2': '84 / 100', 'assignment': '9 / 10', 'grade': 'A+ (Excellent)', 'status': 'Verified'},
-      {'subject': '23CS504 Web Engineering', 'cat1': '90 / 100', 'cat2': '94 / 100', 'assignment': '10 / 10', 'grade': 'O (Outstanding)', 'status': 'Verified'},
-    ];
+    final marks = <Map<String, String>>[];
 
     return Container(
       decoration: BoxDecoration(
@@ -976,12 +966,7 @@ class _StudentAuditViewState extends State<StudentAuditView> {
   }
 
   Widget _buildEvidenceTab(StudentAuditRecord student) {
-    final evidences = [
-      {'id': 'EVD-8890', 'type': 'Identity & Caste Certificate', 'file': 'EVD-8890_Identity_Verification.pdf', 'size': '2.4 MB', 'status': 'Verified'},
-      {'id': 'EVD-8892', 'type': 'Biometric Classroom Logs', 'file': 'EVD-8892_Biometric_Log_S5.pdf', 'size': '4.1 MB', 'status': 'Verified'},
-      {'id': 'EVD-8891', 'type': 'CAT Answer Sheets Scan', 'file': 'EVD-8891_CAT1_AnswerSheet_Scan.pdf', 'size': '8.2 MB', 'status': 'Verified'},
-      {'id': 'EVD-8895', 'type': 'CoE Official Grade Sheet', 'file': 'EVD-8895_CoE_GradeLedger.pdf', 'size': '1.8 MB', 'status': 'Verified'},
-    ];
+    final evidences = <Map<String, String>>[];
 
     return Container(
       decoration: BoxDecoration(
@@ -1146,28 +1131,30 @@ class _StudentAuditViewState extends State<StudentAuditView> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               OutlinedButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (ctx) => EvidenceModal(
-                      item: EvidenceItem(
-                        evidenceId: 'EVD-8890',
-                        recordId: widget.state.studentRecords[_selectedStudentIndex].registerNo,
-                        recordType: title,
-                        uploadedBy: 'ERP Academic Registrar',
-                        uploadDate: '2026-08-18 10:00',
-                        documentType: 'PDF Evidence',
-                        version: 'v1.0',
-                        fileName: evidenceName,
-                        fileSize: '3.4 MB',
-                        status: status,
-                      ),
-                      onClose: () => Navigator.pop(ctx),
-                    ),
-                  );
-                },
+                onPressed: evidenceName.isEmpty
+                    ? null
+                    : () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => EvidenceModal(
+                            item: EvidenceItem(
+                              evidenceId: '',
+                              recordId: widget.state.studentRecords[_selectedStudentIndex].registerNo,
+                              recordType: title,
+                              uploadedBy: '',
+                              uploadDate: '',
+                              documentType: 'PDF Evidence',
+                              version: '',
+                              fileName: evidenceName,
+                              fileSize: '',
+                              status: status,
+                            ),
+                            onClose: () => Navigator.pop(ctx),
+                          ),
+                        );
+                      },
                 icon: const Icon(Icons.picture_as_pdf_rounded, size: 14),
-                label: const Text('View Evidence PDF', style: TextStyle(fontSize: 11)),
+                label: Text(evidenceName.isEmpty ? 'No Evidence' : 'View Evidence PDF', style: const TextStyle(fontSize: 11)),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),

@@ -65,8 +65,8 @@ class _AuditHistoryViewState extends State<AuditHistoryView> {
           children: [
             _buildKpiCard('Total Audit Logs', '$totalLogsCount Logs', Icons.history_rounded, Colors.blue),
             _buildKpiCard('Security Level', 'AES-256 Secured', Icons.security_rounded, Colors.green),
-            _buildKpiCard('Last Sync', '2 Mins Ago', Icons.sync_rounded, Colors.orange),
-            _buildKpiCard('Active Auditors', '12 Online', Icons.admin_panel_settings_rounded, Colors.purple),
+            _buildKpiCard('Last Sync', '—', Icons.sync_rounded, Colors.orange),
+            _buildKpiCard('Active Auditors', '—', Icons.admin_panel_settings_rounded, Colors.purple),
           ],
         ),
 

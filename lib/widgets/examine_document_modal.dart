@@ -23,7 +23,7 @@ class _ExamineDocumentModalState extends State<ExamineDocumentModal> {
   late String _auditStatus;
   late TextEditingController _remarksController;
   int _currentPage = 1;
-  final int _totalPages = 12;
+  final int _totalPages = 0;
 
   final List<String> _checklistItems = [
     'Paper Title',

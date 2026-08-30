@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../services/api_service.dart';
 
 class AuditState extends ChangeNotifier {
   String _activeModule = 'Dashboard';
   String _selectedAcademicYear = '2025 - 2026';
   String _globalSearchQuery = '';
-  String _userRole = 'Lead Auditor';
-  final String _userName = 'Auditor User';
-  
+  String _userRole = 'Lead_Auditor';
+  String _userName = 'Auditor User';
+
+  final ApiService _api = ApiService();
+
   // Dialog State
   EvidenceItem? _selectedEvidence;
   String? _notificationToast;
+
+  // Loading & Error State
+  bool _isLoading = false;
+  String? _error;
 
   // Active view getter & setter
   String get activeModule => _activeModule;
@@ -20,24 +27,30 @@ class AuditState extends ChangeNotifier {
   String get userName => _userName;
   EvidenceItem? get selectedEvidence => _selectedEvidence;
   String? get notificationToast => _notificationToast;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  bool get isAuthenticated => _api.isAuthenticated;
 
   // Department Scope & Permissions
-  String? get departmentScope => _userRole == 'Department Auditor' ? 'CSE' : null;
+  String? get departmentScope {
+    if (_userRole == 'Department_Auditor' || _userRole == 'HOD') return 'CSE';
+    return null;
+  }
 
   bool get canVerify {
-    if (_userRole == 'System Admin') return false;
+    if (_userRole == 'System_Admin' || _userRole == 'Read_Only_Inspector') return false;
     return true;
   }
 
   bool get canFlagIssue {
-    if (_userRole == 'System Admin' || _userRole == 'HOD' || _userRole == 'Dean Academics' || _userRole == 'Read-Only Inspector') {
+    if (_userRole == 'System_Admin' || _userRole == 'HOD' || _userRole == 'Dean_Academics' || _userRole == 'Read_Only_Inspector') {
       return false;
     }
     return true;
   }
 
   bool get canRequestCorrection {
-    if (_userRole == 'System Admin' || _userRole == 'HOD' || _userRole == 'Dean Academics' || _userRole == 'Read-Only Inspector') {
+    if (_userRole == 'System_Admin' || _userRole == 'HOD' || _userRole == 'Dean_Academics' || _userRole == 'Read_Only_Inspector') {
       return false;
     }
     return true;
@@ -81,913 +94,439 @@ class AuditState extends ChangeNotifier {
     });
   }
 
-  // Dashboard Stats
-  final List<AuditKPI> kpis = const [
-    AuditKPI(
-      title: 'Total Records Audited',
-      value: '12,450',
-      change: '↑ 12.5% from last month',
-      isPositive: true,
-      icon: Icons.assignment_turned_in_rounded,
-      color: Color(0xFF6366F1),
-    ),
-    AuditKPI(
-      title: 'Pending Verification',
-      value: '1,284',
-      change: '↓ 8.3% from last month',
-      isPositive: true,
-      icon: Icons.hourglass_top_rounded,
-      color: Color(0xFFF59E0B),
-    ),
-    AuditKPI(
-      title: 'Verified',
-      value: '9,840',
-      change: '↑ 15.2% from last month',
-      isPositive: true,
-      icon: Icons.check_circle_rounded,
-      color: Color(0xFF10B981),
-    ),
-    AuditKPI(
-      title: 'Issues Found',
-      value: '936',
-      change: '↓ 3.1% from last month',
-      isPositive: false,
-      icon: Icons.error_rounded,
-      color: Color(0xFFEF4444),
-    ),
-    AuditKPI(
-      title: 'Critical Issues',
-      value: '47',
-      change: '↓ 6.0% from last month',
-      isPositive: false,
-      icon: Icons.flag_rounded,
-      color: Color(0xFFDC2626),
-    ),
-    AuditKPI(
-      title: 'Corrections Pending',
-      value: '343',
-      change: '↓ 9.4% from last month',
-      isPositive: true,
-      icon: Icons.published_with_changes_rounded,
-      color: Color(0xFF3B82F6),
-    ),
-  ];
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
 
-  final List<ModuleProgress> moduleProgress = const [
-    ModuleProgress(name: 'Student Records', verified: 2850, pending: 285, issues: 120, percentage: 0.91),
-    ModuleProgress(name: 'Assignments', verified: 2450, pending: 320, issues: 98, percentage: 0.88),
-    ModuleProgress(name: 'Marks', verified: 2150, pending: 410, issues: 150, percentage: 0.81),
-    ModuleProgress(name: 'Faculty Reports', verified: 1980, pending: 210, issues: 95, percentage: 0.90),
-    ModuleProgress(name: 'Question Papers', verified: 920, pending: 120, issues: 40, percentage: 0.85),
-    ModuleProgress(name: 'Research & Publications', verified: 1490, pending: 190, issues: 55, percentage: 0.89),
-  ];
+  void _setError(String? message) {
+    _error = message;
+    notifyListeners();
+  }
 
-  final List<AuditActivity> recentActivities = const [
-    AuditActivity(
-      id: 'ACT-901',
-      title: 'Student record verified - 23CS0456 (John Doe)',
-      module: 'Student Audit',
-      timestamp: '10:30 AM',
-      status: 'Verified',
-      icon: Icons.check_circle_rounded,
-      iconColor: Color(0xFF10B981),
-      auditor: 'Auditor User',
-    ),
-    AuditActivity(
-      id: 'ACT-902',
-      title: 'Assignment evidence checked - 23IT312_A1',
-      module: 'Assignment Audit',
-      timestamp: '10:15 AM',
-      status: 'Checked',
-      icon: Icons.task_alt_rounded,
-      iconColor: Color(0xFF10B981),
-      auditor: 'Auditor User',
-    ),
-    AuditActivity(
-      id: 'ACT-903',
-      title: 'Marks discrepancy detected - 23EC106 (Analog Electronics)',
-      module: 'Marks Audit',
-      timestamp: '09:45 AM',
-      status: 'Discrepancy',
-      icon: Icons.warning_amber_rounded,
-      iconColor: Color(0xFFF59E0B),
-      auditor: 'Auditor User',
-    ),
-    AuditActivity(
-      id: 'ACT-904',
-      title: 'Faculty report rejected - Dr. R. Kumar (Course Completion)',
-      module: 'Faculty Report Audit',
-      timestamp: '09:20 AM',
-      status: 'Rejected',
-      icon: Icons.cancel_rounded,
-      iconColor: Color(0xFFEF4444),
-      auditor: 'Auditor User',
-    ),
-    AuditActivity(
-      id: 'ACT-905',
-      title: 'Research paper verified - AI in Education (Dr. S. Meena)',
-      module: 'Research Audit',
-      timestamp: '09:05 AM',
-      status: 'Verified',
-      icon: Icons.check_circle_rounded,
-      iconColor: Color(0xFF10B981),
-      auditor: 'Auditor User',
-    ),
-  ];
+  Future<void> signIn(String email, String password) async {
+    try {
+      final result = await _api.login(email, password);
+      final user = result['user'] as Map<String, dynamic>;
+      _userRole = user['role'] as String? ?? 'Lead_Auditor';
+      _userName = user['fullName'] as String? ?? 'Auditor User';
+      notifyListeners();
+      await loadAllData();
+    } catch (e) {
+      debugPrint('Sign in failed: $e');
+      rethrow;
+    }
+  }
 
-  final List<CriticalIssue> criticalIssues = const [
-    CriticalIssue(
-      id: 'AUD-2025-00145',
-      title: 'Marks mismatch in 23CS201 (Data Structures)',
-      priority: 'High Priority',
-      code: '23CS201',
-      department: 'Computer Science & Engg',
-      date: '2026-08-18',
-    ),
-    CriticalIssue(
-      id: 'AUD-2025-00142',
-      title: 'Missing assignment submission evidence - 12 Students',
-      priority: 'High Priority',
-      code: '23IT304',
-      department: 'Information Tech',
-      date: '2026-08-17',
-    ),
-    CriticalIssue(
-      id: 'AUD-2025-00140',
-      title: 'Question paper not approved - 23IT204 (DBMS)',
-      priority: 'High Priority',
-      code: '23IT204',
-      department: 'Information Tech',
-      date: '2026-08-16',
-    ),
-    CriticalIssue(
-      id: 'AUD-2025-00138',
-      title: 'Faculty report data inconsistency - CSE Department',
-      priority: 'Medium Priority',
-      code: 'REP-CSE-99',
-      department: 'CSE',
-      date: '2026-08-15',
-    ),
-    CriticalIssue(
-      id: 'AUD-2025-00135',
-      title: 'Research publication DOI mismatch - 2 Records',
-      priority: 'Medium Priority',
-      code: 'PUB-2025-012',
-      department: 'Electronics & Comm',
-      date: '2026-08-14',
-    ),
-  ];
+  Future<void> signOut() async {
+    await _api.logout();
+    notifyListeners();
+  }
 
-  // Student Audit Mock Data
-  final List<StudentAuditRecord> studentRecords = [
-    StudentAuditRecord(
-      registerNo: '23CS001',
-      name: 'Adithya V',
-      department: 'Computer Science & Engineering',
-      semester: 5,
-      cgpa: 8.84,
-      attendance: 94.2,
-      photoUrl: '',
-      status: 'Verified',
-      groupStatuses: [
-        RecordGroupStatus(groupName: 'Personal Info', status: 'Verified', details: 'Aadhaar & Birth Cert Verified'),
-        RecordGroupStatus(groupName: 'Attendance', status: 'Verified', details: '94.2% bio-attendance log matched'),
-        RecordGroupStatus(groupName: 'Internal Marks', status: 'Verified', details: 'CAT 1 & 2 verified with answer sheets'),
-        RecordGroupStatus(groupName: 'Assignments', status: 'Verified', details: '5 of 5 assignments uploaded and evaluated'),
-        RecordGroupStatus(groupName: 'End-Sem Results', status: 'Verified', details: 'CoE ledger match verified'),
-        RecordGroupStatus(groupName: 'Projects', status: 'Verified', details: 'Mini project code & report attached'),
-      ],
-    ),
-    StudentAuditRecord(
-      registerNo: '23CS0456',
-      name: 'John Doe',
-      department: 'Computer Science & Engineering',
-      semester: 5,
-      cgpa: 8.12,
-      attendance: 88.5,
-      photoUrl: '',
-      status: 'Verified',
-      groupStatuses: [
-        RecordGroupStatus(groupName: 'Personal Info', status: 'Verified', details: 'Identity records verified'),
-        RecordGroupStatus(groupName: 'Attendance', status: 'Verified', details: '88.5% log verified'),
-        RecordGroupStatus(groupName: 'Internal Marks', status: 'Verified', details: 'Internal marks verified'),
-        RecordGroupStatus(groupName: 'Assignments', status: 'Verified', details: 'Submissions verified'),
-        RecordGroupStatus(groupName: 'End-Sem Results', status: 'Verified', details: 'Results verified'),
-        RecordGroupStatus(groupName: 'Projects', status: 'Verified', details: 'Project documentation verified'),
-      ],
-    ),
-    StudentAuditRecord(
-      registerNo: '23IT045',
-      name: 'Priya Sharma',
-      department: 'Information Technology',
-      semester: 5,
-      cgpa: 9.10,
-      attendance: 74.0,
-      photoUrl: '',
-      status: 'Discrepancy',
-      groupStatuses: [
-        RecordGroupStatus(groupName: 'Personal Info', status: 'Verified', details: 'Address mismatch flagged'),
-        RecordGroupStatus(groupName: 'Attendance', status: 'Discrepancy', details: 'Attendance < 75% threshold without condonation letter'),
-        RecordGroupStatus(groupName: 'Internal Marks', status: 'Verified', details: 'Marks match faculty entry'),
-        RecordGroupStatus(groupName: 'Assignments', status: 'Discrepancy', details: 'Assignment 3 file missing'),
-        RecordGroupStatus(groupName: 'End-Sem Results', status: 'Verified', details: 'CoE grades match'),
-        RecordGroupStatus(groupName: 'Projects', status: 'Pending', details: 'Review pending'),
-      ],
-    ),
-  ];
+  // Data Lists
+  List<AuditKPI> kpis = [];
 
-  // Marks Audit Entries
-  final List<MarksAuditEntry> marksEntries = [
-    MarksAuditEntry(
-      id: 'MRK-2025-01',
-      studentRegNo: '23CS001',
-      studentName: 'Adithya V',
-      subjectCode: '23CS201',
-      subjectName: 'Data Structures',
-      facultyEntry: 84,
-      deptRecord: 84,
-      examRecord: 84,
-      finalResult: 84,
-      isMismatch: false,
-      status: 'Verified',
-    ),
-    MarksAuditEntry(
-      id: 'MRK-2025-02',
-      studentRegNo: '23CS0456',
-      studentName: 'John Doe',
-      subjectCode: '23CS201',
-      subjectName: 'Data Structures',
-      facultyEntry: 88,
-      deptRecord: 88,
-      examRecord: 72,
-      finalResult: 72,
-      isMismatch: true,
-      mismatchReason: 'Exam record (72) does not match Faculty Entry (88). Post-approval modification detected.',
-      status: 'Discrepancy',
-    ),
-    MarksAuditEntry(
-      id: 'MRK-2025-03',
-      studentRegNo: '23IT045',
-      studentName: 'Priya Sharma',
-      subjectCode: '23IT204',
-      subjectName: 'DBMS',
-      facultyEntry: 92,
-      deptRecord: 92,
-      examRecord: 92,
-      finalResult: 92,
-      isMismatch: false,
-      status: 'Verified',
-    ),
-  ];
+  List<ModuleProgress> moduleProgress = [];
 
-  // Assignment Records
-  final List<AssignmentRecord> assignmentRecords = [
-    AssignmentRecord(
-      id: 'ASN-101',
-      studentRegNo: '23CS001',
-      studentName: 'Adithya V',
-      title: 'B-Tree Implementation in C++',
-      subject: '23CS201 Data Structures',
-      submissionDate: '2026-08-10 14:30',
-      marksObtained: 20,
-      totalMarks: 20,
-      evidenceFile: 'EVD-8891_Adithya_Assignment1.pdf',
-      status: 'Verified',
-    ),
-    AssignmentRecord(
-      id: 'ASN-102',
-      studentRegNo: '23IT045',
-      studentName: 'Priya Sharma',
-      title: 'ER Diagram & Relational Schema',
-      subject: '23IT204 DBMS',
-      submissionDate: '2026-08-15 23:59',
-      marksObtained: 18,
-      totalMarks: 20,
-      evidenceFile: '',
-      isMissingFile: true,
-      status: 'Missing Evidence File',
-    ),
-    AssignmentRecord(
-      id: 'ASN-103',
-      studentRegNo: '23EC106',
-      studentName: 'Rohan Kumar',
-      title: 'Amplifier Circuit Simulation',
-      subject: '23EC106 Analog Electronics',
-      submissionDate: '2026-08-18 09:12',
-      marksObtained: 15,
-      totalMarks: 20,
-      evidenceFile: 'EVD-8894_Circuit_Simulation.pdf',
-      isLate: true,
-      status: 'Submitted Late',
-    ),
-  ];
+  List<AuditActivity> recentActivities = [];
 
-  // Faculty Report Records
-  final List<FacultyReportRecord> facultyReports = [
-    FacultyReportRecord(
-      id: 'REP-CSE-101',
-      facultyName: 'Dr. R. Kumar',
-      department: 'Computer Science & Engineering',
-      reportType: 'Course Completion Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2023',
-      semester: 5,
-      reportedAttendance: 95.0,
-      actualAttendance: 82.5,
-      syllabusCompletionPercent: 100,
-      mentoringSessionsLogged: 12,
-      hasConflict: true,
-      conflictDetails: 'Reported attendance (95%) conflicts with biometric classroom logs (82.5%).',
-      status: 'Rejected',
-    ),
-    FacultyReportRecord(
-      id: 'REP-IT-202',
-      facultyName: 'Dr. S. Meena',
-      department: 'Information Technology',
-      reportType: 'Academic Performance Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2023',
-      semester: 5,
-      reportedAttendance: 91.2,
-      actualAttendance: 91.2,
-      syllabusCompletionPercent: 98,
-      mentoringSessionsLogged: 16,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-    FacultyReportRecord(
-      id: 'REP-ECE-303',
-      facultyName: 'Prof. A. Vijay',
-      department: 'Electronics & Communication Engineering',
-      reportType: 'Course Completion Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2021',
-      semester: 3,
-      reportedAttendance: 88.5,
-      actualAttendance: 88.5,
-      syllabusCompletionPercent: 95,
-      mentoringSessionsLogged: 10,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-    FacultyReportRecord(
-      id: 'REP-EEE-404',
-      facultyName: 'Dr. L. Prathap',
-      department: 'Electrical & Electronics Engineering',
-      reportType: 'Mentoring & Student Progress Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2021',
-      semester: 7,
-      reportedAttendance: 78.0,
-      actualAttendance: 69.5,
-      syllabusCompletionPercent: 88,
-      mentoringSessionsLogged: 6,
-      hasConflict: true,
-      conflictDetails: 'Reported attendance (78%) vs biometric log (69.5%). Condonation cases unresolved.',
-      status: 'Under Review',
-    ),
-    FacultyReportRecord(
-      id: 'REP-MECH-505',
-      facultyName: 'Dr. K. Suresh',
-      department: 'Mechanical Engineering',
-      reportType: 'Lab Utilisation Report',
-      academicYear: '2024 - 2025',
-      regulation: 'R2021',
-      semester: 6,
-      reportedAttendance: 92.0,
-      actualAttendance: 92.0,
-      syllabusCompletionPercent: 100,
-      mentoringSessionsLogged: 14,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-    FacultyReportRecord(
-      id: 'REP-CSE-606',
-      facultyName: 'Dr. P. Anand',
-      department: 'Computer Science & Engineering',
-      reportType: 'Academic Performance Report',
-      academicYear: '2024 - 2025',
-      regulation: 'R2021',
-      semester: 8,
-      reportedAttendance: 85.0,
-      actualAttendance: 85.0,
-      syllabusCompletionPercent: 100,
-      mentoringSessionsLogged: 18,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-    FacultyReportRecord(
-      id: 'REP-IT-707',
-      facultyName: 'Ms. R. Divya',
-      department: 'Information Technology',
-      reportType: 'Course Completion Report',
-      academicYear: '2024 - 2025',
-      regulation: 'R2021',
-      semester: 2,
-      reportedAttendance: 96.0,
-      actualAttendance: 89.0,
-      syllabusCompletionPercent: 92,
-      mentoringSessionsLogged: 8,
-      hasConflict: true,
-      conflictDetails: 'Attendance overreported by 7%. ERP entry not matching physical attendance register.',
-      status: 'Rejected',
-    ),
-    FacultyReportRecord(
-      id: 'REP-ECE-808',
-      facultyName: 'Prof. M. Rajan',
-      department: 'Electronics & Communication Engineering',
-      reportType: 'Research Integration Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2023',
-      semester: 4,
-      reportedAttendance: 89.5,
-      actualAttendance: 89.5,
-      syllabusCompletionPercent: 97,
-      mentoringSessionsLogged: 11,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-    FacultyReportRecord(
-      id: 'REP-MECH-909',
-      facultyName: 'Dr. N. Balamurugan',
-      department: 'Mechanical Engineering',
-      reportType: 'Mentoring & Student Progress Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2023',
-      semester: 1,
-      reportedAttendance: 80.0,
-      actualAttendance: 75.0,
-      syllabusCompletionPercent: 84,
-      mentoringSessionsLogged: 4,
-      hasConflict: true,
-      conflictDetails: 'Syllabus completion below 85% threshold. Mentoring sessions fewer than minimum required.',
-      status: 'Under Review',
-    ),
-    FacultyReportRecord(
-      id: 'REP-EEE-010',
-      facultyName: 'Prof. C. Kavitha',
-      department: 'Electrical & Electronics Engineering',
-      reportType: 'Course Completion Report',
-      academicYear: '2024 - 2025',
-      regulation: 'R2023',
-      semester: 6,
-      reportedAttendance: 93.5,
-      actualAttendance: 93.5,
-      syllabusCompletionPercent: 99,
-      mentoringSessionsLogged: 15,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-  ];
+  List<CriticalIssue> criticalIssues = [];
 
-  // Question Paper Audit Records
-  final List<QuestionPaperRecord> questionPapers = [
-    QuestionPaperRecord(
-      id: 'QP-23CS201',
-      courseCode: '23CS201',
-      courseTitle: 'Data Structures',
-      regulation: 'R2023',
-      department: 'CSE',
-      semester: 3,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-23IT204',
-      courseCode: '23IT204',
-      courseTitle: 'Database Management Systems',
-      regulation: 'R2023',
-      department: 'IT',
-      semester: 4,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: false,
-      hodApproved: true,
-      coeApproved: false,
-      status: 'Missing Approval',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21EC301',
-      courseCode: '21EC301',
-      courseTitle: 'Analog Electronics',
-      regulation: 'R2021',
-      department: 'ECE',
-      semester: 5,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21EE401',
-      courseCode: '21EE401',
-      courseTitle: 'Power Systems Analysis',
-      regulation: 'R2021',
-      department: 'EEE',
-      semester: 7,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: false,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: false,
-      status: 'Missing Approval',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21ME501',
-      courseCode: '21ME501',
-      courseTitle: 'Thermodynamics',
-      regulation: 'R2021',
-      department: 'MECH',
-      semester: 6,
-      academicYear: '2024 - 2025',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-23CS401',
-      courseCode: '23CS401',
-      courseTitle: 'Machine Learning',
-      regulation: 'R2023',
-      department: 'CSE',
-      semester: 8,
-      academicYear: '2024 - 2025',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: false,
-      coeApproved: false,
-      status: 'Under Review',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-23IT102',
-      courseCode: '23IT102',
-      courseTitle: 'Programming in Python',
-      regulation: 'R2023',
-      department: 'IT',
-      semester: 2,
-      academicYear: '2024 - 2025',
-      bloomTaxonomyCompliant: false,
-      syllabusMapped: false,
-      hodApproved: false,
-      coeApproved: false,
-      status: 'Rejected',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21EC102',
-      courseCode: '21EC102',
-      courseTitle: 'Circuit Theory',
-      regulation: 'R2021',
-      department: 'ECE',
-      semester: 1,
-      academicYear: '2024 - 2025',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-23EE201',
-      courseCode: '23EE201',
-      courseTitle: 'Electrical Machines',
-      regulation: 'R2023',
-      department: 'EEE',
-      semester: 4,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21ME301',
-      courseCode: '21ME301',
-      courseTitle: 'Engineering Materials',
-      regulation: 'R2021',
-      department: 'MECH',
-      semester: 3,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: false,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: false,
-      status: 'Under Review',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-23CS101',
-      courseCode: '23CS101',
-      courseTitle: 'Problem Solving & C Programming',
-      regulation: 'R2023',
-      department: 'CSE',
-      semester: 1,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21IT601',
-      courseCode: '21IT601',
-      courseTitle: 'Cloud Computing',
-      regulation: 'R2021',
-      department: 'IT',
-      semester: 6,
-      academicYear: '2024 - 2025',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: false,
-      hodApproved: true,
-      coeApproved: false,
-      status: 'Missing Approval',
-    ),
-  ];
+  List<StudentAuditRecord> studentRecords = [];
 
-  // Research Records
-  final List<ResearchRecord> researchRecords = [
-    ResearchRecord(
-      id: 'RES-2025-01',
-      organization: 'KSR College of Engineering',
-      department: 'Computer Science and Engineering',
-      facultyName: 'Dr. R. Kumar',
-      title: 'Automated ERP Ledger Audit Framework using Distributed Immutable Systems',
-      authors: 'Dr. R. Kumar, Prof. P. Anand',
-      type: 'Conference Paper',
-      doi: '10.1109/ICERP.2025.998231',
-      journalName: 'International Conference on ERP Technologies (IEEE)',
-      indexing: 'Scopus',
-      year: '2025',
-      description: 'Presents a immutable ledger validation framework for automated ERP transaction auditing in educational institutions.',
-      documentName: 'paper_kumar.pdf',
-      documentType: 'PDF Document',
-      documentSize: '1.24 MB',
-      documentStatus: 'Uploaded',
-      metadataMatch: false,
-      duplicateFlag: false,
-      status: 'Pending Examination',
-      verificationChecklist: {
-        'Paper Title': 'Pending',
-        'Authors': 'Pending',
-        'Faculty Affiliation': 'Pending',
-        'Department': 'Pending',
-        'Publication Details': 'Pending',
-        'DOI': 'Pending',
-        'Journal / Conference': 'Pending',
-        'Indexing Information': 'Pending',
-      },
-      auditorRemarks: '',
-    ),
-    ResearchRecord(
-      id: 'RES-2025-02',
-      organization: 'KSR College of Engineering',
-      department: 'Information Technology',
-      facultyName: 'Dr. S. Meena',
-      title: 'AI in Higher Education: Machine Learning Models for Student Performance Prediction',
-      authors: 'Dr. S. Meena, Adithya V',
-      type: 'Journal Article',
-      doi: '10.1016/j.compedu.2025.104921',
-      journalName: 'IEEE Transactions on Learning Technologies',
-      indexing: 'Scopus / Web of Science',
-      year: '2025',
-      description: 'Comprehensive study on multi-parameter predictive analytics for student academic retention.',
-      documentName: 'IEEE_AI_Education_Final.pdf',
-      documentType: 'PDF Document',
-      documentSize: '2.80 MB',
-      documentStatus: 'Verified',
-      metadataMatch: true,
-      duplicateFlag: false,
-      status: 'Verified',
-      verificationChecklist: {
-        'Paper Title': 'Verified',
-        'Authors': 'Verified',
-        'Faculty Affiliation': 'Verified',
-        'Department': 'Verified',
-        'Publication Details': 'Verified',
-        'DOI': 'Verified',
-        'Journal / Conference': 'Verified',
-        'Indexing Information': 'Verified',
-      },
-      auditorRemarks: 'Verified against IEEE Xplore DOI registry. All faculty credentials confirmed.',
-    ),
-    ResearchRecord(
-      id: 'RES-2025-03',
-      organization: 'KSR College of Engineering',
-      department: 'Electronics and Communication Engineering',
-      facultyName: 'Dr. A. Priya',
-      title: 'Low Power VLSI Architecture for Real-Time Biomedical Signal Processing',
-      authors: 'Dr. A. Priya, Prof. M. Rajan',
-      type: 'Journal Article',
-      doi: '10.1109/TVLSI.2025.334102',
-      journalName: 'IEEE Transactions on VLSI Systems',
-      indexing: 'Web of Science',
-      year: '2025',
-      description: 'Novel low-power hardware accelerator design for edge biomedical monitoring sensors.',
-      documentName: 'paper_priya_ece.pdf',
-      documentType: 'PDF Document',
-      documentSize: '1.85 MB',
-      documentStatus: 'Uploaded',
-      metadataMatch: true,
-      duplicateFlag: false,
-      status: 'Pending Examination',
-      verificationChecklist: {
-        'Paper Title': 'Pending',
-        'Authors': 'Pending',
-        'Faculty Affiliation': 'Pending',
-        'Department': 'Pending',
-        'Publication Details': 'Pending',
-        'DOI': 'Pending',
-        'Journal / Conference': 'Pending',
-        'Indexing Information': 'Pending',
-      },
-      auditorRemarks: '',
-    ),
-    ResearchRecord(
-      id: 'RES-2025-04',
-      organization: 'KSR College of Engineering',
-      department: 'Mechanical Engineering',
-      facultyName: 'Dr. M. Arun',
-      title: 'Thermal Stress Analysis in Additive Manufactured Titanium Alloys for Aerospace Applications',
-      authors: 'Dr. M. Arun, Dr. K. Suresh',
-      type: 'Book Chapter',
-      doi: '10.1007/978-3-031-12345-6_12',
-      journalName: 'Springer Series in Advanced Manufacturing',
-      indexing: 'Scopus',
-      year: '2024',
-      description: 'Experimental evaluation of residual thermal stresses in laser powder bed fusion 3D printing.',
-      documentName: 'paper_arun_mech.pdf',
-      documentType: 'PDF Document',
-      documentSize: '3.40 MB',
-      documentStatus: 'Under Examination',
-      metadataMatch: true,
-      duplicateFlag: false,
-      status: 'Under Review',
-      verificationChecklist: {
-        'Paper Title': 'Verified',
-        'Authors': 'Verified',
-        'Faculty Affiliation': 'Needs Correction',
-        'Department': 'Verified',
-        'Publication Details': 'Pending',
-        'DOI': 'Verified',
-        'Journal / Conference': 'Pending',
-        'Indexing Information': 'Pending',
-      },
-      auditorRemarks: 'Faculty affiliation format requires departmental designation update.',
-    ),
-  ];
+  List<MarksAuditEntry> marksEntries = [];
 
-  // Evidence Repository Items
-  final List<EvidenceItem> evidenceItems = [
-    EvidenceItem(
-      evidenceId: 'EVD-8891',
-      recordId: '23CS001_CAT1',
-      recordType: 'Answer Sheet Scan',
-      uploadedBy: 'Faculty - Dr. R. Kumar',
-      uploadDate: '2026-08-12 11:20',
-      documentType: 'PDF Document',
-      version: 'v1.0',
-      fileName: '23CS001_DataStructures_CAT1.pdf',
-      fileSize: '4.2 MB',
-      status: 'Accepted',
-    ),
-    EvidenceItem(
-      evidenceId: 'EVD-8894',
-      recordId: 'RES-2025-01',
-      recordType: 'Research Paper PDF',
-      uploadedBy: 'Dr. S. Meena',
-      uploadDate: '2026-08-14 16:45',
-      documentType: 'Journal Reprint',
-      version: 'v1.2',
-      fileName: 'IEEE_AI_Education_Final.pdf',
-      fileSize: '2.8 MB',
-      status: 'Accepted',
-    ),
-    EvidenceItem(
-      evidenceId: 'EVD-8899',
-      recordId: 'QP-23IT204',
-      recordType: 'Question Paper Draft',
-      uploadedBy: 'Dept CoE IT',
-      uploadDate: '2026-08-16 10:00',
-      documentType: 'Question Paper',
-      version: 'v0.9',
-      fileName: '23IT204_DBMS_EndSem_Draft.pdf',
-      fileSize: '1.5 MB',
-      status: 'Pending Verification',
-    ),
-  ];
+  List<AssignmentRecord> assignmentRecords = [];
 
-  // Audit Cases
-  final List<AuditCaseItem> auditCases = [
-    AuditCaseItem(
-      caseId: 'AUD-2026-001245',
-      title: 'Marks mismatch in 23CS201 Data Structures',
-      category: 'Marks Audit',
-      targetRecordId: 'MRK-2025-02 (Student 23CS0456)',
-      severity: 'High',
-      assignedTo: 'HOD - Computer Science',
-      lifecycleStage: 'Correction Requested',
-      createdDate: '2026-08-18',
-      description: 'Exam record marks (72) do not match faculty entry (88). Clarification requested from HOD.',
-    ),
-    AuditCaseItem(
-      caseId: 'AUD-2026-001242',
-      title: 'Faculty report attendance conflict - Dr. R. Kumar',
-      category: 'Faculty Report',
-      targetRecordId: 'REP-CSE-101',
-      severity: 'Medium',
-      assignedTo: 'Dean Academics',
-      lifecycleStage: 'Under Review',
-      createdDate: '2026-08-17',
-      description: 'Reported attendance 95% vs actual 82.5% in classroom biometric device.',
-    ),
-    AuditCaseItem(
-      caseId: 'AUD-2026-001239',
-      title: 'Question Paper missing Bloom Taxonomy mapping',
-      category: 'Question Paper',
-      targetRecordId: 'QP-23IT204',
-      severity: 'Low',
-      assignedTo: 'Controller of Examinations',
-      lifecycleStage: 'Detected',
-      createdDate: '2026-08-16',
-      description: 'CO-PO mapping missing in section C question 14.',
-    ),
-  ];
+  List<FacultyReportRecord> facultyReports = [];
 
-  // AI Anomalies
-  final List<AIAnomalyItem> aiAnomalies = [
-    AIAnomalyItem(
-      id: 'AI-ANO-01',
-      anomalyTitle: 'Unusually high identical marks distribution',
-      category: 'Marks Anomaly',
-      severity: 'High',
-      detectionReason: '42 students in Section B scored identical marks (85/100) in CAT-2 Internal Exam.',
-      recordReference: 'Course 23EC106 (Analog Electronics)',
-      recommendation: 'Request raw answer sheet scan verification for Section B.',
-      status: 'Active Alert',
-    ),
-    AIAnomalyItem(
-      id: 'AI-ANO-02',
-      anomalyTitle: 'Assignment marked submitted but file missing',
-      category: 'Assignment Anomaly',
-      severity: 'Medium',
-      detectionReason: '12 assignment records marked as "Submitted" in ERP database without S3 file hash.',
-      recordReference: 'Subject 23IT304 (Web Dev)',
-      recommendation: 'Issue automated correction request to IT department.',
-      status: 'Active Alert',
-    ),
-    AIAnomalyItem(
-      id: 'AI-ANO-03',
-      anomalyTitle: 'Research DOI metadata discrepancy',
-      category: 'Research Anomaly',
-      severity: 'Medium',
-      detectionReason: 'Uploaded publication DOI links to a different paper title on IEEE Xplore.',
-      recordReference: 'Publication RES-2025-02',
-      recommendation: 'Verify author affiliation and original PDF evidence.',
-      status: 'Flagged',
-    ),
-  ];
+  List<QuestionPaperRecord> questionPapers = [];
 
-  // Audit Logs
-  final List<AuditLogItem> auditLogs = [
-    AuditLogItem(
-      id: 'LOG-8801',
-      timestamp: '2026-08-18 10:30:15',
-      auditorName: 'Auditor User (Chief Auditor)',
-      ipAddress: '192.168.1.104',
-      action: 'RECORD_VERIFIED',
-      recordId: '23CS001',
-      details: 'Verified student academic record 23CS001 Adithya V. All 6 record groups passed.',
-    ),
-    AuditLogItem(
-      id: 'LOG-8802',
-      timestamp: '2026-08-18 09:45:22',
-      auditorName: 'Auditor User (Chief Auditor)',
-      ipAddress: '192.168.1.104',
-      action: 'DISCREPANCY_FLAGGED',
-      recordId: 'MRK-2025-02',
-      details: 'Flagged marks mismatch case AUD-2026-001245 for Student 23CS0456.',
-    ),
-    AuditLogItem(
-      id: 'LOG-8803',
-      timestamp: '2026-08-18 09:20:01',
-      auditorName: 'Auditor User (Chief Auditor)',
-      ipAddress: '192.168.1.104',
-      action: 'REPORT_REJECTED',
-      recordId: 'REP-CSE-101',
-      details: 'Rejected faculty course completion report REP-CSE-101 due to attendance conflict.',
-    ),
-  ];
+  List<ResearchRecord> researchRecords = [];
+
+  List<EvidenceItem> evidenceItems = [];
+
+  List<AuditCaseItem> auditCases = [];
+
+  List<AIAnomalyItem> aiAnomalies = [];
+
+  List<AuditLogItem> auditLogs = [];
+
+  // API Load Methods
+  Future<void> loadAllData() async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      await Future.wait([
+        loadDashboard(),
+        loadStudents(),
+        loadAssignments(),
+        loadMarks(),
+        loadFacultyReports(),
+        loadQuestionPapers(),
+        loadResearch(),
+        loadEvidence(),
+        loadAuditCases(),
+        loadAuditHistory(),
+      ]);
+    } catch (e) {
+      _setError(e.toString());
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> loadDashboard() async {
+    try {
+      final data = await _api.getDashboard();
+      final kpisData = data['kpis'] as Map<String, dynamic>?;
+      kpis = [
+        AuditKPI(
+          title: 'Total Records Audited',
+          value: '${kpisData?['totalRecords'] ?? 0}',
+          change: '0%',
+          isPositive: true,
+          icon: Icons.analytics_rounded,
+          color: const Color(0xFF4F46E5),
+        ),
+        AuditKPI(
+          title: 'Pending Verification',
+          value: '${kpisData?['pendingCount'] ?? 0}',
+          change: '0%',
+          isPositive: false,
+          icon: Icons.hourglass_top_rounded,
+          color: const Color(0xFFF59E0B),
+        ),
+        AuditKPI(
+          title: 'Verified Records',
+          value: '${kpisData?['verifiedCount'] ?? 0}',
+          change: '0%',
+          isPositive: true,
+          icon: Icons.check_circle_rounded,
+          color: const Color(0xFF10B981),
+        ),
+        AuditKPI(
+          title: 'Discrepancies Found',
+          value: '${kpisData?['issuesCount'] ?? 0}',
+          change: '0%',
+          isPositive: false,
+          icon: Icons.error_rounded,
+          color: const Color(0xFFEF4444),
+        ),
+        AuditKPI(
+          title: 'Critical Issues',
+          value: '${kpisData?['criticalCount'] ?? 0}',
+          change: '0%',
+          isPositive: false,
+          icon: Icons.warning_amber_rounded,
+          color: const Color(0xFFDC2626),
+        ),
+        AuditKPI(
+          title: 'Corrections Pending',
+          value: '${kpisData?['correctionsPending'] ?? 0}',
+          change: '0%',
+          isPositive: false,
+          icon: Icons.published_with_changes_rounded,
+          color: const Color(0xFF8B5CF6),
+        ),
+      ];
+
+      moduleProgress = (data['moduleProgress'] as List<dynamic>? ?? []).map((m) {
+        final map = m as Map<String, dynamic>;
+        return ModuleProgress(
+          name: map['name'] as String,
+          verified: (map['verified'] as num?)?.toInt() ?? 0,
+          pending: (map['pending'] as num?)?.toInt() ?? 0,
+          issues: (map['issues'] as num?)?.toInt() ?? 0,
+          percentage: (map['percentage'] as num?)?.toDouble() ?? 0.0,
+        );
+      }).toList();
+
+      recentActivities = (data['recentActivities'] as List<dynamic>? ?? []).map((a) {
+        final map = a as Map<String, dynamic>;
+        return AuditActivity(
+          id: map['id'] as String? ?? '',
+          title: map['title'] as String? ?? '',
+          module: map['module'] as String? ?? '',
+          timestamp: map['timestamp'] as String? ?? '',
+          status: map['status'] as String? ?? 'Completed',
+          icon: _getActivityIcon(map['module'] as String? ?? ''),
+          iconColor: _getActivityColor(map['status'] as String? ?? 'Completed'),
+          auditor: map['auditor'] as String? ?? '',
+        );
+      }).toList();
+
+      criticalIssues = (data['criticalIssues'] as List<dynamic>? ?? []).map((c) {
+        final map = c as Map<String, dynamic>;
+        return CriticalIssue(
+          id: map['id'] as String? ?? '',
+          title: map['title'] as String? ?? '',
+          priority: map['priority'] as String? ?? 'High',
+          code: map['code'] as String? ?? '',
+          department: map['department'] as String? ?? '',
+          date: map['date'] as String? ?? '',
+        );
+      }).toList();
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load dashboard: $e');
+    }
+  }
+
+  Future<void> loadStudents() async {
+    try {
+      final data = await _api.getStudents();
+      final records = data['records'] as List<dynamic>? ?? [];
+      studentRecords = records.map((s) {
+        final map = s as Map<String, dynamic>;
+        return StudentAuditRecord(
+          registerNo: map['registerNo'] as String? ?? '',
+          name: map['name'] as String? ?? '',
+          department: map['department'] as String? ?? '',
+          semester: (map['semester'] as num?)?.toInt() ?? 0,
+          cgpa: (map['cgpa'] as num?)?.toDouble() ?? 0.0,
+          attendance: (map['attendance'] as num?)?.toDouble() ?? 0.0,
+          photoUrl: map['photoUrl'] as String? ?? '',
+          status: map['status'] as String? ?? 'Pending',
+          groupStatuses: (map['groupStatuses'] as List<dynamic>? ?? []).map((g) {
+            final gm = g as Map<String, dynamic>;
+            return RecordGroupStatus(
+              groupName: gm['groupName'] as String? ?? '',
+              status: gm['status'] as String? ?? 'Pending',
+              details: gm['details'] as String? ?? '',
+            );
+          }).toList(),
+        );
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load students: $e');
+    }
+  }
+
+  Future<void> loadAssignments() async {
+    try {
+      final data = await _api.getAssignments();
+      final records = data['records'] as List<dynamic>? ?? [];
+      assignmentRecords = records.map((r) {
+        final map = r as Map<String, dynamic>;
+        return AssignmentRecord(
+          id: map['id'] as String? ?? '',
+          studentRegNo: map['studentRegNo'] as String? ?? '',
+          studentName: map['studentName'] as String? ?? '',
+          title: map['title'] as String? ?? '',
+          subject: map['subject'] as String? ?? '',
+          submissionDate: map['submissionDate'] as String? ?? '',
+          marksObtained: (map['marksObtained'] as num?)?.toInt() ?? 0,
+          totalMarks: (map['totalMarks'] as num?)?.toInt() ?? 0,
+          evidenceFile: map['evidenceFile'] as String? ?? '',
+          isMissingFile: map['isMissingFile'] as bool? ?? false,
+          isLate: map['isLate'] as bool? ?? false,
+          isDuplicate: map['isDuplicate'] as bool? ?? false,
+          status: map['status'] as String? ?? 'Pending',
+        );
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load assignments: $e');
+    }
+  }
+
+  Future<void> loadMarks() async {
+    try {
+      final data = await _api.getMarks();
+      final records = data['records'] as List<dynamic>? ?? [];
+      marksEntries = records.map((r) {
+        final map = r as Map<String, dynamic>;
+        return MarksAuditEntry(
+          id: map['id'] as String? ?? '',
+          studentRegNo: map['studentRegNo'] as String? ?? '',
+          studentName: map['studentName'] as String? ?? '',
+          subjectCode: map['subjectCode'] as String? ?? '',
+          subjectName: map['subjectName'] as String? ?? '',
+          facultyEntry: (map['facultyEntry'] as num?)?.toInt() ?? 0,
+          deptRecord: (map['deptRecord'] as num?)?.toInt() ?? 0,
+          examRecord: (map['examRecord'] as num?)?.toInt() ?? 0,
+          finalResult: (map['finalResult'] as num?)?.toInt() ?? 0,
+          isMismatch: map['isMismatch'] as bool? ?? false,
+          mismatchReason: map['mismatchReason'] as String? ?? '',
+          status: map['status'] as String? ?? 'Pending',
+        );
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load marks: $e');
+    }
+  }
+
+  Future<void> loadFacultyReports() async {
+    try {
+      final data = await _api.getFacultyReports();
+      final records = data['records'] as List<dynamic>? ?? [];
+      facultyReports = records.map((r) {
+        final map = r as Map<String, dynamic>;
+        return FacultyReportRecord(
+          id: map['id'] as String? ?? '',
+          facultyName: map['facultyName'] as String? ?? '',
+          department: map['department'] as String? ?? '',
+          reportType: map['reportType'] as String? ?? '',
+          academicYear: map['academicYear'] as String? ?? '',
+          regulation: map['regulation'] as String? ?? 'R2023',
+          semester: (map['semester'] as num?)?.toInt() ?? 1,
+          reportedAttendance: (map['reportedAttendance'] as num?)?.toDouble() ?? 0.0,
+          actualAttendance: (map['actualAttendance'] as num?)?.toDouble() ?? 0.0,
+          syllabusCompletionPercent: (map['syllabusCompletionPercent'] as num?)?.toInt() ?? 0,
+          mentoringSessionsLogged: (map['mentoringSessionsLogged'] as num?)?.toInt() ?? 0,
+          hasConflict: map['hasConflict'] as bool? ?? false,
+          conflictDetails: map['conflictDetails'] as String? ?? '',
+          status: map['status'] as String? ?? 'Pending',
+        );
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load faculty reports: $e');
+    }
+  }
+
+  Future<void> loadQuestionPapers() async {
+    try {
+      final data = await _api.getQuestionPapers();
+      final records = data['records'] as List<dynamic>? ?? [];
+      questionPapers = records.map((r) {
+        final map = r as Map<String, dynamic>;
+        return QuestionPaperRecord(
+          id: map['id'] as String? ?? '',
+          courseCode: map['courseCode'] as String? ?? '',
+          courseTitle: map['courseTitle'] as String? ?? '',
+          regulation: map['regulation'] as String? ?? 'R2023',
+          department: map['department'] as String? ?? '',
+          semester: (map['semester'] as num?)?.toInt() ?? 1,
+          academicYear: map['academicYear'] as String? ?? '2025 - 2026',
+          bloomTaxonomyCompliant: map['bloomTaxonomyCompliant'] as bool? ?? false,
+          syllabusMapped: map['syllabusMapped'] as bool? ?? false,
+          hodApproved: map['hodApproved'] as bool? ?? false,
+          coeApproved: map['coeApproved'] as bool? ?? false,
+          status: map['status'] as String? ?? 'Pending',
+        );
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load question papers: $e');
+    }
+  }
+
+  Future<void> loadResearch() async {
+    try {
+      final data = await _api.getResearch();
+      final records = data['records'] as List<dynamic>? ?? [];
+      researchRecords = records.map((r) {
+        final map = r as Map<String, dynamic>;
+        return ResearchRecord(
+          id: map['id'] as String? ?? '',
+          title: map['title'] as String? ?? '',
+          authors: map['authors'] as String? ?? '',
+          type: map['type'] as String? ?? 'Journal Article',
+          doi: map['doi'] as String? ?? '',
+          journalName: map['journalName'] as String? ?? '',
+          indexing: map['indexing'] as String? ?? 'Scopus',
+          year: map['year'] as String? ?? '2025',
+          metadataMatch: map['metadataMatch'] as bool? ?? false,
+          duplicateFlag: map['duplicateFlag'] as bool? ?? false,
+          status: map['status'] as String? ?? 'Pending Examination',
+          organization: map['organization'] as String? ?? 'KSR College of Engineering',
+          department: map['department'] as String? ?? '',
+          facultyName: map['facultyName'] as String? ?? '',
+          description: map['description'] as String? ?? '',
+          documentName: map['documentName'] as String? ?? '',
+          documentType: map['documentType'] as String? ?? '',
+          documentSize: map['documentSize'] as String? ?? '',
+          documentStatus: map['documentStatus'] as String? ?? 'Not Uploaded',
+          verificationChecklist: map['verificationChecklist'] is Map
+              ? Map<String, String>.from(map['verificationChecklist'] as Map)
+              : <String, String>{},
+          auditorRemarks: map['auditorRemarks'] as String? ?? '',
+        );
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load research: $e');
+    }
+  }
+
+  Future<void> loadEvidence() async {
+    try {
+      final data = await _api.getEvidence();
+      final records = data['records'] as List<dynamic>? ?? [];
+      evidenceItems = records.map((r) {
+        final map = r as Map<String, dynamic>;
+        return EvidenceItem(
+          evidenceId: map['evidenceId'] as String? ?? '',
+          recordId: map['recordId'] as String? ?? '',
+          recordType: map['recordType'] as String? ?? '',
+          uploadedBy: map['uploadedBy'] as String? ?? 'System',
+          uploadDate: map['uploadDate'] as String? ?? '',
+          documentType: map['documentType'] as String? ?? '',
+          version: map['version'] as String? ?? 'v1.0',
+          fileName: map['fileName'] as String? ?? '',
+          fileSize: map['fileSize'] as String? ?? '',
+          status: map['status'] as String? ?? 'Pending',
+        );
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load evidence: $e');
+    }
+  }
+
+  Future<void> loadAuditCases() async {
+    try {
+      final data = await _api.getAuditCases();
+      final records = data['records'] as List<dynamic>? ?? [];
+      auditCases = records.map((c) {
+        final map = c as Map<String, dynamic>;
+        return AuditCaseItem(
+          caseId: map['caseId'] as String? ?? '',
+          title: map['title'] as String? ?? '',
+          category: map['category'] as String? ?? 'General Audit',
+          targetRecordId: map['targetRecordId'] as String? ?? '',
+          severity: map['severity'] as String? ?? 'High',
+          assignedTo: map['assignedTo'] as String? ?? '',
+          lifecycleStage: map['lifecycleStage'] as String? ?? 'Detected',
+          createdDate: map['createdDate'] as String? ?? '',
+          description: map['description'] as String? ?? '',
+        );
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load audit cases: $e');
+    }
+  }
+
+  Future<void> loadAuditHistory() async {
+    try {
+      final data = await _api.getAuditHistory();
+      final records = data['records'] as List<dynamic>? ?? [];
+      auditLogs = records.map((l) {
+        final map = l as Map<String, dynamic>;
+        return AuditLogItem(
+          id: map['id'] as String? ?? '',
+          timestamp: map['timestamp'] as String? ?? '',
+          auditorName: map['auditorName'] as String? ?? '',
+          ipAddress: map['ipAddress'] as String? ?? '',
+          action: map['action'] as String? ?? '',
+          recordId: map['recordId'] as String? ?? '',
+          details: map['details'] as String? ?? '',
+        );
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load audit history: $e');
+    }
+  }
 
   // Verification & Action Methods
-  void verifyStudentRecord(String regNo) {
+  Future<void> verifyStudentRecord(String regNo) async {
     final idx = studentRecords.indexWhere((r) => r.registerNo == regNo);
     if (idx != -1) {
       studentRecords[idx] = StudentAuditRecord(
@@ -1009,10 +548,16 @@ class AuditState extends ChangeNotifier {
       showToast('Student record $regNo verified successfully!');
       notifyListeners();
     }
+    try {
+      await _api.verifyStudent(regNo);
+    } catch (e) {
+      debugPrint('API verify failed: $e');
+    }
   }
 
-  void flagIssue(String recordId, String reason, String severity) {
-    final caseId = 'AUD-2026-00${1246 + auditCases.length}';
+  Future<void> flagIssue(String recordId, String reason, String severity) async {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final caseId = 'AUD-$timestamp';
     auditCases.insert(0, AuditCaseItem(
       caseId: caseId,
       title: 'Discrepancy Flagged: $reason',
@@ -1027,34 +572,106 @@ class AuditState extends ChangeNotifier {
     addAuditLog('CASE_CREATED', recordId, 'Created audit case $caseId for $recordId with severity $severity');
     showToast('Audit Case $caseId created and sent for review!');
     notifyListeners();
+    try {
+      await _api.flagIssue(recordId: recordId, reason: reason, severity: severity);
+    } catch (e) {
+      debugPrint('API flag issue failed: $e');
+    }
   }
 
   void addAuditLog(String action, String recordId, String details) {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
     auditLogs.insert(0, AuditLogItem(
-      id: 'LOG-${8804 + auditLogs.length}',
+      id: 'LOG-$timestamp',
       timestamp: DateTime.now().toLocal().toString().split('.')[0],
       auditorName: '$_userName ($_userRole)',
-      ipAddress: '192.168.1.104',
+      ipAddress: '',
       action: action,
       recordId: recordId,
       details: details,
     ));
   }
 
-  void addResearchRecord(ResearchRecord record) {
+  Future<void> addResearchRecord(ResearchRecord record) async {
     researchRecords.insert(0, record);
     addAuditLog('RESEARCH_SUBMITTED', record.id, 'New research paper "${record.title}" submitted by ${record.facultyName} (${record.department})');
     showToast('Research paper submitted successfully! Status: Pending Examination');
     notifyListeners();
+    try {
+      await _api.createResearch({
+        'title': record.title,
+        'authors': record.authors,
+        'type': record.type,
+        'doi': record.doi,
+        'journalName': record.journalName,
+        'indexing': record.indexing,
+        'year': record.year,
+        'organization': record.organization,
+        'departmentId': null,
+        'facultyName': record.facultyName,
+        'description': record.description,
+        'documentName': record.documentName,
+        'documentType': record.documentType,
+        'documentSize': record.documentSize,
+      });
+    } catch (e) {
+      debugPrint('API create research failed: $e');
+    }
   }
 
-  void updateResearchRecord(ResearchRecord updated) {
+  Future<void> updateResearchRecord(ResearchRecord updated) async {
     final idx = researchRecords.indexWhere((r) => r.id == updated.id);
     if (idx != -1) {
       researchRecords[idx] = updated;
       addAuditLog('RESEARCH_AUDITED', updated.id, 'Audited research paper ${updated.id}. Status: ${updated.status}');
       showToast('Research details saved successfully!');
       notifyListeners();
+    }
+    try {
+      await _api.updateResearch(updated.id, {
+        'status': updated.status,
+        'metadataMatch': updated.metadataMatch,
+        'duplicateFlag': updated.duplicateFlag,
+        'documentStatus': updated.documentStatus,
+        'verificationChecklist': updated.verificationChecklist,
+        'auditorRemarks': updated.auditorRemarks,
+      });
+    } catch (e) {
+      debugPrint('API update research failed: $e');
+    }
+  }
+
+  IconData _getActivityIcon(String module) {
+    switch (module) {
+      case 'Student Audit':
+        return Icons.person_rounded;
+      case 'Assignment Audit':
+        return Icons.assignment_rounded;
+      case 'Marks Audit':
+        return Icons.bar_chart_rounded;
+      case 'Faculty Report Audit':
+        return Icons.people_rounded;
+      case 'Question Paper Audit':
+        return Icons.description_rounded;
+      case 'Research Audit':
+        return Icons.science_rounded;
+      case 'Audit Cases':
+        return Icons.warning_amber_rounded;
+      default:
+        return Icons.fact_check_rounded;
+    }
+  }
+
+  Color _getActivityColor(String status) {
+    switch (status) {
+      case 'Verified':
+        return const Color(0xFF10B981);
+      case 'Pending':
+        return const Color(0xFFF59E0B);
+      case 'Issues':
+        return const Color(0xFFEF4444);
+      default:
+        return const Color(0xFF6B7280);
     }
   }
 }

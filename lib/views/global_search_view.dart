@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
-import '../widgets/status_badge.dart';
 
 class GlobalSearchView extends StatefulWidget {
   final AuditState state;
@@ -14,7 +13,6 @@ class GlobalSearchView extends StatefulWidget {
 
 class _GlobalSearchViewState extends State<GlobalSearchView> {
   late TextEditingController _searchController;
-  String _selectedDept = 'All Departments';
   String _selectedRecordType = 'All Records';
 
   @override
@@ -149,12 +147,12 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
               value: widget.state.userRole,
               icon: Icons.admin_panel_settings_rounded,
               items: const [
-                DropdownMenuItem(value: 'Lead Auditor', child: Text('Lead Auditor')),
-                DropdownMenuItem(value: 'Department Auditor', child: Text('Department Auditor')),
+                DropdownMenuItem(value: 'Lead_Auditor', child: Text('Lead Auditor')),
+                DropdownMenuItem(value: 'Department_Auditor', child: Text('Department Auditor')),
                 DropdownMenuItem(value: 'HOD', child: Text('HOD')),
-                DropdownMenuItem(value: 'Dean Academics', child: Text('Dean Academics')),
-                DropdownMenuItem(value: 'System Admin', child: Text('System Admin')),
-                DropdownMenuItem(value: 'Read-Only Inspector', child: Text('Read-Only Inspector')),
+                DropdownMenuItem(value: 'Dean_Academics', child: Text('Dean Academics')),
+                DropdownMenuItem(value: 'System_Admin', child: Text('System Admin')),
+                DropdownMenuItem(value: 'Read_Only_Inspector', child: Text('Read-Only Inspector')),
               ],
               onChanged: (v) {
                 if (v != null) widget.state.setUserRole(v);
@@ -205,127 +203,55 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
         const Text('Search Results', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 12),
 
-        // Mock result cards
-        _buildResultCard(
-          context,
-          title: 'Adithya V (Register No: 23CS001)',
-          subtitle: 'Student Profile • Computer Science & Engg • Semester 5 • CGPA: 8.84 • Attendance: 94.2%',
-          type: 'Student Audit',
-          status: 'Verified',
-          onTap: () => widget.state.setActiveModule('Student Audit'),
-        ),
-        const SizedBox(height: 12),
-        _buildResultCard(
-          context,
-          title: 'Marks Record — 23CS201 Data Structures (Student: 23CS0456)',
-          subtitle: 'Marks Mismatch • Faculty Entry: 88 vs Exam Record: 72 • Case AUD-2026-001245',
-          type: 'Marks Audit',
-          status: 'Discrepancy Flagged',
-          onTap: () => widget.state.setActiveModule('Marks Audit'),
-        ),
-        const SizedBox(height: 12),
-        _buildResultCard(
-          context,
-          title: 'Research Paper — AI in Higher Education (Dr. S. Meena)',
-          subtitle: 'DOI: 10.1016/j.compedu.2025.104921 • IEEE Transactions • Scopus Indexed',
-          type: 'Research Audit',
-          status: 'Verified',
-          onTap: () => widget.state.setActiveModule('Research Audit'),
-        ),
-        const SizedBox(height: 12),
-        _buildResultCard(
-          context,
-          title: 'Question Paper — 23IT204 Database Management Systems',
-          subtitle: 'Regulation R2023 • IT Dept • CO-PO Mapped • CoE Approval Pending',
-          type: 'Question Paper Audit',
-          status: 'Pending Verification',
-          onTap: () => widget.state.setActiveModule('Question Paper Audit'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildResultCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required String type,
-    required String status,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isMobile = constraints.maxWidth < 600;
-          if (isMobile) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        if (widget.state.globalSearchQuery.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(36),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Column(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: AppColors.accentLight, borderRadius: BorderRadius.circular(10)),
-                      child: const Icon(Icons.description_rounded, color: AppColors.accent),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    ),
-                  ],
+                Icon(Icons.search_off_rounded, size: 48, color: AppColors.textMuted),
+                SizedBox(height: 12),
+                Text(
+                  'Enter a search query to find audit records.',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
                 ),
-                const SizedBox(height: 8),
-                Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    StatusBadge(status: status),
-                    ElevatedButton(
-                      onPressed: onTap,
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
-                      child: const Text('Audit Record'),
-                    ),
-                  ],
+                SizedBox(height: 4),
+                Text(
+                  'Search by register number, faculty name, DOI, paper title, or case ID.',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
               ],
-            );
-          }
-          return Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: AppColors.accentLight, borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.description_rounded, color: AppColors.accent),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    const SizedBox(height: 4),
-                    Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                  ],
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(36),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Column(
+              children: [
+                Icon(Icons.search_off_rounded, size: 48, color: AppColors.textMuted),
+                SizedBox(height: 12),
+                Text(
+                  'No search results found.',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
                 ),
-              ),
-              StatusBadge(status: status),
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: onTap,
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
-                child: const Text('Audit Record'),
-              ),
-            ],
-          );
-        },
-      ),
+                SizedBox(height: 4),
+                Text(
+                  'Try adjusting your search query or filters.',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

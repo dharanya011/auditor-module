@@ -27,19 +27,17 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
   String _getRoleBasedPrompt(String role) {
     switch (role) {
-      case 'Lead Auditor':
+      case 'Lead_Auditor':
         return 'Review faculty reports and question papers across departments, monitor compliance with regulations, and verify pending audit records.';
-      case 'Department Auditor':
+      case 'Department_Auditor':
         return 'Review faculty reports and question papers for your assigned department and verify records that are pending audit.';
       case 'HOD':
         return 'Monitor faculty report and question paper audits for your department and review records requiring verification or corrective action.';
-      case 'Dean':
-      case 'Dean Academics':
+      case 'Dean_Academics':
         return 'Monitor faculty report and question paper compliance across departments and review overall audit progress.';
-      case 'Inspector':
-      case 'Read-Only Inspector':
+      case 'Read_Only_Inspector':
         return 'Inspect faculty reports and question papers for regulatory compliance, quality standards, and verification status.';
-      case 'System Admin':
+      case 'System_Admin':
         return 'Monitor the complete Faculty Audit system, manage audit records, and review verification activity across departments.';
       default:
         return 'Review faculty reports and question papers across departments and verify records that are pending audit.';
@@ -389,10 +387,10 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
         ResponsiveRow(
           spacing: 14,
           children: [
-            _buildKpiCard('Total Reports Audited', '840', Icons.badge_outlined, const Color(0xFF4F46E5), const Color(0xFFEEF2FF)),
-            _buildKpiCard('Verified Reports', '780', Icons.check_circle_outline_rounded, const Color(0xFF10B981), const Color(0xFFECFDF5)),
-            _buildKpiCard('Biometric Conflicts', '42 Flags', Icons.fingerprint_rounded, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
-            _buildKpiCard('Syllabus Gaps Flagged', '18 Reports', Icons.error_outline_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
+            _buildKpiCard('Total Reports Audited', '${widget.state.facultyReports.length}', Icons.badge_outlined, const Color(0xFF4F46E5), const Color(0xFFEEF2FF)),
+            _buildKpiCard('Verified Reports', '${widget.state.facultyReports.where((f) => f.status == "Verified").length}', Icons.check_circle_outline_rounded, const Color(0xFF10B981), const Color(0xFFECFDF5)),
+            _buildKpiCard('Biometric Conflicts', '${widget.state.facultyReports.where((f) => f.hasConflict).length} Flags', Icons.fingerprint_rounded, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
+            _buildKpiCard('Syllabus Gaps Flagged', '${widget.state.facultyReports.where((f) => f.syllabusCompletionPercent < 85).length} Reports', Icons.error_outline_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
           ],
         ),
 

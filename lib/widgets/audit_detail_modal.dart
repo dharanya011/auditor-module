@@ -61,7 +61,7 @@ class _AuditDetailModalState extends State<AuditDetailModal> {
         targetViewModule: 'Marks Audit',
         department: m.studentRegNo.contains('CS') ? 'CSE' : (m.studentRegNo.contains('IT') ? 'IT' : 'ECE'),
         status: m.status,
-        details: 'Faculty Entry: ${m.facultyEntry} • Dept: ${m.deptRecord} • Exam: ${m.examRecord} ${m.mismatchReason.isNotEmpty ? "• " + m.mismatchReason : ""}',
+        details: 'Faculty Entry: ${m.facultyEntry} • Dept: ${m.deptRecord} • Exam: ${m.examRecord} ${m.mismatchReason.isNotEmpty ? "• ${m.mismatchReason}" : ""}',
       ));
     }
 
@@ -74,7 +74,7 @@ class _AuditDetailModalState extends State<AuditDetailModal> {
         targetViewModule: 'Assignment Audit',
         department: a.subject,
         status: a.status,
-        details: 'Submitted: ${a.submissionDate} • Score: ${a.marksObtained}/${a.totalMarks} ${a.evidenceFile.isNotEmpty ? "• Hash: " + a.evidenceFile : ""}',
+        details: 'Submitted: ${a.submissionDate} • Score: ${a.marksObtained}/${a.totalMarks} ${a.evidenceFile.isNotEmpty ? "• Hash: ${a.evidenceFile}" : ""}',
       ));
     }
 

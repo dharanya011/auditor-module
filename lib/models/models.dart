@@ -281,26 +281,17 @@ class ResearchRecord {
     required this.metadataMatch,
     this.duplicateFlag = false,
     required this.status,
-    this.organization = 'KSR College of Engineering',
-    this.department = 'Computer Science & Engineering',
-    this.facultyName = 'Dr. R. Kumar',
-    this.description = 'Research paper submitted for academic performance and ERP audit verification.',
-    this.documentName = 'paper_kumar.pdf',
-    this.documentType = 'PDF Document',
-    this.documentSize = '1.24 MB',
-    this.documentStatus = 'Uploaded',
-    Map<String, String>? verificationChecklist,
-    this.auditorRemarks = '',
-  }) : verificationChecklist = verificationChecklist ?? {
-          'Paper Title': 'Pending',
-          'Authors': 'Pending',
-          'Faculty Affiliation': 'Pending',
-          'Department': 'Pending',
-          'Publication Details': 'Pending',
-          'DOI': 'Pending',
-          'Journal / Conference': 'Pending',
-          'Indexing Information': 'Pending',
-        };
+    required this.organization,
+    required this.department,
+    required this.facultyName,
+    required this.description,
+    required this.documentName,
+    required this.documentType,
+    required this.documentSize,
+    required this.documentStatus,
+    required this.verificationChecklist,
+    required this.auditorRemarks,
+  });
 }
 
 class EvidenceItem {

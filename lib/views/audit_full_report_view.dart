@@ -703,7 +703,7 @@ class _DrillDownPage extends StatelessWidget {
         {'Final Result': '${m.finalResult}'},
         {'Mismatch': m.isMismatch ? 'Yes' : 'No'},
         {'Record Status': m.status},
-        if (m.mismatchReason != null) {'Note': m.mismatchReason!},
+        {'Note': m.mismatchReason},
       ],
     )).toList();
   }
@@ -736,7 +736,7 @@ class _DrillDownPage extends StatelessWidget {
         {'Syllabus Completion': '${f.syllabusCompletionPercent}%'},
         {'Conflict': f.hasConflict ? 'Yes' : 'No'},
         {'Record Status': f.status},
-        if (f.conflictDetails != null) {'Conflict Details': f.conflictDetails!},
+        {'Conflict Details': f.conflictDetails},
       ],
     )).toList();
   }
@@ -783,7 +783,7 @@ class _DrillDownPage extends StatelessWidget {
       list = state.researchRecords.where((r) => r.status == 'Pending').toList();
     } else if (st == 'Issues') {
       list = state.researchRecords
-          .where((r) => r.status == 'Discrepancy Flagged' || (r.duplicateFlag ?? false))
+          .where((r) => r.status == 'Discrepancy Flagged' || r.duplicateFlag)
           .toList();
     } else {
       list = state.researchRecords;
@@ -802,7 +802,7 @@ class _DrillDownPage extends StatelessWidget {
         {'Indexing': r.indexing},
         {'DOI': r.doi},
         {'Metadata Match': r.metadataMatch ? 'Yes' : 'No'},
-        {'Duplicate Flag': (r.duplicateFlag ?? false) ? 'Flagged' : 'None'},
+        {'Duplicate Flag': r.duplicateFlag ? 'Flagged' : 'None'},
         {'Record Status': r.status},
       ],
     )).toList();
