@@ -187,9 +187,9 @@ class DashboardView extends StatelessWidget {
                 mainAxisSpacing: 16,
                 childAspectRatio: aspectRatio,
               ),
-              itemCount: state.kpis.length,
+              itemCount: state.kpisList.length,
               itemBuilder: (context, index) {
-                final kpi = state.kpis[index];
+                final kpi = state.kpisList[index];
                 return KPICard(
                   kpi: kpi,
                   onTap: () => _openKpiDetailModal(context, index, kpi),
@@ -236,27 +236,27 @@ class DashboardView extends StatelessWidget {
                             PieChartData(
                               sectionsSpace: 2,
                               centerSpaceRadius: 40,
-                              sections: state.moduleProgress.isEmpty
+                              sections: state.moduleProgressList.isEmpty
                                   ? []
                                   : [
                                       PieChartSectionData(
                                         color: const Color(0xFF10B981),
-                                        value: state.moduleProgress.fold(0, (sum, m) => sum + m.verified).toDouble(),
-                                        title: state.moduleProgress.fold(0, (sum, m) => sum + m.verified).toString(),
+                                        value: state.moduleProgressList.fold(0, (sum, m) => sum + m.verified).toDouble(),
+                                        title: state.moduleProgressList.fold(0, (sum, m) => sum + m.verified).toString(),
                                         radius: 26,
                                         titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                                       ),
                                       PieChartSectionData(
                                         color: const Color(0xFFF59E0B),
-                                        value: state.moduleProgress.fold(0, (sum, m) => sum + m.pending).toDouble(),
-                                        title: state.moduleProgress.fold(0, (sum, m) => sum + m.pending).toString(),
+                                        value: state.moduleProgressList.fold(0, (sum, m) => sum + m.pending).toDouble(),
+                                        title: state.moduleProgressList.fold(0, (sum, m) => sum + m.pending).toString(),
                                         radius: 24,
                                         titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
                                       ),
                                       PieChartSectionData(
                                         color: const Color(0xFFEF4444),
-                                        value: state.moduleProgress.fold(0, (sum, m) => sum + m.issues).toDouble(),
-                                        title: state.moduleProgress.fold(0, (sum, m) => sum + m.issues).toString(),
+                                        value: state.moduleProgressList.fold(0, (sum, m) => sum + m.issues).toDouble(),
+                                        title: state.moduleProgressList.fold(0, (sum, m) => sum + m.issues).toString(),
                                         radius: 22,
                                         titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
                                       ),
@@ -310,7 +310,7 @@ class DashboardView extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             // Data Rows
-                            ...state.moduleProgress.map((m) => Container(
+                            ...state.moduleProgressList.map((m) => Container(
                               margin: const EdgeInsets.only(bottom: 4),
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
