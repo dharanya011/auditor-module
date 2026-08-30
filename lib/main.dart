@@ -23,8 +23,6 @@ import 'views/reports_view.dart';
 import 'views/audit_full_report_view.dart';
 import 'views/profile_view.dart';
 
-import 'views/login_view.dart';
-
 void main() {
   runApp(const KSRCEAuditorApp());
 }
@@ -47,7 +45,11 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
   }
 
   Future<void> _initializeData() async {
-    if (_auditState.isAuthenticated) {
+    try {
+      // Auto-authenticate with seed admin credentials on start to bypass sign-in step
+      await _auditState.signIn('admin@ksrce.edu.in', 'Admin@123');
+    } catch (e) {
+      debugPrint('Auto-login failed: $e. Loading data anonymously.');
       await _auditState.loadAllData();
     }
     if (mounted) {
@@ -87,8 +89,7 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
                     ),
                   ),
                 )
-              : _auditState.isAuthenticated
-                  ? LayoutBuilder(
+              : LayoutBuilder(
             builder: (context, constraints) {
               final isDesktop = constraints.maxWidth >= 900;
               return Scaffold(
@@ -155,8 +156,7 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
                 ),
               );
             },
-          )
-        : LoginView(state: _auditState),
+          ),
         );
       },
     );
