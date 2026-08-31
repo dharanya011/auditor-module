@@ -35,7 +35,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Flutter Web
-        run: flutter build web --release --base-href "/auditor-module/" --no-tree-shake-icons --pwa-strategy=none
+        run: flutter build web --release --base-href "/auditor-module/" --no-tree-shake-icons --pwa-strategy=none --dart-define=API_BASE_URL="${{ secrets.API_BASE_URL }}"
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3

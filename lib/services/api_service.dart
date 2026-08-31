@@ -5,7 +5,9 @@ import 'package:http/http.dart' as http;
 class ApiService {
   static String get baseUrl {
     const envUrl = String.fromEnvironment('API_BASE_URL');
-    if (envUrl.isNotEmpty) return envUrl;
+    if (envUrl.isNotEmpty) {
+      return envUrl.endsWith('/') ? envUrl.substring(0, envUrl.length - 1) : envUrl;
+    }
     if (kIsWeb) return 'http://localhost:5000/api';
     return 'http://10.0.2.2:5000/api';
   }
