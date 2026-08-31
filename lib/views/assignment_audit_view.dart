@@ -28,12 +28,12 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
 
   String _getRoleBasedPrompt(String role) {
     switch (role) {
-      case 'Lead Auditor': return 'Review audit records across departments and monitor pending and completed verification activities.';
-      case 'Department Auditor': return 'Review and verify audit records for your assigned department and resolve pending issues.';
+      case 'Lead_Auditor': return 'Review audit records across departments and monitor pending and completed verification activities.';
+      case 'Department_Auditor': return 'Review and verify audit records for your assigned department and resolve pending issues.';
       case 'HOD': return 'Monitor department-level audit progress and review records requiring attention.';
-      case 'Dean': return 'Monitor overall academic audit compliance and review department-level audit status.';
-      case 'Inspector': return 'Inspect audit records, verification status and compliance-related issues.';
-      case 'System Admin': return 'Monitor the complete audit system and manage audit records across all roles and departments.';
+      case 'Dean_Academics': return 'Monitor overall academic audit compliance and review department-level audit status.';
+      case 'Read_Only_Inspector': return 'Inspect audit records, verification status and compliance-related issues.';
+      case 'System_Admin': return 'Monitor the complete audit system and manage audit records across all roles and departments.';
       default: return 'Review and verify audit records.';
     }
   }

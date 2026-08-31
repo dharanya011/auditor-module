@@ -63,7 +63,7 @@ class _AddResearchPaperDialogState extends State<AddResearchPaperDialog> {
   bool _hasUploadedFile = false;
   String _fileName = '';
   String _fileSize = '';
-  String _fileType = 'PDF Document';
+  final String _fileType = 'PDF Document';
 
   @override
   void initState() {
@@ -85,12 +85,9 @@ class _AddResearchPaperDialogState extends State<AddResearchPaperDialog> {
   }
 
   void _simulateFileUpload() {
-    setState(() {
-      _hasUploadedFile = true;
-      _fileName = 'research_paper_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}.pdf';
-      _fileSize = '1.45 MB';
-      _fileType = 'PDF Document';
-    });
+    // File upload will be connected to backend in STEP 2.
+    // For now, show that upload is pending implementation.
+    widget.state.showToast('Document upload will be available when backend is connected.');
   }
 
   void _removeUploadedFile() {
@@ -104,17 +101,8 @@ class _AddResearchPaperDialogState extends State<AddResearchPaperDialog> {
   void _handleSubmit() {
     if (!_formKey.currentState!.validate()) return;
 
-    if (!_hasUploadedFile) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please upload a Research Paper Document before submitting.'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
-      return;
-    }
-
-    final newId = 'RES-2025-0${widget.state.researchRecords.length + 1}';
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final newId = 'RES-$timestamp';
 
     final newRecord = ResearchRecord(
       id: newId,
@@ -122,17 +110,17 @@ class _AddResearchPaperDialogState extends State<AddResearchPaperDialog> {
       department: _selectedDepartment,
       facultyName: _selectedFaculty,
       title: _titleController.text.trim(),
-      authors: _authorsController.text.trim().isEmpty ? _selectedFaculty : _authorsController.text.trim(),
+      authors: _authorsController.text.trim(),
       type: _selectedType,
-      doi: _doiController.text.trim().isEmpty ? '10.1109/ICERP.2025.${1000 + widget.state.researchRecords.length}' : _doiController.text.trim(),
-      journalName: _journalController.text.trim().isEmpty ? 'Journal of Advanced Engineering Research' : _journalController.text.trim(),
+      doi: _doiController.text.trim(),
+      journalName: _journalController.text.trim(),
       indexing: _selectedIndexing,
       year: _selectedYear,
-      description: _descriptionController.text.trim().isEmpty ? 'Research paper submitted for academic audit verification.' : _descriptionController.text.trim(),
-      documentName: _fileName,
-      documentType: _fileType,
-      documentSize: _fileSize,
-      documentStatus: 'Uploaded',
+      description: _descriptionController.text.trim(),
+      documentName: _hasUploadedFile ? _fileName : '',
+      documentType: _hasUploadedFile ? _fileType : '',
+      documentSize: _hasUploadedFile ? _fileSize : '',
+      documentStatus: _hasUploadedFile ? 'Uploaded' : 'Not Uploaded',
       metadataMatch: true,
       duplicateFlag: false,
       status: 'Pending Examination',

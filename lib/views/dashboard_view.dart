@@ -220,9 +220,9 @@ class DashboardView extends StatelessWidget {
                 mainAxisSpacing: 16,
                 childAspectRatio: aspectRatio,
               ),
-              itemCount: state.kpis.length,
+              itemCount: state.kpisList.length,
               itemBuilder: (context, index) {
-                final kpi = state.kpis[index];
+                final kpi = state.kpisList[index];
                 return KPICard(
                   kpi: kpi,
                   onTap: () => _openKpiDetailModal(context, index, kpi),
@@ -341,7 +341,7 @@ class DashboardView extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             // Data Rows
-                            ...state.moduleProgress.map((m) => Container(
+                            ...state.moduleProgressList.map((m) => Container(
                               margin: const EdgeInsets.only(bottom: 4),
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
@@ -665,15 +665,15 @@ class DashboardView extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildQueueItem(Icons.hourglass_top_rounded, 'Pending Verification', 124, Colors.amber),
+                  _buildQueueItem(Icons.hourglass_top_rounded, 'Pending Verification', null, Colors.amber),
                   const Divider(height: 16),
-                  _buildQueueItem(Icons.find_in_page_rounded, 'In Review', 32, Colors.blue),
+                  _buildQueueItem(Icons.find_in_page_rounded, 'In Review', null, Colors.blue),
                   const Divider(height: 16),
-                  _buildQueueItem(Icons.published_with_changes_rounded, 'Correction Requested', 18, Colors.purple),
+                  _buildQueueItem(Icons.published_with_changes_rounded, 'Correction Requested', null, Colors.purple),
                   const Divider(height: 16),
-                  _buildQueueItem(Icons.autorenew_rounded, 'Re-verification', 11, Colors.orange),
+                  _buildQueueItem(Icons.autorenew_rounded, 'Re-verification', null, Colors.orange),
                   const Divider(height: 16),
-                  _buildQueueItem(Icons.check_circle_rounded, 'Completed', 458, Colors.green),
+                  _buildQueueItem(Icons.check_circle_rounded, 'Completed', null, Colors.green),
                 ],
               ),
             ),
@@ -715,16 +715,9 @@ class DashboardView extends StatelessWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: ['23CS001', 'Dr. Kumar', 'AI in Education', 'Data Structures', '23IT045', 'Analog Electronics'].map((tag) {
-                      return ActionChip(
-                        label: Text(tag, style: const TextStyle(fontSize: 11)),
-                        backgroundColor: AppColors.background,
-                        onPressed: () {
-                          state.setGlobalSearchQuery(tag);
-                          state.setActiveModule('Global Search');
-                        },
-                      );
-                    }).toList(),
+                    children: const [
+                      Text('No recent searches', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                    ],
                   ),
                 ],
               ),
@@ -757,13 +750,13 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  Widget _buildQueueItem(IconData icon, String title, int count, Color color) {
+  Widget _buildQueueItem(IconData icon, String title, int? count, Color color) {
     return Row(
       children: [
         Icon(icon, color: color, size: 20),
         const SizedBox(width: 12),
         Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
-        Text(count.toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        Text(count?.toString() ?? '—', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       ],
     );
   }

@@ -84,10 +84,10 @@ class _EvidenceRepositoryViewState extends State<EvidenceRepositoryView> {
         // KPI Summary Cards Row
         ResponsiveRow(
           children: [
-            _buildKpiCard('Total Documents Stored', '14,250 Files', Icons.folder_zip_outlined, const Color(0xFF4F46E5), const Color(0xFFEEF2FF)),
-            _buildKpiCard('AWS S3 Hashes Verified', '14,180 Files', Icons.verified_user_rounded, const Color(0xFF10B981), const Color(0xFFECFDF5)),
-            _buildKpiCard('Corrupted Hash Alerts', '12 Flags', Icons.error_outline_rounded, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
-            _buildKpiCard('Version Control Active', 'v1.0 - v2.4', Icons.history_toggle_off_rounded, const Color(0xFF8B5CF6), const Color(0xFFF5F3FF)),
+            _buildKpiCard('Total Documents Stored', '${widget.state.evidenceItems.length} Files', Icons.folder_zip_outlined, const Color(0xFF4F46E5), const Color(0xFFEEF2FF)),
+            _buildKpiCard('AWS S3 Hashes Verified', '${widget.state.evidenceItems.where((e) => e.status == "Accepted" || e.status == "Verified").length} Files', Icons.verified_user_rounded, const Color(0xFF10B981), const Color(0xFFECFDF5)),
+            _buildKpiCard('Corrupted Hash Alerts', '${widget.state.evidenceItems.where((e) => e.status == "Pending Verification" || e.status == "Rejected").length} Flags', Icons.error_outline_rounded, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
+            _buildKpiCard('Version Control Active', '—', Icons.history_toggle_off_rounded, const Color(0xFF8B5CF6), const Color(0xFFF5F3FF)),
           ],
         ),
 

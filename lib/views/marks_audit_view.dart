@@ -28,12 +28,12 @@ class _MarksAuditViewState extends State<MarksAuditView> {
 
   String _getRoleBasedPrompt(String role) {
     switch (role) {
-      case 'Lead Auditor': return 'Review audit records across departments and monitor pending and completed verification activities.';
-      case 'Department Auditor': return 'Review and verify audit records for your assigned department and resolve pending issues.';
+      case 'Lead_Auditor': return 'Review audit records across departments and monitor pending and completed verification activities.';
+      case 'Department_Auditor': return 'Review and verify audit records for your assigned department and resolve pending issues.';
       case 'HOD': return 'Monitor department-level audit progress and review records requiring attention.';
-      case 'Dean': return 'Monitor overall academic audit compliance and review department-level audit status.';
-      case 'Inspector': return 'Inspect audit records, verification status and compliance-related issues.';
-      case 'System Admin': return 'Monitor the complete audit system and manage audit records across all roles and departments.';
+      case 'Dean_Academics': return 'Monitor overall academic audit compliance and review department-level audit status.';
+      case 'Read_Only_Inspector': return 'Inspect audit records, verification status and compliance-related issues.';
+      case 'System_Admin': return 'Monitor the complete audit system and manage audit records across all roles and departments.';
       default: return 'Review and verify audit records.';
     }
   }
@@ -367,10 +367,10 @@ class _MarksAuditViewState extends State<MarksAuditView> {
         ResponsiveRow(
           spacing: 14,
           children: [
-            _buildKpiCard('Total Marks Audited', '34,850', Icons.analytics_outlined, const Color(0xFF4F46E5), const Color(0xFFEEF2FF)),
-            _buildKpiCard('5-Stage Matched', '34,210', Icons.verified_rounded, const Color(0xFF10B981), const Color(0xFFECFDF5)),
-            _buildKpiCard('Post-Approval Mismatches', '42 Flags', Icons.error_outline_rounded, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
-            _buildKpiCard('Pending HOD Verification', '598 Records', Icons.pending_actions_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
+            _buildKpiCard('Total Marks Audited', '${widget.state.marksEntries.length}', Icons.analytics_outlined, const Color(0xFF4F46E5), const Color(0xFFEEF2FF)),
+            _buildKpiCard('5-Stage Matched', '${widget.state.marksEntries.where((m) => !m.isMismatch).length}', Icons.verified_rounded, const Color(0xFF10B981), const Color(0xFFECFDF5)),
+            _buildKpiCard('Post-Approval Mismatches', '${widget.state.marksEntries.where((m) => m.isMismatch).length} Flags', Icons.error_outline_rounded, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
+            _buildKpiCard('Pending HOD Verification', '${widget.state.marksEntries.where((m) => m.status == "Pending Approval" || m.status == "Pending").length} Records', Icons.pending_actions_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
           ],
         ),
 

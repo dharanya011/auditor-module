@@ -26,19 +26,17 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
 
   String _getRoleBasedPrompt(String role) {
     switch (role) {
-      case 'Lead Auditor':
+      case 'Lead_Auditor':
         return 'Review question papers across departments, check Bloom Taxonomy compliance, CO-PO mapping, and CoE/HOD approvals.';
-      case 'Department Auditor':
+      case 'Department_Auditor':
         return 'Verify question papers for your department and ensure all papers meet regulation and approval standards.';
       case 'HOD':
         return 'Monitor question paper audits for your department and review papers pending HOD approval.';
-      case 'Dean':
-      case 'Dean Academics':
+      case 'Dean_Academics':
         return 'Monitor question paper compliance across departments and review overall audit progress.';
-      case 'Inspector':
-      case 'Read-Only Inspector':
+      case 'Read_Only_Inspector':
         return 'Inspect question papers for regulatory compliance, Bloom Taxonomy standards, and approval status.';
-      case 'System Admin':
+      case 'System_Admin':
         return 'Monitor the complete Question Paper Audit system and review verification activity across departments.';
       default:
         return 'Review question papers across departments and verify records that are pending audit.';

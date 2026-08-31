@@ -31,10 +31,10 @@ class ReportsView extends StatelessWidget {
               mainAxisSpacing: 16,
               childAspectRatio: childAspectRatio,
               children: [
-                _buildKpiCard('Total Generated', '1,420', Icons.analytics_rounded, Colors.blue),
-                _buildKpiCard('Scheduled Jobs', '8 Active', Icons.schedule_rounded, Colors.orange),
-                _buildKpiCard('Export Templates', '12 Custom', Icons.format_paint_rounded, Colors.purple),
-                _buildKpiCard('Data Storage', '2.4 GB', Icons.storage_rounded, Colors.green),
+                _buildKpiCard('Total Generated', '—', Icons.analytics_rounded, Colors.blue),
+                _buildKpiCard('Scheduled Jobs', '—', Icons.schedule_rounded, Colors.orange),
+                _buildKpiCard('Export Templates', '—', Icons.format_paint_rounded, Colors.purple),
+                _buildKpiCard('Data Storage', '—', Icons.storage_rounded, Colors.green),
               ],
             );
           },

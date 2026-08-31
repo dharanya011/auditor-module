@@ -36,6 +36,28 @@ class KSRCEAuditorApp extends StatefulWidget {
 
 class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
   final AuditState _auditState = AuditState();
+  bool _isInitializing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      // Auto-authenticate with seed admin credentials on start to bypass sign-in step
+      await _auditState.signIn('admin@ksrce.edu.in', 'Admin@123');
+    } catch (e) {
+      debugPrint('Auto-login failed: $e. Loading data anonymously.');
+      await _auditState.loadAllData();
+    }
+    if (mounted) {
+      setState(() {
+        _isInitializing = false;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -62,7 +84,20 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
             textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
             scaffoldBackgroundColor: AppColors.background,
           ),
-          home: LayoutBuilder(
+          home: _isInitializing
+              ? const Scaffold(
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(color: AppColors.accent),
+                        SizedBox(height: 16),
+                        Text('Loading Auditor Dashboard...', style: TextStyle(color: AppColors.textSecondary)),
+                      ],
+                    ),
+                  ),
+                )
+              : LayoutBuilder(
             builder: (context, constraints) {
               final isDesktop = constraints.maxWidth >= 900;
               return Scaffold(

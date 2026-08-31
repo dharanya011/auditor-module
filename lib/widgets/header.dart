@@ -167,7 +167,7 @@ class Header extends StatelessWidget {
                         ),
                         child: const Center(
                           child: Text(
-                            '5',
+                            '0',
                             style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -184,65 +184,25 @@ class Header extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'Audit Alerts (5 Unread)',
+                            'Audit Alerts',
                             style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              state.showToast('All notifications marked as read');
-                              Navigator.pop(context);
-                            },
-                            child: const Text('Mark all read', style: TextStyle(fontSize: 11)),
                           ),
                         ],
                       ),
                     ),
                   ),
                   const PopupMenuDivider(),
-                  _buildNotificationItem(
-                    context,
-                    title: 'Marks mismatch in 23CS201',
-                    subtitle: 'High Priority • AUD-2025-00145',
-                    time: '2m ago',
-                    icon: Icons.warning_amber_rounded,
-                    iconColor: Colors.red,
-                    targetModule: 'Marks Audit',
-                  ),
-                  _buildNotificationItem(
-                    context,
-                    title: 'Missing assignment evidence',
-                    subtitle: '12 Students • 23IT304',
-                    time: '15m ago',
-                    icon: Icons.assignment_late_rounded,
-                    iconColor: Colors.orange,
-                    targetModule: 'Assignment Audit',
-                  ),
-                  _buildNotificationItem(
-                    context,
-                    title: 'Question paper not approved',
-                    subtitle: 'High Priority • 23IT204 DBMS',
-                    time: '1h ago',
-                    icon: Icons.description_outlined,
-                    iconColor: Colors.red,
-                    targetModule: 'Question Paper Audit',
-                  ),
-                  _buildNotificationItem(
-                    context,
-                    title: 'Faculty report data inconsistency',
-                    subtitle: 'Medium Priority • CSE Dept',
-                    time: '2h ago',
-                    icon: Icons.badge_outlined,
-                    iconColor: Colors.amber.shade800,
-                    targetModule: 'Faculty Report Audit',
-                  ),
-                  _buildNotificationItem(
-                    context,
-                    title: 'Research DOI mismatch',
-                    subtitle: 'Medium Priority • 2 Records',
-                    time: '3h ago',
-                    icon: Icons.science_outlined,
-                    iconColor: Colors.purple,
-                    targetModule: 'Research Audit',
+                  const PopupMenuItem<String>(
+                    enabled: false,
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          'No new notifications',
+                          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                        ),
+                      ),
+                    ),
                   ),
                   const PopupMenuDivider(),
                   PopupMenuItem<String>(
@@ -327,44 +287,4 @@ class Header extends StatelessWidget {
     );
   }
 
-  PopupMenuItem<String> _buildNotificationItem(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required String time,
-    required IconData icon,
-    required Color iconColor,
-    required String targetModule,
-  }) {
-    return PopupMenuItem<String>(
-      onTap: () => state.setActiveModule(targetModule),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: iconColor, size: 18),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 10),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            time,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 9),
-          ),
-        ],
-      ),
-    );
   }
-}

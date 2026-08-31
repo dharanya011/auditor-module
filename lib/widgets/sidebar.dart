@@ -76,7 +76,7 @@ class Sidebar extends StatelessWidget {
               children: [
                 _buildSectionLabel('MAIN'),
                 _buildNavItem(context, 'Dashboard', Icons.dashboard_rounded),
-                _buildNavItem(context, 'Audit Work Queue', Icons.assignment_outlined, badge: '124'),
+                _buildNavItem(context, 'Audit Work Queue', Icons.assignment_outlined),
                 _buildNavItem(context, 'Global Search', Icons.search_rounded),
 
                 const SizedBox(height: 16),

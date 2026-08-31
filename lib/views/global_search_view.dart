@@ -190,12 +190,12 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
               value: widget.state.userRole,
               icon: Icons.admin_panel_settings_rounded,
               items: const [
-                DropdownMenuItem(value: 'Lead Auditor', child: Text('Lead Auditor')),
-                DropdownMenuItem(value: 'Department Auditor', child: Text('Department Auditor')),
+                DropdownMenuItem(value: 'Lead_Auditor', child: Text('Lead Auditor')),
+                DropdownMenuItem(value: 'Department_Auditor', child: Text('Department Auditor')),
                 DropdownMenuItem(value: 'HOD', child: Text('HOD')),
-                DropdownMenuItem(value: 'Dean Academics', child: Text('Dean Academics')),
-                DropdownMenuItem(value: 'System Admin', child: Text('System Admin')),
-                DropdownMenuItem(value: 'Read-Only Inspector', child: Text('Read-Only Inspector')),
+                DropdownMenuItem(value: 'Dean_Academics', child: Text('Dean Academics')),
+                DropdownMenuItem(value: 'System_Admin', child: Text('System Admin')),
+                DropdownMenuItem(value: 'Read_Only_Inspector', child: Text('Read-Only Inspector')),
               ],
               onChanged: (v) {
                 if (v != null) widget.state.setUserRole(v);
@@ -292,90 +292,6 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
             ),
           ),
       ],
-    );
-  }
-
-  Widget _buildResultCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required String type,
-    required String status,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isMobile = constraints.maxWidth < 600;
-          if (isMobile) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: AppColors.accentLight, borderRadius: BorderRadius.circular(10)),
-                      child: const Icon(Icons.description_rounded, color: AppColors.accent),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    StatusBadge(status: status),
-                    ElevatedButton(
-                      onPressed: onTap,
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
-                      child: const Text('Audit Record'),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          }
-          return Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: AppColors.accentLight, borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.description_rounded, color: AppColors.accent),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    const SizedBox(height: 4),
-                    Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                  ],
-                ),
-              ),
-              StatusBadge(status: status),
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: onTap,
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
-                child: const Text('Audit Record'),
-              ),
-            ],
-          );
-        },
-      ),
     );
   }
 }
