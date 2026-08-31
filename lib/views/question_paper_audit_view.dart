@@ -3,6 +3,7 @@ import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/responsive_row.dart';
+import '../widgets/api_error_widget.dart';
 
 class QuestionPaperAuditView extends StatefulWidget {
   final AuditState state;
@@ -225,6 +226,29 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.state.isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Loading question paper audit records from database...', style: TextStyle(color: AppColors.textSecondary)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (widget.state.backendError != null) {
+      return ApiErrorWidget(
+        errorMessage: widget.state.backendError!,
+        onRetry: () => widget.state.loadFromApi(),
+      );
+    }
+
     // Filter records
     final papers = widget.state.questionPapers.where((q) {
       if (_selectedDept != 'All Departments' && q.department != _selectedDept) return false;
@@ -361,16 +385,23 @@ class _QuestionPaperAuditViewState extends State<QuestionPaperAuditView> {
 
         const SizedBox(height: 20),
 
+        if (papers.isEmpty)
+          const ApiEmptyWidget(
+            message: 'No Question Paper Audit Records Found',
+            hint: 'The PostgreSQL database returned 0 question paper audit entries.',
+          ),
+
         // Data Table — Desktop scroll table; Mobile card-per-record
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 600;
-            if (isMobile) {
-              return Column(
-                children: papers.map((q) => _buildMobileCard(q)).toList(),
-              );
-            }
-            return Container(
+        if (papers.isNotEmpty)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 600;
+              if (isMobile) {
+                return Column(
+                  children: papers.map((q) => _buildMobileCard(q)).toList(),
+                );
+              }
+              return Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14),

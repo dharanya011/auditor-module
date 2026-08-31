@@ -4,6 +4,7 @@ import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/action_modal.dart';
 import '../widgets/responsive_row.dart';
+import '../widgets/api_error_widget.dart';
 
 class FacultyReportAuditView extends StatefulWidget {
   final AuditState state;
@@ -262,6 +263,29 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.state.isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Loading faculty audit reports from database...', style: TextStyle(color: AppColors.textSecondary)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (widget.state.backendError != null) {
+      return ApiErrorWidget(
+        errorMessage: widget.state.backendError!,
+        onRetry: () => widget.state.loadFromApi(),
+      );
+    }
+
     // Filter records
     final reports = widget.state.facultyReports.where((f) {
       if (widget.state.departmentScope != null) {
@@ -455,8 +479,15 @@ class _FacultyReportAuditViewState extends State<FacultyReportAuditView> {
 
         const SizedBox(height: 20),
 
+        if (reports.isEmpty)
+          const ApiEmptyWidget(
+            message: 'No Faculty Report Audit Records Found',
+            hint: 'The PostgreSQL database returned 0 faculty report audit entries.',
+          ),
+
         // Data Table — Desktop scroll table; Mobile card-per-record
-        LayoutBuilder(
+        if (reports.isNotEmpty)
+          LayoutBuilder(
           builder: (context, constraints) {
             final isMobile = constraints.maxWidth < 600;
             if (isMobile) {

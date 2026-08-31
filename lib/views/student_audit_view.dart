@@ -4,6 +4,8 @@ import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/action_modal.dart';
 import '../widgets/evidence_modal.dart';
+import '../widgets/api_error_widget.dart';
+import '../services/api_service.dart';
 import '../models/models.dart';
 
 class StudentAuditView extends StatefulWidget {
@@ -18,6 +20,74 @@ class StudentAuditView extends StatefulWidget {
 class _StudentAuditViewState extends State<StudentAuditView> {
   int _selectedStudentIndex = 0;
   String _activeTab = '360° Verification Modules';
+
+  // Attendance API Integration State
+  bool _isAttendanceLoading = false;
+  String? _attendanceError;
+  Map<String, dynamic>? _attendanceData;
+  String? _loadedAttendanceStudentId;
+
+  // Marks API Integration State
+  bool _isMarksLoading = false;
+  String? _marksError;
+  List<Map<String, dynamic>>? _marksData;
+  String? _loadedMarksStudentId;
+
+  Future<void> _fetchStudentAttendance(String studentId, {bool forceRefresh = false}) async {
+    if (!forceRefresh && _loadedAttendanceStudentId == studentId && _attendanceData != null) return;
+    if (_isAttendanceLoading) return;
+
+    setState(() {
+      _isAttendanceLoading = true;
+      _attendanceError = null;
+      _loadedAttendanceStudentId = studentId;
+    });
+
+    try {
+      final res = await ApiService.instance.fetchAttendance(studentId);
+      if (mounted) {
+        setState(() {
+          _attendanceData = res;
+          _isAttendanceLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _attendanceError = 'Failed to load attendance: ${e.toString()}';
+          _isAttendanceLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _fetchStudentMarks(String studentId, {bool forceRefresh = false}) async {
+    if (!forceRefresh && _loadedMarksStudentId == studentId && _marksData != null) return;
+    if (_isMarksLoading) return;
+
+    setState(() {
+      _isMarksLoading = true;
+      _marksError = null;
+      _loadedMarksStudentId = studentId;
+    });
+
+    try {
+      final res = await ApiService.instance.fetchMarks(studentId);
+      if (mounted) {
+        setState(() {
+          _marksData = res;
+          _isMarksLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _marksError = 'Failed to load marks: ${e.toString()}';
+          _isMarksLoading = false;
+        });
+      }
+    }
+  }
 
   // 5 Student Audit Filters
   String _selectedDept = 'All Departments';
@@ -250,15 +320,63 @@ class _StudentAuditViewState extends State<StudentAuditView> {
 
   @override
   Widget build(BuildContext context) {
-    final activeStudents = _filteredStudents;
-    final int safeIndex = activeStudents.isEmpty ? 0 : _selectedStudentIndex.clamp(0, activeStudents.length - 1);
-    final student = activeStudents.isNotEmpty ? activeStudents[safeIndex] : null;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 850;
+
+    // ── Loading state ─────────────────────────────────────────────────────────
+    if (widget.state.isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading student records from database…',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+          ],
+        ),
+      );
+    }
+
+    // ── API error state — never show mock data ────────────────────────────────
+    if (widget.state.backendError != null) {
+      return ApiErrorWidget(
+        errorMessage: widget.state.backendError,
+        onRetry: () => widget.state.loadFromApi(),
+      );
+    }
+
+    final activeStudents = _filteredStudents;
+
+    // ── Empty state — API returned zero records ───────────────────────────────
+    if (widget.state.studentRecords.isEmpty) {
+      return const ApiEmptyWidget(
+        icon: Icons.people_outline_rounded,
+        message: 'No student records found',
+        hint: 'The database returned no student records for the current filters.',
+      );
+    }
+
+    final int safeIndex = activeStudents.isEmpty ? 0 : _selectedStudentIndex.clamp(0, activeStudents.length - 1);
+    final StudentAuditRecord? student = activeStudents.isNotEmpty ? activeStudents[safeIndex] : null;
+
+    if (student != null) {
+      if (_loadedAttendanceStudentId != student.registerNo && !_isAttendanceLoading) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _fetchStudentAttendance(student.registerNo);
+        });
+      }
+      if (_loadedMarksStudentId != student.registerNo && !_isMarksLoading) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _fetchStudentMarks(student.registerNo);
+        });
+      }
+    }
 
     return ListView(
       padding: EdgeInsets.all(isMobile ? 16 : 24),
       children: [
+
         // Title Bar & Student Selector Dropdown
         if (!isMobile)
           Row(
@@ -734,8 +852,7 @@ class _StudentAuditViewState extends State<StudentAuditView> {
 
         const SizedBox(height: 12),
 
-        // Active Tab View Content
-        _buildActiveTabContent(student!),
+        _buildActiveTabContent(student),
       ],
     ],
   );
@@ -768,17 +885,17 @@ class _StudentAuditViewState extends State<StudentAuditView> {
       },
       {
         'title': 'Biometric Attendance Logs',
-        'subtitle': '${student.attendance}% biometric classroom attendance matched with hostel & institutional gate logs.',
-        'status': student.attendance >= 75 ? 'Verified' : 'Discrepancy',
+        'subtitle': _getBiometricSubtitle(student),
+        'status': _getBiometricStatus(student),
         'icon': Icons.fingerprint_rounded,
-        'iconBg': student.attendance >= 75 ? const Color(0xFFECFDF5) : const Color(0xFFFEE2E2),
-        'iconColor': student.attendance >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+        'iconBg': const Color(0xFFECFDF5),
+        'iconColor': const Color(0xFF10B981),
         'evidenceName': 'EVD-8892_Biometric_Log_S5.pdf',
       },
       {
         'title': 'Internal Assessment Marks (CAT 1 & 2)',
-        'subtitle': 'CAT 1 & CAT 2 internal marks cross-checked with scanned raw answer sheets and COE mark registers.',
-        'status': 'Verified',
+        'subtitle': _getMarksSubtitle(student),
+        'status': _getMarksStatus(student),
         'icon': Icons.analytics_outlined,
         'iconBg': const Color(0xFFEFF6FF),
         'iconColor': const Color(0xFF3B82F6),
@@ -883,13 +1000,123 @@ class _StudentAuditViewState extends State<StudentAuditView> {
     );
   }
 
+  String _getBiometricSubtitle(StudentAuditRecord student) {
+    if (_isAttendanceLoading) return 'Loading attendance records from database…';
+    if (_attendanceError != null) return 'Unable to reach Attendance REST API.';
+    if (_attendanceData != null && _attendanceData!['records'] is List) {
+      final records = _attendanceData!['records'] as List;
+      if (records.isEmpty) {
+        return 'No biometric attendance log entries found in PostgreSQL database for reg no ${student.registerNo}.';
+      }
+      final overallPct = _attendanceData!['overall_percentage'];
+      if (overallPct != null && (overallPct as num) > 0) {
+        return '$overallPct% overall biometric attendance logged across ${records.length} record(s) in institutional database.';
+      }
+      return '${records.length} biometric attendance log record(s) retrieved from PostgreSQL database.';
+    }
+    return '${student.attendance}% biometric classroom attendance matched with hostel & institutional gate logs.';
+  }
+
+  String _getBiometricStatus(StudentAuditRecord student) {
+    if (_attendanceData != null && _attendanceData!['records'] is List) {
+      final records = _attendanceData!['records'] as List;
+      if (records.isEmpty) return 'No Logs';
+      return 'Verified';
+    }
+    return student.attendance >= 75 ? 'Verified' : 'Discrepancy';
+  }
+
   Widget _buildAttendanceTab(StudentAuditRecord student) {
-    final logs = [
-      {'month': 'August 2026', 'held': 48, 'attended': 46, 'pct': '95.8%', 'status': 'Verified'},
-      {'month': 'July 2026', 'held': 52, 'attended': 49, 'pct': '94.2%', 'status': 'Verified'},
-      {'month': 'June 2026', 'held': 44, 'attended': 41, 'pct': '93.1%', 'status': 'Verified'},
-      {'month': 'May 2026', 'held': 50, 'attended': 47, 'pct': '94.0%', 'status': 'Verified'},
-    ];
+    if (_isAttendanceLoading) {
+      return Container(
+        padding: const EdgeInsets.all(36),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppColors.cardShadow,
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 14),
+              Text(
+                'Loading attendance logs from database…',
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_attendanceError != null) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.25)),
+          boxShadow: AppColors.cardShadow,
+        ),
+        child: Column(
+          children: [
+            const Icon(Icons.cloud_off_rounded, color: Color(0xFFEF4444), size: 36),
+            const SizedBox(height: 10),
+            Text(
+              _attendanceError!,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 14),
+            ElevatedButton.icon(
+              onPressed: () => _fetchStudentAttendance(student.registerNo, forceRefresh: true),
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: const Text('Retry Attendance API'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accent,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final records = (_attendanceData != null && _attendanceData!['records'] is List)
+        ? List<Map<String, dynamic>>.from(_attendanceData!['records'] as List)
+        : <Map<String, dynamic>>[];
+
+    if (records.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(36),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppColors.cardShadow,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.fingerprint_rounded, size: 44, color: AppColors.textSecondary),
+            const SizedBox(height: 12),
+            Text(
+              'No Attendance Records Found for ${student.name}',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'The database returned 0 attendance entries for register number ${student.registerNo}.',
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -903,23 +1130,29 @@ class _StudentAuditViewState extends State<StudentAuditView> {
         scrollDirection: Axis.horizontal,
         child: DataTable(
           headingRowColor: WidgetStateProperty.all(AppColors.tableHeaderBg),
-          columnSpacing: 20,
+          columnSpacing: 24,
           horizontalMargin: 20,
           columns: const [
-            DataColumn(label: Text('MONTH', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('CLASSES HELD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('ATTENDED', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('PERCENTAGE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+            DataColumn(label: Text('DATE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+            DataColumn(label: Text('STUDENT NAME & REG', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+            DataColumn(label: Text('DEPT / YEAR / SEC', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+            DataColumn(label: Text('ATTENDANCE %', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
             DataColumn(label: Text('BIOMETRIC MATCH', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
           ],
-          rows: logs.map((l) {
+          rows: records.map((r) {
+            final rawDate = (r['date'] ?? '').toString();
+            final formattedDate = rawDate.length >= 10 ? rawDate.substring(0, 10) : rawDate;
+            final pct = r['attendance_percentage'];
+            final pctText = pct != null ? '$pct%' : 'N/A';
+            final status = (r['status'] ?? 'Recorded').toString();
+
             return DataRow(
               cells: [
-                DataCell(Text(l['month'].toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
-                DataCell(Text('${l['held']} Hours', style: const TextStyle(fontSize: 12))),
-                DataCell(Text('${l['attended']} Hours', style: const TextStyle(fontSize: 12))),
-                DataCell(Text(l['pct'].toString(), style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF10B981), fontSize: 12))),
-                DataCell(StatusBadge(status: l['status'].toString(), isCompact: true)),
+                DataCell(Text(formattedDate.isEmpty ? 'N/A' : formattedDate, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
+                DataCell(Text('${r['name'] ?? student.name} (${r['student_reg_no'] ?? student.registerNo})', style: const TextStyle(fontSize: 12))),
+                DataCell(Text('${r['dept'] ?? student.department} • Yr ${r['year'] ?? ''} Sec ${r['section'] ?? ''}', style: const TextStyle(fontSize: 12))),
+                DataCell(Text(pctText, style: TextStyle(fontWeight: FontWeight.bold, color: pct != null && (pct as num) >= 75 ? const Color(0xFF10B981) : AppColors.textSecondary, fontSize: 12))),
+                DataCell(StatusBadge(status: status, isCompact: true)),
               ],
             );
           }).toList(),
@@ -928,13 +1161,115 @@ class _StudentAuditViewState extends State<StudentAuditView> {
     );
   }
 
+  String _getMarksSubtitle(StudentAuditRecord student) {
+    if (_isMarksLoading) return 'Loading marks records from database…';
+    if (_marksError != null) return 'Unable to reach Marks REST API.';
+    if (_marksData != null) {
+      if (_marksData!.isEmpty) {
+        return 'No internal marks records found in PostgreSQL database for reg no ${student.registerNo}.';
+      }
+      return '${_marksData!.length} internal marks record(s) retrieved from PostgreSQL database.';
+    }
+    return 'CAT 1 & CAT 2 internal marks cross-checked with scanned raw answer sheets and COE mark registers.';
+  }
+
+  String _getMarksStatus(StudentAuditRecord student) {
+    if (_marksData != null) {
+      if (_marksData!.isEmpty) return 'No Marks';
+      return 'Verified';
+    }
+    return 'Verified';
+  }
+
   Widget _buildMarksTab(StudentAuditRecord student) {
-    final marks = [
-      {'subject': '23CS501 Data Structures', 'cat1': '88 / 100', 'cat2': '92 / 100', 'assignment': '10 / 10', 'grade': 'O (Outstanding)', 'status': 'Verified'},
-      {'subject': '23CS502 Database Systems', 'cat1': '82 / 100', 'cat2': '85 / 100', 'assignment': '9 / 10', 'grade': 'A+ (Excellent)', 'status': 'Verified'},
-      {'subject': '23CS503 Operating Systems', 'cat1': '78 / 100', 'cat2': '84 / 100', 'assignment': '9 / 10', 'grade': 'A+ (Excellent)', 'status': 'Verified'},
-      {'subject': '23CS504 Web Engineering', 'cat1': '90 / 100', 'cat2': '94 / 100', 'assignment': '10 / 10', 'grade': 'O (Outstanding)', 'status': 'Verified'},
-    ];
+    if (_isMarksLoading) {
+      return Container(
+        padding: const EdgeInsets.all(36),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppColors.cardShadow,
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 14),
+              Text(
+                'Loading internal marks from database…',
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_marksError != null) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.25)),
+          boxShadow: AppColors.cardShadow,
+        ),
+        child: Column(
+          children: [
+            const Icon(Icons.cloud_off_rounded, color: Color(0xFFEF4444), size: 36),
+            const SizedBox(height: 10),
+            Text(
+              _marksError!,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 14),
+            ElevatedButton.icon(
+              onPressed: () => _fetchStudentMarks(student.registerNo, forceRefresh: true),
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: const Text('Retry Marks API'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accent,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final marks = _marksData ?? <Map<String, dynamic>>[];
+
+    if (marks.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(36),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppColors.cardShadow,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.analytics_outlined, size: 44, color: AppColors.textSecondary),
+            const SizedBox(height: 12),
+            Text(
+              'No Marks Records Found for ${student.name}',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'The database returned 0 internal marks entries for register number ${student.registerNo}.',
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -952,21 +1287,28 @@ class _StudentAuditViewState extends State<StudentAuditView> {
           horizontalMargin: 20,
           columns: const [
             DataColumn(label: Text('SUBJECT CODE & TITLE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('CAT 1 MARKS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('CAT 2 MARKS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('ASSIGNMENT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            DataColumn(label: Text('PREDICTED GRADE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+            DataColumn(label: Text('FACULTY ENTRY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+            DataColumn(label: Text('DEPT RECORD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+            DataColumn(label: Text('COE LEDGER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+            DataColumn(label: Text('FINAL RESULT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
             DataColumn(label: Text('AUDIT STATUS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
           ],
           rows: marks.map((m) {
+            final subjectStr = '${m['subject_code'] ?? ''} ${m['subject_name'] ?? ''}'.trim();
+            final facultyEntry = m['faculty_entry'] != null ? '${m['faculty_entry']}' : 'N/A';
+            final deptRecord = m['dept_record'] != null ? '${m['dept_record']}' : 'N/A';
+            final examRecord = m['exam_record'] != null ? '${m['exam_record']}' : 'N/A';
+            final finalResult = m['final_result'] != null ? '${m['final_result']}' : 'N/A';
+            final status = (m['status'] ?? 'Verified').toString();
+
             return DataRow(
               cells: [
-                DataCell(Text(m['subject'].toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
-                DataCell(Text(m['cat1'].toString(), style: const TextStyle(fontSize: 12))),
-                DataCell(Text(m['cat2'].toString(), style: const TextStyle(fontSize: 12))),
-                DataCell(Text(m['assignment'].toString(), style: const TextStyle(fontSize: 12))),
-                DataCell(Text(m['grade'].toString(), style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.accent, fontSize: 12))),
-                DataCell(StatusBadge(status: m['status'].toString(), isCompact: true)),
+                DataCell(Text(subjectStr.isEmpty ? 'N/A' : subjectStr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
+                DataCell(Text(facultyEntry, style: const TextStyle(fontSize: 12))),
+                DataCell(Text(deptRecord, style: const TextStyle(fontSize: 12))),
+                DataCell(Text(examRecord, style: const TextStyle(fontSize: 12))),
+                DataCell(Text(finalResult, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF10B981), fontSize: 12))),
+                DataCell(StatusBadge(status: status, isCompact: true)),
               ],
             );
           }).toList(),

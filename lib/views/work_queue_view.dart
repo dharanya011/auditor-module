@@ -3,6 +3,8 @@ import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/action_modal.dart';
+import '../services/api_service.dart';
+import '../widgets/api_error_widget.dart';
 
 class WorkQueueView extends StatefulWidget {
   final AuditState state;
@@ -18,99 +20,72 @@ class _WorkQueueViewState extends State<WorkQueueView> {
   String _selectedDept = 'All Departments';
   String _selectedPriority = 'All Priorities';
 
-  final List<Map<String, String>> _allTasks = [
-    {
-      'id': 'AUD-2026-001245',
-      'target': 'MRK-2025-02 (23CS0456)',
-      'module': 'Marks Audit',
-      'dept': 'CSE',
-      'priority': 'High',
-      'status': 'Correction Requested',
-    },
-    {
-      'id': 'AUD-2026-001244',
-      'target': 'ASN-MECH-301 (Thermal Engg)',
-      'module': 'Assignment Audit',
-      'dept': 'MECH',
-      'priority': 'High',
-      'status': 'Correction Requested',
-    },
-    {
-      'id': 'AUD-2026-001243',
-      'target': 'QP-23ME202 (Fluid Mech)',
-      'module': 'Question Paper',
-      'dept': 'MECH',
-      'priority': 'Medium',
-      'status': 'Pending Verification',
-    },
-    {
-      'id': 'AUD-2026-001242',
-      'target': 'REP-CSE-101 (Dr. R. Kumar)',
-      'module': 'Faculty Report',
-      'dept': 'CSE',
-      'priority': 'Medium',
-      'status': 'Under Review',
-    },
-    {
-      'id': 'AUD-2026-001241',
-      'target': 'MRK-MECH-108 (CAD/CAM)',
-      'module': 'Marks Audit',
-      'dept': 'MECH',
-      'priority': 'High',
-      'status': 'Under Review',
-    },
-    {
-      'id': 'AUD-2026-001240',
-      'target': 'REP-MECH-405 (Mentoring)',
-      'module': 'Faculty Report',
-      'dept': 'MECH',
-      'priority': 'Normal',
-      'status': 'Completed',
-    },
-    {
-      'id': 'AUD-2026-001239',
-      'target': 'QP-23IT204',
-      'module': 'Question Paper',
-      'dept': 'IT',
-      'priority': 'Low',
-      'status': 'Pending Verification',
-    },
-    {
-      'id': 'AUD-2026-001238',
-      'target': 'RES-MECH-2025 (Solar Paper)',
-      'module': 'Research Audit',
-      'dept': 'MECH',
-      'priority': 'Medium',
-      'status': 'Re-verification',
-    },
-    {
-      'id': 'AUD-2026-001235',
-      'target': 'ASN-102 (Priya Sharma)',
-      'module': 'Assignment Audit',
-      'dept': 'IT',
-      'priority': 'High',
-      'status': 'Correction Requested',
-    },
-    {
-      'id': 'AUD-2026-001230',
-      'target': 'RES-2025-02',
-      'module': 'Research Audit',
-      'dept': 'ECE',
-      'priority': 'Medium',
-      'status': 'Re-verification',
-    },
-    {
-      'id': 'AUD-2026-001210',
-      'target': '23CS001 (Adithya V)',
-      'module': 'Student Audit',
-      'dept': 'CSE',
-      'priority': 'Normal',
-      'status': 'Completed',
-    },
-  ];
+  bool _isLoading = false;
+  String? _errorMessage;
+  List<Map<String, String>> _allTasks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQueueFromApi();
+  }
+
+  Future<void> _loadQueueFromApi() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final rawTasks = await ApiService.instance.fetchWorkQueue();
+      if (mounted) {
+        setState(() {
+          _allTasks = rawTasks.map((t) => {
+            'id': (t['id'] ?? '').toString(),
+            'target': (t['target'] ?? '').toString(),
+            'module': (t['module'] ?? '').toString(),
+            'dept': (t['dept'] ?? '').toString(),
+            'priority': (t['priority'] ?? 'Normal').toString(),
+            'status': (t['status'] ?? 'Pending Verification').toString(),
+          }).toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Loading work queue tasks from PostgreSQL database...', style: TextStyle(color: AppColors.textSecondary)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return ApiErrorWidget(
+        errorMessage: _errorMessage!,
+        onRetry: () => _loadQueueFromApi(),
+      );
+    }
+
     // Filter tasks
     final filteredTasks = _allTasks.where((task) {
       if (_activeTab != 'All Tasks') {

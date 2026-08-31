@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
+import '../services/api_service.dart';
+import '../widgets/api_error_widget.dart';
 
 class GlobalSearchView extends StatefulWidget {
   final AuditState state;
@@ -14,13 +16,52 @@ class GlobalSearchView extends StatefulWidget {
 
 class _GlobalSearchViewState extends State<GlobalSearchView> {
   late TextEditingController _searchController;
-  String _selectedDept = 'All Departments';
   String _selectedRecordType = 'All Records';
+
+  bool _isSearching = false;
+  String? _searchError;
+  List<Map<String, dynamic>> _searchResults = [];
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: widget.state.globalSearchQuery);
+    if (_searchController.text.trim().isNotEmpty) {
+      _performSearch(_searchController.text.trim());
+    }
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+        _searchError = null;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+      _searchError = null;
+    });
+
+    try {
+      final results = await ApiService.instance.searchGlobal(query, type: _selectedRecordType);
+      if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isSearching = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _searchError = e.toString();
+          _isSearching = false;
+        });
+      }
+    }
   }
 
   @override
@@ -88,7 +129,7 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
                 ),
                 onChanged: (val) {
                   widget.state.setGlobalSearchQuery(val);
-                  setState(() {});
+                  _performSearch(val);
                 },
               ),
             ],
@@ -175,7 +216,10 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
                 DropdownMenuItem(value: 'Research', child: Text('Research Publications')),
               ],
               onChanged: (v) {
-                if (v != null) setState(() => _selectedRecordType = v);
+                if (v != null) {
+                  setState(() => _selectedRecordType = v);
+                  _performSearch(_searchController.text);
+                }
               },
             );
 
@@ -205,42 +249,48 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
         const Text('Search Results', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 12),
 
-        // Mock result cards
-        _buildResultCard(
-          context,
-          title: 'Adithya V (Register No: 23CS001)',
-          subtitle: 'Student Profile • Computer Science & Engg • Semester 5 • CGPA: 8.84 • Attendance: 94.2%',
-          type: 'Student Audit',
-          status: 'Verified',
-          onTap: () => widget.state.setActiveModule('Student Audit'),
-        ),
-        const SizedBox(height: 12),
-        _buildResultCard(
-          context,
-          title: 'Marks Record — 23CS201 Data Structures (Student: 23CS0456)',
-          subtitle: 'Marks Mismatch • Faculty Entry: 88 vs Exam Record: 72 • Case AUD-2026-001245',
-          type: 'Marks Audit',
-          status: 'Discrepancy Flagged',
-          onTap: () => widget.state.setActiveModule('Marks Audit'),
-        ),
-        const SizedBox(height: 12),
-        _buildResultCard(
-          context,
-          title: 'Research Paper — AI in Higher Education (Dr. S. Meena)',
-          subtitle: 'DOI: 10.1016/j.compedu.2025.104921 • IEEE Transactions • Scopus Indexed',
-          type: 'Research Audit',
-          status: 'Verified',
-          onTap: () => widget.state.setActiveModule('Research Audit'),
-        ),
-        const SizedBox(height: 12),
-        _buildResultCard(
-          context,
-          title: 'Question Paper — 23IT204 Database Management Systems',
-          subtitle: 'Regulation R2023 • IT Dept • CO-PO Mapped • CoE Approval Pending',
-          type: 'Question Paper Audit',
-          status: 'Pending Verification',
-          onTap: () => widget.state.setActiveModule('Question Paper Audit'),
-        ),
+        if (_isSearching)
+          const Padding(
+            padding: EdgeInsets.all(32.0),
+            child: Center(
+              child: Column(
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 12),
+                  Text('Searching real PostgreSQL database records...', style: TextStyle(color: AppColors.textSecondary)),
+                ],
+              ),
+            ),
+          )
+        else if (_searchError != null)
+          ApiErrorWidget(
+            errorMessage: _searchError!,
+            onRetry: () => _performSearch(_searchController.text),
+          )
+        else if (_searchResults.isEmpty && _searchController.text.trim().isNotEmpty)
+          ApiEmptyWidget(
+            message: 'No Auditable Records Found',
+            hint: 'No PostgreSQL database records matched "${_searchController.text.trim()}".',
+          )
+        else if (_searchResults.isEmpty)
+          const ApiEmptyWidget(
+            message: 'Global Audit Search Engine',
+            hint: 'Type a Register Number, Student Name, Department, DOI, or Paper Title above to search the PostgreSQL database.',
+          )
+        else
+          ..._searchResults.map(
+            (res) => Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: _buildResultCard(
+                context,
+                title: (res['title'] ?? '').toString(),
+                subtitle: (res['subtitle'] ?? '').toString(),
+                type: (res['type'] ?? 'Audit Record').toString(),
+                status: (res['status'] ?? 'Verified').toString(),
+                onTap: () => widget.state.setActiveModule((res['moduleKey'] ?? 'Dashboard').toString()),
+              ),
+            ),
+          ),
       ],
     );
   }

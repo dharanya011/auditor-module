@@ -4,6 +4,7 @@ import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/action_modal.dart';
 import '../widgets/responsive_row.dart';
+import '../widgets/api_error_widget.dart';
 
 class AssignmentAuditView extends StatefulWidget {
   final AuditState state;
@@ -218,6 +219,29 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.state.isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Loading assignment audit records from database...', style: TextStyle(color: AppColors.textSecondary)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (widget.state.backendError != null) {
+      return ApiErrorWidget(
+        errorMessage: widget.state.backendError!,
+        onRetry: () => widget.state.loadFromApi(),
+      );
+    }
+
     // Filter assignments using actual AssignmentRecord fields
     final assignments = widget.state.assignmentRecords.where((a) {
       if (widget.state.departmentScope != null) {
@@ -406,8 +430,15 @@ class _AssignmentAuditViewState extends State<AssignmentAuditView> {
 
         const SizedBox(height: 20),
 
+        if (assignments.isEmpty)
+          const ApiEmptyWidget(
+            message: 'No Assignment Audit Records Found',
+            hint: 'The PostgreSQL database returned 0 assignment audit entries.',
+          ),
+
         // Data Table Container (Responsive: horizontal scroll desktop / tablet, cards on mobile)
-        LayoutBuilder(
+        if (assignments.isNotEmpty)
+          LayoutBuilder(
           builder: (context, constraints) {
             final isMobile = constraints.maxWidth < 650;
             if (isMobile) {

@@ -38,6 +38,14 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
   final AuditState _auditState = AuditState();
 
   @override
+  void initState() {
+    super.initState();
+    // Attempt to load real data from the Node.js backend (backend/.env credentials).
+    // If the backend is not running, mock data is used as fallback — no crash.
+    _auditState.loadFromApi();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _auditState,

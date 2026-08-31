@@ -6,6 +6,7 @@ import '../models/models.dart';
 import '../widgets/kpi_card.dart';
 import '../widgets/responsive_row.dart';
 import '../widgets/audit_detail_modal.dart';
+import '../widgets/api_error_widget.dart';
 
 class DashboardView extends StatelessWidget {
   final AuditState state;
@@ -58,6 +59,38 @@ class DashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (state.isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Loading live dashboard analytics from database...', style: TextStyle(color: AppColors.textSecondary)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (state.backendError != null) {
+      return ApiErrorWidget(
+        errorMessage: state.backendError!,
+        onRetry: () => state.loadFromApi(),
+      );
+    }
+
+    final totalVerified = int.tryParse(state.kpis[2].value) ?? 0;
+    final totalPending = int.tryParse(state.kpis[1].value) ?? 0;
+    final totalIssues = int.tryParse(state.kpis[3].value) ?? 0;
+    final grandTotal = (totalVerified + totalPending + totalIssues) > 0 ? (totalVerified + totalPending + totalIssues) : 1;
+
+    final verifiedVal = (totalVerified / grandTotal * 100).roundToDouble();
+    final pendingVal = (totalPending / grandTotal * 100).roundToDouble();
+    final issuesVal = (totalIssues / grandTotal * 100).roundToDouble();
+
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -239,22 +272,22 @@ class DashboardView extends StatelessWidget {
                               sections: [
                                 PieChartSectionData(
                                   color: const Color(0xFF10B981),
-                                  value: 92,
-                                  title: '92%',
+                                  value: verifiedVal > 0 ? verifiedVal : 1,
+                                  title: '${verifiedVal.toInt()}%',
                                   radius: 26,
                                   titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                                 ),
                                 PieChartSectionData(
                                   color: const Color(0xFFF59E0B),
-                                  value: 8,
-                                  title: '8%',
+                                  value: pendingVal > 0 ? pendingVal : 0,
+                                  title: '${pendingVal.toInt()}%',
                                   radius: 24,
                                   titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
                                 ),
                                 PieChartSectionData(
                                   color: const Color(0xFFEF4444),
-                                  value: 5,
-                                  title: '5%',
+                                  value: issuesVal > 0 ? issuesVal : 0,
+                                  title: '${issuesVal.toInt()}%',
                                   radius: 22,
                                   titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
                                 ),

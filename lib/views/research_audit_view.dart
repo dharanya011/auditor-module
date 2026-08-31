@@ -6,6 +6,7 @@ import '../widgets/status_badge.dart';
 import '../widgets/responsive_row.dart';
 import '../widgets/add_research_paper_dialog.dart';
 import '../widgets/examine_document_modal.dart';
+import '../widgets/api_error_widget.dart';
 
 class ResearchAuditView extends StatefulWidget {
   final AuditState state;
@@ -88,6 +89,29 @@ class _ResearchAuditViewState extends State<ResearchAuditView> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.state.isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Loading research audit records from database...', style: TextStyle(color: AppColors.textSecondary)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (widget.state.backendError != null) {
+      return ApiErrorWidget(
+        errorMessage: widget.state.backendError!,
+        onRetry: () => widget.state.loadFromApi(),
+      );
+    }
+
     final allRecords = widget.state.researchRecords;
 
     // Filtered Records

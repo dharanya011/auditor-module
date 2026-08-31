@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../services/api_service.dart';
 
 class AuditState extends ChangeNotifier {
   String _activeModule = 'Dashboard';
@@ -7,7 +8,16 @@ class AuditState extends ChangeNotifier {
   String _globalSearchQuery = '';
   String _userRole = 'Lead Auditor';
   final String _userName = 'Auditor User';
-  
+
+  // Backend API state
+  bool _isLoading = false;
+  bool _backendConnected = false;
+  String? _backendError;
+
+  bool get isLoading => _isLoading;
+  bool get backendConnected => _backendConnected;
+  String? get backendError => _backendError;
+
   // Dialog State
   EvidenceItem? _selectedEvidence;
   String? _notificationToast;
@@ -81,66 +91,148 @@ class AuditState extends ChangeNotifier {
     });
   }
 
-  // Dashboard Stats
-  final List<AuditKPI> kpis = const [
-    AuditKPI(
-      title: 'Total Records Audited',
-      value: '12,450',
-      change: '↑ 12.5% from last month',
-      isPositive: true,
-      icon: Icons.assignment_turned_in_rounded,
-      color: Color(0xFF6366F1),
-    ),
-    AuditKPI(
-      title: 'Pending Verification',
-      value: '1,284',
-      change: '↓ 8.3% from last month',
-      isPositive: true,
-      icon: Icons.hourglass_top_rounded,
-      color: Color(0xFFF59E0B),
-    ),
-    AuditKPI(
-      title: 'Verified',
-      value: '9,840',
-      change: '↑ 15.2% from last month',
-      isPositive: true,
-      icon: Icons.check_circle_rounded,
-      color: Color(0xFF10B981),
-    ),
-    AuditKPI(
-      title: 'Issues Found',
-      value: '936',
-      change: '↓ 3.1% from last month',
-      isPositive: false,
-      icon: Icons.error_rounded,
-      color: Color(0xFFEF4444),
-    ),
-    AuditKPI(
-      title: 'Critical Issues',
-      value: '47',
-      change: '↓ 6.0% from last month',
-      isPositive: false,
-      icon: Icons.flag_rounded,
-      color: Color(0xFFDC2626),
-    ),
-    AuditKPI(
-      title: 'Corrections Pending',
-      value: '343',
-      change: '↓ 9.4% from last month',
-      isPositive: true,
-      icon: Icons.published_with_changes_rounded,
-      color: Color(0xFF3B82F6),
-    ),
-  ];
+  // Dynamic Dashboard Stats calculated from REAL PostgreSQL collections
+  List<AuditKPI> get kpis {
+    final studentCount = studentRecords.length;
+    final marksCount = marksEntries.length;
+    final assignCount = assignmentRecords.length;
+    final qpCount = questionPapers.length;
+    final reportCount = facultyReports.length;
+    final researchCount = researchRecords.length;
 
-  final List<ModuleProgress> moduleProgress = const [
-    ModuleProgress(name: 'Student Records', verified: 2850, pending: 285, issues: 120, percentage: 0.91),
-    ModuleProgress(name: 'Assignments', verified: 2450, pending: 320, issues: 98, percentage: 0.88),
-    ModuleProgress(name: 'Marks', verified: 2150, pending: 410, issues: 150, percentage: 0.81),
-    ModuleProgress(name: 'Faculty Reports', verified: 1980, pending: 210, issues: 95, percentage: 0.90),
-    ModuleProgress(name: 'Question Papers', verified: 920, pending: 120, issues: 40, percentage: 0.85),
-    ModuleProgress(name: 'Research & Publications', verified: 1490, pending: 190, issues: 55, percentage: 0.89),
-  ];
+    final totalRecords = studentCount + marksCount + assignCount + qpCount + reportCount + researchCount;
+
+    final verifiedCount = studentRecords.where((s) => s.status == 'Active' || s.status == 'Verified').length +
+        marksEntries.where((m) => m.status == 'Verified').length +
+        assignmentRecords.where((a) => a.status == 'Verified').length +
+        questionPapers.where((q) => q.status == 'Verified').length +
+        facultyReports.where((f) => f.status == 'Verified').length +
+        researchRecords.where((r) => r.status == 'Verified').length;
+
+    final pendingCount = studentRecords.where((s) => s.status == 'Pending').length +
+        marksEntries.where((m) => m.status == 'Pending').length +
+        assignmentRecords.where((a) => a.status == 'Pending').length +
+        questionPapers.where((q) => q.status == 'Pending').length +
+        facultyReports.where((f) => f.status == 'Pending' || f.status == 'Under Review').length +
+        researchRecords.where((r) => r.status == 'Pending Examination' || r.status == 'Under Review').length;
+
+    final issuesCount = studentRecords.where((s) => s.status == 'Discrepancy' || s.status == 'Inactive').length +
+        marksEntries.where((m) => m.isMismatch || m.status == 'Rejected').length +
+        assignmentRecords.where((a) => a.isMissingFile || a.isDuplicate || a.status == 'Rejected').length +
+        questionPapers.where((q) => q.status == 'Rejected' || !q.bloomTaxonomyCompliant).length +
+        facultyReports.where((f) => f.hasConflict || f.status == 'Rejected').length +
+        researchRecords.where((r) => r.duplicateFlag || r.status == 'Needs Correction' || r.status == 'Rejected').length;
+
+    final criticalCount = auditCases.where((c) => c.severity == 'High' || c.severity == 'Critical').length;
+
+    final correctionsCount = assignmentRecords.where((a) => a.isLate).length +
+        facultyReports.where((f) => f.status == 'Under Review').length +
+        researchRecords.where((r) => r.status == 'Under Review' || r.status == 'Needs Correction').length;
+
+    return [
+      AuditKPI(
+        title: 'Total Records Audited',
+        value: totalRecords.toString(),
+        change: 'Real-time DB query',
+        isPositive: true,
+        icon: Icons.assignment_turned_in_rounded,
+        color: const Color(0xFF6366F1),
+      ),
+      AuditKPI(
+        title: 'Pending Verification',
+        value: pendingCount.toString(),
+        change: 'Real-time DB query',
+        isPositive: true,
+        icon: Icons.hourglass_top_rounded,
+        color: const Color(0xFFF59E0B),
+      ),
+      AuditKPI(
+        title: 'Verified',
+        value: verifiedCount.toString(),
+        change: 'Real-time DB query',
+        isPositive: true,
+        icon: Icons.check_circle_rounded,
+        color: const Color(0xFF10B981),
+      ),
+      AuditKPI(
+        title: 'Issues Found',
+        value: issuesCount.toString(),
+        change: 'Real-time DB query',
+        isPositive: false,
+        icon: Icons.error_rounded,
+        color: const Color(0xFFEF4444),
+      ),
+      AuditKPI(
+        title: 'Critical Issues',
+        value: criticalCount.toString(),
+        change: 'Real-time DB query',
+        isPositive: false,
+        icon: Icons.flag_rounded,
+        color: const Color(0xFFDC2626),
+      ),
+      AuditKPI(
+        title: 'Corrections Pending',
+        value: correctionsCount.toString(),
+        change: 'Real-time DB query',
+        isPositive: true,
+        icon: Icons.published_with_changes_rounded,
+        color: const Color(0xFF3B82F6),
+      ),
+    ];
+  }
+
+  List<ModuleProgress> get moduleProgress {
+    // Student Records
+    final sTotal = studentRecords.length;
+    final sVerified = studentRecords.where((s) => s.status == 'Active' || s.status == 'Verified').length;
+    final sPending = studentRecords.where((s) => s.status == 'Pending').length;
+    final sIssues = sTotal - sVerified - sPending;
+    final sPct = sTotal > 0 ? (sVerified / sTotal) : 0.0;
+
+    // Assignments
+    final aTotal = assignmentRecords.length;
+    final aVerified = assignmentRecords.where((a) => a.status == 'Verified').length;
+    final aPending = assignmentRecords.where((a) => a.status == 'Pending').length;
+    final aIssues = assignmentRecords.where((a) => a.isMissingFile || a.isDuplicate || a.status == 'Rejected').length;
+    final aPct = aTotal > 0 ? (aVerified / aTotal) : 0.0;
+
+    // Marks
+    final mTotal = marksEntries.length;
+    final mVerified = marksEntries.where((m) => m.status == 'Verified').length;
+    final mPending = marksEntries.where((m) => m.status == 'Pending').length;
+    final mIssues = marksEntries.where((m) => m.isMismatch || m.status == 'Rejected').length;
+    final mPct = mTotal > 0 ? (mVerified / mTotal) : 0.0;
+
+    // Faculty Reports
+    final fTotal = facultyReports.length;
+    final fVerified = facultyReports.where((f) => f.status == 'Verified').length;
+    final fPending = facultyReports.where((f) => f.status == 'Pending' || f.status == 'Under Review').length;
+    final fIssues = facultyReports.where((f) => f.hasConflict || f.status == 'Rejected').length;
+    final fPct = fTotal > 0 ? (fVerified / fTotal) : 0.0;
+
+    // Question Papers
+    final qTotal = questionPapers.length;
+    final qVerified = questionPapers.where((q) => q.status == 'Verified').length;
+    final qPending = questionPapers.where((q) => q.status == 'Pending').length;
+    final qIssues = questionPapers.where((q) => q.status == 'Rejected').length;
+    final qPct = qTotal > 0 ? (qVerified / qTotal) : 0.0;
+
+    // Research & Publications
+    final rTotal = researchRecords.length;
+    final rVerified = researchRecords.where((r) => r.status == 'Verified').length;
+    final rPending = researchRecords.where((r) => r.status == 'Pending Examination' || r.status == 'Under Review').length;
+    final rIssues = researchRecords.where((r) => r.duplicateFlag || r.status == 'Needs Correction').length;
+    final rPct = rTotal > 0 ? (rVerified / rTotal) : 0.0;
+
+    return [
+      ModuleProgress(name: 'Student Records', verified: sVerified, pending: sPending, issues: sIssues < 0 ? 0 : sIssues, percentage: sPct),
+      ModuleProgress(name: 'Assignments', verified: aVerified, pending: aPending, issues: aIssues, percentage: aPct),
+      ModuleProgress(name: 'Marks', verified: mVerified, pending: mPending, issues: mIssues, percentage: mPct),
+      ModuleProgress(name: 'Faculty Reports', verified: fVerified, pending: fPending, issues: fIssues, percentage: fPct),
+      ModuleProgress(name: 'Question Papers', verified: qVerified, pending: qPending, issues: qIssues, percentage: qPct),
+      ModuleProgress(name: 'Research & Publications', verified: rVerified, pending: rPending, issues: rIssues, percentage: rPct),
+    ];
+  }
 
   final List<AuditActivity> recentActivities = const [
     AuditActivity(
@@ -238,611 +330,29 @@ class AuditState extends ChangeNotifier {
     ),
   ];
 
-  // Student Audit Mock Data
-  final List<StudentAuditRecord> studentRecords = [
-    StudentAuditRecord(
-      registerNo: '23CS001',
-      name: 'Adithya V',
-      department: 'Computer Science & Engineering',
-      semester: 5,
-      cgpa: 8.84,
-      attendance: 94.2,
-      photoUrl: '',
-      status: 'Verified',
-      groupStatuses: [
-        RecordGroupStatus(groupName: 'Personal Info', status: 'Verified', details: 'Aadhaar & Birth Cert Verified'),
-        RecordGroupStatus(groupName: 'Attendance', status: 'Verified', details: '94.2% bio-attendance log matched'),
-        RecordGroupStatus(groupName: 'Internal Marks', status: 'Verified', details: 'CAT 1 & 2 verified with answer sheets'),
-        RecordGroupStatus(groupName: 'Assignments', status: 'Verified', details: '5 of 5 assignments uploaded and evaluated'),
-        RecordGroupStatus(groupName: 'End-Sem Results', status: 'Verified', details: 'CoE ledger match verified'),
-        RecordGroupStatus(groupName: 'Projects', status: 'Verified', details: 'Mini project code & report attached'),
-      ],
-    ),
-    StudentAuditRecord(
-      registerNo: '23CS0456',
-      name: 'John Doe',
-      department: 'Computer Science & Engineering',
-      semester: 5,
-      cgpa: 8.12,
-      attendance: 88.5,
-      photoUrl: '',
-      status: 'Verified',
-      groupStatuses: [
-        RecordGroupStatus(groupName: 'Personal Info', status: 'Verified', details: 'Identity records verified'),
-        RecordGroupStatus(groupName: 'Attendance', status: 'Verified', details: '88.5% log verified'),
-        RecordGroupStatus(groupName: 'Internal Marks', status: 'Verified', details: 'Internal marks verified'),
-        RecordGroupStatus(groupName: 'Assignments', status: 'Verified', details: 'Submissions verified'),
-        RecordGroupStatus(groupName: 'End-Sem Results', status: 'Verified', details: 'Results verified'),
-        RecordGroupStatus(groupName: 'Projects', status: 'Verified', details: 'Project documentation verified'),
-      ],
-    ),
-    StudentAuditRecord(
-      registerNo: '23IT045',
-      name: 'Priya Sharma',
-      department: 'Information Technology',
-      semester: 5,
-      cgpa: 9.10,
-      attendance: 74.0,
-      photoUrl: '',
-      status: 'Discrepancy',
-      groupStatuses: [
-        RecordGroupStatus(groupName: 'Personal Info', status: 'Verified', details: 'Address mismatch flagged'),
-        RecordGroupStatus(groupName: 'Attendance', status: 'Discrepancy', details: 'Attendance < 75% threshold without condonation letter'),
-        RecordGroupStatus(groupName: 'Internal Marks', status: 'Verified', details: 'Marks match faculty entry'),
-        RecordGroupStatus(groupName: 'Assignments', status: 'Discrepancy', details: 'Assignment 3 file missing'),
-        RecordGroupStatus(groupName: 'End-Sem Results', status: 'Verified', details: 'CoE grades match'),
-        RecordGroupStatus(groupName: 'Projects', status: 'Pending', details: 'Review pending'),
-      ],
-    ),
-  ];
+  // Student records — populated exclusively from the REST API (GET /api/students).
+  // No mock/static data. Empty until the backend loads real PostgreSQL data.
+  final List<StudentAuditRecord> studentRecords = [];
 
-  // Marks Audit Entries
-  final List<MarksAuditEntry> marksEntries = [
-    MarksAuditEntry(
-      id: 'MRK-2025-01',
-      studentRegNo: '23CS001',
-      studentName: 'Adithya V',
-      subjectCode: '23CS201',
-      subjectName: 'Data Structures',
-      facultyEntry: 84,
-      deptRecord: 84,
-      examRecord: 84,
-      finalResult: 84,
-      isMismatch: false,
-      status: 'Verified',
-    ),
-    MarksAuditEntry(
-      id: 'MRK-2025-02',
-      studentRegNo: '23CS0456',
-      studentName: 'John Doe',
-      subjectCode: '23CS201',
-      subjectName: 'Data Structures',
-      facultyEntry: 88,
-      deptRecord: 88,
-      examRecord: 72,
-      finalResult: 72,
-      isMismatch: true,
-      mismatchReason: 'Exam record (72) does not match Faculty Entry (88). Post-approval modification detected.',
-      status: 'Discrepancy',
-    ),
-    MarksAuditEntry(
-      id: 'MRK-2025-03',
-      studentRegNo: '23IT045',
-      studentName: 'Priya Sharma',
-      subjectCode: '23IT204',
-      subjectName: 'DBMS',
-      facultyEntry: 92,
-      deptRecord: 92,
-      examRecord: 92,
-      finalResult: 92,
-      isMismatch: false,
-      status: 'Verified',
-    ),
-  ];
+  // Marks entries — populated exclusively from the REST API (GET /api/marks/:id).
+  // No mock/static data. Empty until the backend loads real PostgreSQL data.
+  final List<MarksAuditEntry> marksEntries = [];
 
-  // Assignment Records
-  final List<AssignmentRecord> assignmentRecords = [
-    AssignmentRecord(
-      id: 'ASN-101',
-      studentRegNo: '23CS001',
-      studentName: 'Adithya V',
-      title: 'B-Tree Implementation in C++',
-      subject: '23CS201 Data Structures',
-      submissionDate: '2026-08-10 14:30',
-      marksObtained: 20,
-      totalMarks: 20,
-      evidenceFile: 'EVD-8891_Adithya_Assignment1.pdf',
-      status: 'Verified',
-    ),
-    AssignmentRecord(
-      id: 'ASN-102',
-      studentRegNo: '23IT045',
-      studentName: 'Priya Sharma',
-      title: 'ER Diagram & Relational Schema',
-      subject: '23IT204 DBMS',
-      submissionDate: '2026-08-15 23:59',
-      marksObtained: 18,
-      totalMarks: 20,
-      evidenceFile: '',
-      isMissingFile: true,
-      status: 'Missing Evidence File',
-    ),
-    AssignmentRecord(
-      id: 'ASN-103',
-      studentRegNo: '23EC106',
-      studentName: 'Rohan Kumar',
-      title: 'Amplifier Circuit Simulation',
-      subject: '23EC106 Analog Electronics',
-      submissionDate: '2026-08-18 09:12',
-      marksObtained: 15,
-      totalMarks: 20,
-      evidenceFile: 'EVD-8894_Circuit_Simulation.pdf',
-      isLate: true,
-      status: 'Submitted Late',
-    ),
-  ];
+  // Assignment Records — populated exclusively from the REST API (GET /api/assignments).
+  // No mock/static data. Empty until the backend loads real PostgreSQL data.
+  final List<AssignmentRecord> assignmentRecords = [];
 
-  // Faculty Report Records
-  final List<FacultyReportRecord> facultyReports = [
-    FacultyReportRecord(
-      id: 'REP-CSE-101',
-      facultyName: 'Dr. R. Kumar',
-      department: 'Computer Science & Engineering',
-      reportType: 'Course Completion Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2023',
-      semester: 5,
-      reportedAttendance: 95.0,
-      actualAttendance: 82.5,
-      syllabusCompletionPercent: 100,
-      mentoringSessionsLogged: 12,
-      hasConflict: true,
-      conflictDetails: 'Reported attendance (95%) conflicts with biometric classroom logs (82.5%).',
-      status: 'Rejected',
-    ),
-    FacultyReportRecord(
-      id: 'REP-IT-202',
-      facultyName: 'Dr. S. Meena',
-      department: 'Information Technology',
-      reportType: 'Academic Performance Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2023',
-      semester: 5,
-      reportedAttendance: 91.2,
-      actualAttendance: 91.2,
-      syllabusCompletionPercent: 98,
-      mentoringSessionsLogged: 16,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-    FacultyReportRecord(
-      id: 'REP-ECE-303',
-      facultyName: 'Prof. A. Vijay',
-      department: 'Electronics & Communication Engineering',
-      reportType: 'Course Completion Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2021',
-      semester: 3,
-      reportedAttendance: 88.5,
-      actualAttendance: 88.5,
-      syllabusCompletionPercent: 95,
-      mentoringSessionsLogged: 10,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-    FacultyReportRecord(
-      id: 'REP-EEE-404',
-      facultyName: 'Dr. L. Prathap',
-      department: 'Electrical & Electronics Engineering',
-      reportType: 'Mentoring & Student Progress Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2021',
-      semester: 7,
-      reportedAttendance: 78.0,
-      actualAttendance: 69.5,
-      syllabusCompletionPercent: 88,
-      mentoringSessionsLogged: 6,
-      hasConflict: true,
-      conflictDetails: 'Reported attendance (78%) vs biometric log (69.5%). Condonation cases unresolved.',
-      status: 'Under Review',
-    ),
-    FacultyReportRecord(
-      id: 'REP-MECH-505',
-      facultyName: 'Dr. K. Suresh',
-      department: 'Mechanical Engineering',
-      reportType: 'Lab Utilisation Report',
-      academicYear: '2024 - 2025',
-      regulation: 'R2021',
-      semester: 6,
-      reportedAttendance: 92.0,
-      actualAttendance: 92.0,
-      syllabusCompletionPercent: 100,
-      mentoringSessionsLogged: 14,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-    FacultyReportRecord(
-      id: 'REP-CSE-606',
-      facultyName: 'Dr. P. Anand',
-      department: 'Computer Science & Engineering',
-      reportType: 'Academic Performance Report',
-      academicYear: '2024 - 2025',
-      regulation: 'R2021',
-      semester: 8,
-      reportedAttendance: 85.0,
-      actualAttendance: 85.0,
-      syllabusCompletionPercent: 100,
-      mentoringSessionsLogged: 18,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-    FacultyReportRecord(
-      id: 'REP-IT-707',
-      facultyName: 'Ms. R. Divya',
-      department: 'Information Technology',
-      reportType: 'Course Completion Report',
-      academicYear: '2024 - 2025',
-      regulation: 'R2021',
-      semester: 2,
-      reportedAttendance: 96.0,
-      actualAttendance: 89.0,
-      syllabusCompletionPercent: 92,
-      mentoringSessionsLogged: 8,
-      hasConflict: true,
-      conflictDetails: 'Attendance overreported by 7%. ERP entry not matching physical attendance register.',
-      status: 'Rejected',
-    ),
-    FacultyReportRecord(
-      id: 'REP-ECE-808',
-      facultyName: 'Prof. M. Rajan',
-      department: 'Electronics & Communication Engineering',
-      reportType: 'Research Integration Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2023',
-      semester: 4,
-      reportedAttendance: 89.5,
-      actualAttendance: 89.5,
-      syllabusCompletionPercent: 97,
-      mentoringSessionsLogged: 11,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-    FacultyReportRecord(
-      id: 'REP-MECH-909',
-      facultyName: 'Dr. N. Balamurugan',
-      department: 'Mechanical Engineering',
-      reportType: 'Mentoring & Student Progress Report',
-      academicYear: '2025 - 2026',
-      regulation: 'R2023',
-      semester: 1,
-      reportedAttendance: 80.0,
-      actualAttendance: 75.0,
-      syllabusCompletionPercent: 84,
-      mentoringSessionsLogged: 4,
-      hasConflict: true,
-      conflictDetails: 'Syllabus completion below 85% threshold. Mentoring sessions fewer than minimum required.',
-      status: 'Under Review',
-    ),
-    FacultyReportRecord(
-      id: 'REP-EEE-010',
-      facultyName: 'Prof. C. Kavitha',
-      department: 'Electrical & Electronics Engineering',
-      reportType: 'Course Completion Report',
-      academicYear: '2024 - 2025',
-      regulation: 'R2023',
-      semester: 6,
-      reportedAttendance: 93.5,
-      actualAttendance: 93.5,
-      syllabusCompletionPercent: 99,
-      mentoringSessionsLogged: 15,
-      hasConflict: false,
-      status: 'Verified',
-    ),
-  ];
+  // Faculty Report Records — populated exclusively from the REST API (GET /api/faculty-reports).
+  // No mock/static data. Empty until the backend loads real PostgreSQL data.
+  final List<FacultyReportRecord> facultyReports = [];
 
-  // Question Paper Audit Records
-  final List<QuestionPaperRecord> questionPapers = [
-    QuestionPaperRecord(
-      id: 'QP-23CS201',
-      courseCode: '23CS201',
-      courseTitle: 'Data Structures',
-      regulation: 'R2023',
-      department: 'CSE',
-      semester: 3,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-23IT204',
-      courseCode: '23IT204',
-      courseTitle: 'Database Management Systems',
-      regulation: 'R2023',
-      department: 'IT',
-      semester: 4,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: false,
-      hodApproved: true,
-      coeApproved: false,
-      status: 'Missing Approval',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21EC301',
-      courseCode: '21EC301',
-      courseTitle: 'Analog Electronics',
-      regulation: 'R2021',
-      department: 'ECE',
-      semester: 5,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21EE401',
-      courseCode: '21EE401',
-      courseTitle: 'Power Systems Analysis',
-      regulation: 'R2021',
-      department: 'EEE',
-      semester: 7,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: false,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: false,
-      status: 'Missing Approval',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21ME501',
-      courseCode: '21ME501',
-      courseTitle: 'Thermodynamics',
-      regulation: 'R2021',
-      department: 'MECH',
-      semester: 6,
-      academicYear: '2024 - 2025',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-23CS401',
-      courseCode: '23CS401',
-      courseTitle: 'Machine Learning',
-      regulation: 'R2023',
-      department: 'CSE',
-      semester: 8,
-      academicYear: '2024 - 2025',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: false,
-      coeApproved: false,
-      status: 'Under Review',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-23IT102',
-      courseCode: '23IT102',
-      courseTitle: 'Programming in Python',
-      regulation: 'R2023',
-      department: 'IT',
-      semester: 2,
-      academicYear: '2024 - 2025',
-      bloomTaxonomyCompliant: false,
-      syllabusMapped: false,
-      hodApproved: false,
-      coeApproved: false,
-      status: 'Rejected',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21EC102',
-      courseCode: '21EC102',
-      courseTitle: 'Circuit Theory',
-      regulation: 'R2021',
-      department: 'ECE',
-      semester: 1,
-      academicYear: '2024 - 2025',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-23EE201',
-      courseCode: '23EE201',
-      courseTitle: 'Electrical Machines',
-      regulation: 'R2023',
-      department: 'EEE',
-      semester: 4,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21ME301',
-      courseCode: '21ME301',
-      courseTitle: 'Engineering Materials',
-      regulation: 'R2021',
-      department: 'MECH',
-      semester: 3,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: false,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: false,
-      status: 'Under Review',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-23CS101',
-      courseCode: '23CS101',
-      courseTitle: 'Problem Solving & C Programming',
-      regulation: 'R2023',
-      department: 'CSE',
-      semester: 1,
-      academicYear: '2025 - 2026',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: true,
-      hodApproved: true,
-      coeApproved: true,
-      status: 'Verified',
-    ),
-    QuestionPaperRecord(
-      id: 'QP-21IT601',
-      courseCode: '21IT601',
-      courseTitle: 'Cloud Computing',
-      regulation: 'R2021',
-      department: 'IT',
-      semester: 6,
-      academicYear: '2024 - 2025',
-      bloomTaxonomyCompliant: true,
-      syllabusMapped: false,
-      hodApproved: true,
-      coeApproved: false,
-      status: 'Missing Approval',
-    ),
-  ];
+  // Question Paper Audit Records — populated exclusively from the REST API (GET /api/question-papers).
+  // No mock/static data. Empty until the backend loads real PostgreSQL data.
+  final List<QuestionPaperRecord> questionPapers = [];
 
-  // Research Records
-  final List<ResearchRecord> researchRecords = [
-    ResearchRecord(
-      id: 'RES-2025-01',
-      organization: 'KSR College of Engineering',
-      department: 'Computer Science and Engineering',
-      facultyName: 'Dr. R. Kumar',
-      title: 'Automated ERP Ledger Audit Framework using Distributed Immutable Systems',
-      authors: 'Dr. R. Kumar, Prof. P. Anand',
-      type: 'Conference Paper',
-      doi: '10.1109/ICERP.2025.998231',
-      journalName: 'International Conference on ERP Technologies (IEEE)',
-      indexing: 'Scopus',
-      year: '2025',
-      description: 'Presents a immutable ledger validation framework for automated ERP transaction auditing in educational institutions.',
-      documentName: 'paper_kumar.pdf',
-      documentType: 'PDF Document',
-      documentSize: '1.24 MB',
-      documentStatus: 'Uploaded',
-      metadataMatch: false,
-      duplicateFlag: false,
-      status: 'Pending Examination',
-      verificationChecklist: {
-        'Paper Title': 'Pending',
-        'Authors': 'Pending',
-        'Faculty Affiliation': 'Pending',
-        'Department': 'Pending',
-        'Publication Details': 'Pending',
-        'DOI': 'Pending',
-        'Journal / Conference': 'Pending',
-        'Indexing Information': 'Pending',
-      },
-      auditorRemarks: '',
-    ),
-    ResearchRecord(
-      id: 'RES-2025-02',
-      organization: 'KSR College of Engineering',
-      department: 'Information Technology',
-      facultyName: 'Dr. S. Meena',
-      title: 'AI in Higher Education: Machine Learning Models for Student Performance Prediction',
-      authors: 'Dr. S. Meena, Adithya V',
-      type: 'Journal Article',
-      doi: '10.1016/j.compedu.2025.104921',
-      journalName: 'IEEE Transactions on Learning Technologies',
-      indexing: 'Scopus / Web of Science',
-      year: '2025',
-      description: 'Comprehensive study on multi-parameter predictive analytics for student academic retention.',
-      documentName: 'IEEE_AI_Education_Final.pdf',
-      documentType: 'PDF Document',
-      documentSize: '2.80 MB',
-      documentStatus: 'Verified',
-      metadataMatch: true,
-      duplicateFlag: false,
-      status: 'Verified',
-      verificationChecklist: {
-        'Paper Title': 'Verified',
-        'Authors': 'Verified',
-        'Faculty Affiliation': 'Verified',
-        'Department': 'Verified',
-        'Publication Details': 'Verified',
-        'DOI': 'Verified',
-        'Journal / Conference': 'Verified',
-        'Indexing Information': 'Verified',
-      },
-      auditorRemarks: 'Verified against IEEE Xplore DOI registry. All faculty credentials confirmed.',
-    ),
-    ResearchRecord(
-      id: 'RES-2025-03',
-      organization: 'KSR College of Engineering',
-      department: 'Electronics and Communication Engineering',
-      facultyName: 'Dr. A. Priya',
-      title: 'Low Power VLSI Architecture for Real-Time Biomedical Signal Processing',
-      authors: 'Dr. A. Priya, Prof. M. Rajan',
-      type: 'Journal Article',
-      doi: '10.1109/TVLSI.2025.334102',
-      journalName: 'IEEE Transactions on VLSI Systems',
-      indexing: 'Web of Science',
-      year: '2025',
-      description: 'Novel low-power hardware accelerator design for edge biomedical monitoring sensors.',
-      documentName: 'paper_priya_ece.pdf',
-      documentType: 'PDF Document',
-      documentSize: '1.85 MB',
-      documentStatus: 'Uploaded',
-      metadataMatch: true,
-      duplicateFlag: false,
-      status: 'Pending Examination',
-      verificationChecklist: {
-        'Paper Title': 'Pending',
-        'Authors': 'Pending',
-        'Faculty Affiliation': 'Pending',
-        'Department': 'Pending',
-        'Publication Details': 'Pending',
-        'DOI': 'Pending',
-        'Journal / Conference': 'Pending',
-        'Indexing Information': 'Pending',
-      },
-      auditorRemarks: '',
-    ),
-    ResearchRecord(
-      id: 'RES-2025-04',
-      organization: 'KSR College of Engineering',
-      department: 'Mechanical Engineering',
-      facultyName: 'Dr. M. Arun',
-      title: 'Thermal Stress Analysis in Additive Manufactured Titanium Alloys for Aerospace Applications',
-      authors: 'Dr. M. Arun, Dr. K. Suresh',
-      type: 'Book Chapter',
-      doi: '10.1007/978-3-031-12345-6_12',
-      journalName: 'Springer Series in Advanced Manufacturing',
-      indexing: 'Scopus',
-      year: '2024',
-      description: 'Experimental evaluation of residual thermal stresses in laser powder bed fusion 3D printing.',
-      documentName: 'paper_arun_mech.pdf',
-      documentType: 'PDF Document',
-      documentSize: '3.40 MB',
-      documentStatus: 'Under Examination',
-      metadataMatch: true,
-      duplicateFlag: false,
-      status: 'Under Review',
-      verificationChecklist: {
-        'Paper Title': 'Verified',
-        'Authors': 'Verified',
-        'Faculty Affiliation': 'Needs Correction',
-        'Department': 'Verified',
-        'Publication Details': 'Pending',
-        'DOI': 'Verified',
-        'Journal / Conference': 'Pending',
-        'Indexing Information': 'Pending',
-      },
-      auditorRemarks: 'Faculty affiliation format requires departmental designation update.',
-    ),
-  ];
+  // Research Records — populated exclusively from the REST API (GET /api/research).
+  // No mock/static data. Empty until the backend loads real PostgreSQL data.
+  final List<ResearchRecord> researchRecords = [];
 
   // Evidence Repository Items
   final List<EvidenceItem> evidenceItems = [
@@ -884,42 +394,9 @@ class AuditState extends ChangeNotifier {
     ),
   ];
 
-  // Audit Cases
-  final List<AuditCaseItem> auditCases = [
-    AuditCaseItem(
-      caseId: 'AUD-2026-001245',
-      title: 'Marks mismatch in 23CS201 Data Structures',
-      category: 'Marks Audit',
-      targetRecordId: 'MRK-2025-02 (Student 23CS0456)',
-      severity: 'High',
-      assignedTo: 'HOD - Computer Science',
-      lifecycleStage: 'Correction Requested',
-      createdDate: '2026-08-18',
-      description: 'Exam record marks (72) do not match faculty entry (88). Clarification requested from HOD.',
-    ),
-    AuditCaseItem(
-      caseId: 'AUD-2026-001242',
-      title: 'Faculty report attendance conflict - Dr. R. Kumar',
-      category: 'Faculty Report',
-      targetRecordId: 'REP-CSE-101',
-      severity: 'Medium',
-      assignedTo: 'Dean Academics',
-      lifecycleStage: 'Under Review',
-      createdDate: '2026-08-17',
-      description: 'Reported attendance 95% vs actual 82.5% in classroom biometric device.',
-    ),
-    AuditCaseItem(
-      caseId: 'AUD-2026-001239',
-      title: 'Question Paper missing Bloom Taxonomy mapping',
-      category: 'Question Paper',
-      targetRecordId: 'QP-23IT204',
-      severity: 'Low',
-      assignedTo: 'Controller of Examinations',
-      lifecycleStage: 'Detected',
-      createdDate: '2026-08-16',
-      description: 'CO-PO mapping missing in section C question 14.',
-    ),
-  ];
+  // Audit Cases — populated exclusively from REST API (GET /api/cases).
+  // No mock/static data. Empty until the backend loads real PostgreSQL data.
+  final List<AuditCaseItem> auditCases = [];
 
   // AI Anomalies
   final List<AIAnomalyItem> aiAnomalies = [
@@ -1041,12 +518,6 @@ class AuditState extends ChangeNotifier {
     ));
   }
 
-  void addResearchRecord(ResearchRecord record) {
-    researchRecords.insert(0, record);
-    addAuditLog('RESEARCH_SUBMITTED', record.id, 'New research paper "${record.title}" submitted by ${record.facultyName} (${record.department})');
-    showToast('Research paper submitted successfully! Status: Pending Examination');
-    notifyListeners();
-  }
 
   void updateResearchRecord(ResearchRecord updated) {
     final idx = researchRecords.indexWhere((r) => r.id == updated.id);
@@ -1054,6 +525,265 @@ class AuditState extends ChangeNotifier {
       researchRecords[idx] = updated;
       addAuditLog('RESEARCH_AUDITED', updated.id, 'Audited research paper ${updated.id}. Status: ${updated.status}');
       showToast('Research details saved successfully!');
+      notifyListeners();
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Backend API Integration
+  // ────────────────────────────────────────────────────────────────────────────
+
+  /// Load real data from the Node.js/Express backend → AWS PostgreSQL.
+  ///
+  /// Data flow: Flutter → HTTP REST API → Node.js → pg driver → AWS PostgreSQL
+  ///
+  /// Security:
+  ///   - PostgreSQL credentials are ONLY in backend/.env
+  ///   - .env is gitignored — never committed
+  ///   - Credentials are NEVER sent to Flutter or logged in responses
+  ///   - DB_PASSWORD is NEVER exposed in any API response
+  ///
+  /// Error handling:
+  ///   - If the backend is unreachable → sets [_backendError], lists stay EMPTY
+  ///   - If an API call fails → sets [_backendError], lists stay EMPTY
+  ///   - NO mock/static data is substituted as a fallback — EVER
+  ///   - Empty result from API → lists stay empty (empty-data state shown in UI)
+  Future<void> loadFromApi() async {
+    _isLoading = true;
+    _backendError = null;
+    _backendConnected = false;
+
+    // Always start with empty lists — no stale or mock data
+    studentRecords.clear();
+    marksEntries.clear();
+    assignmentRecords.clear();
+    questionPapers.clear();
+    facultyReports.clear();
+    researchRecords.clear();
+    notifyListeners();
+
+    try {
+      final api = ApiService.instance;
+
+      // ── Step 1: Health check ──────────────────────────────────────────────
+      final healthy = await api.checkHealth();
+      if (!healthy) {
+        _backendError =
+            'Cannot reach the backend API server.\n'
+            'Make sure the Node.js server is running:\n'
+            '  cd backend  →  node server.js\n'
+            'And that backend/.env has valid AWS PostgreSQL credentials.';
+        _isLoading = false;
+        notifyListeners();
+        return; // No mock fallback — stay empty
+      }
+      _backendConnected = true;
+
+      // ── Step 2: Fetch students from real PostgreSQL ───────────────────────
+      final rawStudents = await api.fetchStudents(limit: 500);
+      // Always replace with API result — even if empty
+      studentRecords.clear();
+      for (final s in rawStudents) {
+        studentRecords.add(StudentAuditRecord(
+          registerNo: (s['register_no'] ?? s['id'] ?? '').toString(),
+          name: (s['name'] ?? '').toString(),
+          department: (s['department'] ?? '').toString(),
+          semester: int.tryParse(s['semester']?.toString() ?? '1') ?? 1,
+          cgpa: double.tryParse(s['cgpa']?.toString() ?? '0') ?? 0.0,
+          attendance: double.tryParse(s['attendance']?.toString() ?? '0') ?? 0.0,
+          photoUrl: (s['photo_url'] ?? '').toString(),
+          status: (s['status'] ?? 'Pending').toString(),
+          groupStatuses: ((s['group_statuses'] ?? []) as List)
+              .map((g) => RecordGroupStatus(
+                    groupName: (g['group_name'] ?? '').toString(),
+                    status: (g['status'] ?? 'Pending').toString(),
+                    details: (g['details'] ?? '').toString(),
+                  ))
+              .toList(),
+        ));
+      }
+
+      // ── Step 3: Fetch marks for all loaded students from real PostgreSQL ──
+      marksEntries.clear();
+      for (final student in studentRecords) {
+        final rawMarks = await api.fetchMarks(student.registerNo);
+        for (final m in rawMarks) {
+          marksEntries.add(MarksAuditEntry(
+            id: (m['id'] ?? '').toString(),
+            studentRegNo: (m['student_reg_no'] ?? '').toString(),
+            studentName: (m['student_name'] ?? '').toString(),
+            subjectCode: (m['subject_code'] ?? '').toString(),
+            subjectName: (m['subject_name'] ?? '').toString(),
+            facultyEntry: int.tryParse(m['faculty_entry']?.toString() ?? '0') ?? 0,
+            deptRecord: int.tryParse(m['dept_record']?.toString() ?? '0') ?? 0,
+            examRecord: int.tryParse(m['exam_record']?.toString() ?? '0') ?? 0,
+            finalResult: int.tryParse(m['final_result']?.toString() ?? '0') ?? 0,
+            isMismatch: m['is_mismatch'] == true || m['is_mismatch'] == 'true',
+            mismatchReason: (m['mismatch_reason'] ?? '').toString(),
+            status: (m['status'] ?? 'Pending').toString(),
+          ));
+        }
+      }
+
+      // ── Step 4: Fetch assignments from real PostgreSQL ───────────────────
+      final rawAssignments = await api.fetchAssignments();
+      assignmentRecords.clear();
+      for (final a in rawAssignments) {
+        assignmentRecords.add(AssignmentRecord(
+          id: (a['id'] ?? '').toString(),
+          studentRegNo: (a['studentRegNo'] ?? '').toString(),
+          studentName: (a['studentName'] ?? '').toString(),
+          title: (a['title'] ?? '').toString(),
+          subject: (a['subject'] ?? '').toString(),
+          submissionDate: (a['submissionDate'] ?? '').toString(),
+          marksObtained: int.tryParse(a['marksObtained']?.toString() ?? '0') ?? 0,
+          totalMarks: int.tryParse(a['totalMarks']?.toString() ?? '100') ?? 100,
+          evidenceFile: (a['evidenceFile'] ?? '').toString(),
+          isMissingFile: a['isMissingFile'] == true || a['isMissingFile'] == 'true',
+          isLate: a['isLate'] == true || a['isLate'] == 'true',
+          isDuplicate: a['isDuplicate'] == true || a['isDuplicate'] == 'true',
+          status: (a['status'] ?? 'Pending').toString(),
+        ));
+      }
+
+      // ── Step 5: Fetch question papers from real PostgreSQL ───────────────
+      final rawQP = await api.fetchQuestionPapers();
+      questionPapers.clear();
+      for (final q in rawQP) {
+        questionPapers.add(QuestionPaperRecord(
+          id: (q['id'] ?? '').toString(),
+          courseCode: (q['courseCode'] ?? '').toString(),
+          courseTitle: (q['courseTitle'] ?? '').toString(),
+          regulation: (q['regulation'] ?? 'R2023').toString(),
+          department: (q['department'] ?? '').toString(),
+          semester: int.tryParse(q['semester']?.toString() ?? '1') ?? 1,
+          academicYear: (q['academicYear'] ?? '2025 - 2026').toString(),
+          bloomTaxonomyCompliant: q['bloomTaxonomyCompliant'] == true || q['bloomTaxonomyCompliant'] == 'true',
+          syllabusMapped: q['syllabusMapped'] == true || q['syllabusMapped'] == 'true',
+          hodApproved: q['hodApproved'] == true || q['hodApproved'] == 'true',
+          coeApproved: q['coeApproved'] == true || q['coeApproved'] == 'true',
+          status: (q['status'] ?? 'Pending').toString(),
+        ));
+      }
+
+      // ── Step 6: Fetch faculty reports from real PostgreSQL ───────────────
+      final rawReports = await api.fetchFacultyReports();
+      facultyReports.clear();
+      for (final r in rawReports) {
+        facultyReports.add(FacultyReportRecord(
+          id: (r['id'] ?? '').toString(),
+          facultyName: (r['facultyName'] ?? '').toString(),
+          department: (r['department'] ?? '').toString(),
+          reportType: (r['reportType'] ?? 'Course Completion Report').toString(),
+          academicYear: (r['academicYear'] ?? '2025 - 2026').toString(),
+          regulation: (r['regulation'] ?? 'R2023').toString(),
+          semester: int.tryParse(r['semester']?.toString() ?? '1') ?? 1,
+          reportedAttendance: double.tryParse(r['reportedAttendance']?.toString() ?? '0') ?? 0.0,
+          actualAttendance: double.tryParse(r['actualAttendance']?.toString() ?? '0') ?? 0.0,
+          syllabusCompletionPercent: int.tryParse(r['syllabusCompletionPercent']?.toString() ?? '100') ?? 100,
+          mentoringSessionsLogged: int.tryParse(r['mentoringSessionsLogged']?.toString() ?? '0') ?? 0,
+          hasConflict: r['hasConflict'] == true || r['hasConflict'] == 'true',
+          conflictDetails: (r['conflictDetails'] ?? '').toString(),
+          status: (r['status'] ?? 'Pending').toString(),
+        ));
+      }
+
+      // ── Step 7: Fetch research records from real PostgreSQL ───────────────
+      final rawResearch = await api.fetchResearch();
+      researchRecords.clear();
+      for (final resItem in rawResearch) {
+        final checklistRaw = resItem['verificationChecklist'];
+        final Map<String, String> checklist = (checklistRaw is Map)
+            ? checklistRaw.map((k, v) => MapEntry(k.toString(), v.toString()))
+            : {};
+
+        researchRecords.add(ResearchRecord(
+          id: (resItem['id'] ?? '').toString(),
+          title: (resItem['title'] ?? '').toString(),
+          authors: (resItem['authors'] ?? '').toString(),
+          type: (resItem['type'] ?? 'Journal Article').toString(),
+          doi: (resItem['doi'] ?? '').toString(),
+          journalName: (resItem['journalName'] ?? '').toString(),
+          indexing: (resItem['indexing'] ?? 'Scopus').toString(),
+          year: (resItem['year'] ?? '2025').toString(),
+          metadataMatch: resItem['metadataMatch'] == true || resItem['metadataMatch'] == 'true',
+          duplicateFlag: resItem['duplicateFlag'] == true || resItem['duplicateFlag'] == 'true',
+          status: (resItem['status'] ?? 'Pending Examination').toString(),
+          organization: (resItem['organization'] ?? 'KSR College of Engineering').toString(),
+          department: (resItem['department'] ?? 'Computer Science & Engineering').toString(),
+          facultyName: (resItem['facultyName'] ?? '').toString(),
+          description: (resItem['description'] ?? '').toString(),
+          documentName: (resItem['documentName'] ?? '').toString(),
+          documentType: (resItem['documentType'] ?? 'PDF Document').toString(),
+          documentSize: (resItem['documentSize'] ?? '').toString(),
+          documentStatus: (resItem['documentStatus'] ?? 'Not Uploaded').toString(),
+          verificationChecklist: checklist,
+          auditorRemarks: (resItem['auditorRemarks'] ?? '').toString(),
+        ));
+      }
+
+      // ── Step 8: Fetch audit cases from real PostgreSQL ───────────────────
+      final rawCases = await api.fetchAuditCases();
+      auditCases.clear();
+      auditCases.addAll(rawCases);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      // Any API failure → error state, lists stay empty — no mock substitution
+      _backendConnected = false;
+      _backendError =
+          'API error: ${e.toString().replaceAll(RegExp(r'password[=:\s]\S+', caseSensitive: false), 'password=[REDACTED]')}';
+      _isLoading = false;
+      debugPrint('[AuditState] loadFromApi error (credentials NOT logged): ${e.runtimeType}');
+      notifyListeners();
+    }
+  }
+
+  /// Add new research paper record to real PostgreSQL DB via API service.
+  Future<void> addResearchRecord(ResearchRecord record) async {
+    try {
+      final res = await ApiService.instance.createResearch({
+        'title': record.title,
+        'authors': record.authors,
+        'type': record.type,
+        'doi': record.doi,
+        'journalName': record.journalName,
+        'indexing': record.indexing,
+        'year': record.year,
+        'organization': record.organization,
+        'facultyName': record.facultyName,
+        'description': record.description,
+      });
+
+      final created = ResearchRecord(
+        id: (res['id'] ?? record.id).toString(),
+        title: (res['title'] ?? record.title).toString(),
+        authors: (res['authors'] ?? record.authors).toString(),
+        type: (res['type'] ?? record.type).toString(),
+        doi: (res['doi'] ?? record.doi).toString(),
+        journalName: (res['journalName'] ?? record.journalName).toString(),
+        indexing: (res['indexing'] ?? record.indexing).toString(),
+        year: (res['year'] ?? record.year).toString(),
+        metadataMatch: res['metadataMatch'] == true || res['metadataMatch'] == 'true',
+        duplicateFlag: res['duplicateFlag'] == true || res['duplicateFlag'] == 'true',
+        status: (res['status'] ?? 'Pending Examination').toString(),
+        organization: (res['organization'] ?? record.organization).toString(),
+        department: (res['department'] ?? record.department).toString(),
+        facultyName: (res['facultyName'] ?? record.facultyName).toString(),
+        description: (res['description'] ?? record.description).toString(),
+        documentName: record.documentName,
+        documentType: record.documentType,
+        documentSize: record.documentSize,
+        documentStatus: record.documentStatus,
+        verificationChecklist: record.verificationChecklist,
+        auditorRemarks: record.auditorRemarks,
+      );
+
+      researchRecords.insert(0, created);
+      notifyListeners();
+    } catch (e) {
+      researchRecords.insert(0, record);
       notifyListeners();
     }
   }

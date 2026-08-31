@@ -4,6 +4,7 @@ import '../providers/audit_state.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/action_modal.dart';
 import '../widgets/responsive_row.dart';
+import '../widgets/api_error_widget.dart';
 
 class MarksAuditView extends StatefulWidget {
   final AuditState state;
@@ -218,6 +219,38 @@ class _MarksAuditViewState extends State<MarksAuditView> {
 
   @override
   Widget build(BuildContext context) {
+    // ── Loading state ──────────────────────────────────────────────────────────
+    if (widget.state.isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading marks records from database…',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+          ],
+        ),
+      );
+    }
+
+    // ── API error state — never show mock data ───────────────────────────
+    if (widget.state.backendError != null) {
+      return ApiErrorWidget(
+        errorMessage: widget.state.backendError,
+        onRetry: () => widget.state.loadFromApi(),
+      );
+    }
+
+    // ── Empty state — API returned zero records ─────────────────────────
+    if (widget.state.marksEntries.isEmpty) {
+      return const ApiEmptyWidget(
+        icon: Icons.grading_rounded,
+        message: 'No marks records found',
+        hint: 'The database returned no marks entries. Add student records first.',
+      );
+    }
+
     // Filter records
     final entries = widget.state.marksEntries.where((m) {
       if (widget.state.departmentScope != null) {
