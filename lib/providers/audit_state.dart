@@ -1171,7 +1171,7 @@ class AuditState extends ChangeNotifier {
       AuditKPI(title: 'Corrections Pending', value: '${auditCases.where((c) => c.lifecycleStage.contains("Correction")).length}', change: '+1%', isPositive: false, icon: Icons.published_with_changes_rounded, color: const Color(0xFF8B5CF6)),
     ];
 
-    double calcPct(int ver, int tot) => tot > 0 ? (ver / tot * 100).clamp(0.0, 100.0) : 0.0;
+    double calcPct(int ver, int tot) => tot > 0 ? (ver / tot).clamp(0.0, 1.0) : 0.0;
 
     moduleProgress = [
       ModuleProgress(name: 'Student Records', verified: studentVerified, pending: studentPending, issues: studentIssues, percentage: calcPct(studentVerified, studentRecords.length)),
