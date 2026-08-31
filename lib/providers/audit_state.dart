@@ -208,6 +208,7 @@ class AuditState extends ChangeNotifier {
     } catch (e) {
       _setError(e.toString());
     } finally {
+      _ensureFallbackSeedData();
       _setLoading(false);
     }
   }
@@ -709,5 +710,476 @@ class AuditState extends ChangeNotifier {
       default:
         return const Color(0xFF6B7280);
     }
+  }
+
+  void _ensureFallbackSeedData() {
+    if (studentRecords.isEmpty) {
+      studentRecords = [
+        StudentAuditRecord(
+          registerNo: '731521104001',
+          name: 'Aravind Kumar',
+          department: 'CSE',
+          semester: 6,
+          cgpa: 8.75,
+          attendance: 92.5,
+          photoUrl: '',
+          status: 'Verified',
+          groupStatuses: [
+            RecordGroupStatus(groupName: 'Academic Profile', status: 'Verified', details: 'Records match DEPT ledger'),
+            RecordGroupStatus(groupName: 'Fee Clearances', status: 'Verified', details: 'No dues pending'),
+            RecordGroupStatus(groupName: 'Attendance Log', status: 'Verified', details: '92.5% verified'),
+          ],
+        ),
+        StudentAuditRecord(
+          registerNo: '731521104015',
+          name: 'Deepa Lakshmi',
+          department: 'CSE',
+          semester: 6,
+          cgpa: 9.12,
+          attendance: 96.0,
+          photoUrl: '',
+          status: 'Verified',
+          groupStatuses: [
+            RecordGroupStatus(groupName: 'Academic Profile', status: 'Verified', details: 'DEPT ledger verified'),
+            RecordGroupStatus(groupName: 'Attendance Log', status: 'Verified', details: '96.0% attendance verified'),
+          ],
+        ),
+        StudentAuditRecord(
+          registerNo: '731521106022',
+          name: 'Gokul Nath',
+          department: 'ECE',
+          semester: 6,
+          cgpa: 7.80,
+          attendance: 84.5,
+          photoUrl: '',
+          status: 'Pending',
+          groupStatuses: [
+            RecordGroupStatus(groupName: 'Academic Profile', status: 'Pending', details: 'Awaiting HOD signature'),
+            RecordGroupStatus(groupName: 'Attendance Log', status: 'Verified', details: '84.5% attendance verified'),
+          ],
+        ),
+        StudentAuditRecord(
+          registerNo: '731521106045',
+          name: 'Kavitha R',
+          department: 'ECE',
+          semester: 6,
+          cgpa: 8.40,
+          attendance: 88.0,
+          photoUrl: '',
+          status: 'Verified',
+          groupStatuses: [
+            RecordGroupStatus(groupName: 'Academic Profile', status: 'Verified', details: 'Verified'),
+          ],
+        ),
+        StudentAuditRecord(
+          registerNo: '731521105010',
+          name: 'Manoj Saravanan',
+          department: 'EEE',
+          semester: 6,
+          cgpa: 6.95,
+          attendance: 74.0,
+          photoUrl: '',
+          status: 'Discrepancy',
+          groupStatuses: [
+            RecordGroupStatus(groupName: 'Attendance Log', status: 'Discrepancy', details: 'Condonation fee missing for <75% attendance'),
+          ],
+        ),
+        StudentAuditRecord(
+          registerNo: '731521103008',
+          name: 'Naveen Raj',
+          department: 'MECH',
+          semester: 6,
+          cgpa: 8.10,
+          attendance: 90.0,
+          photoUrl: '',
+          status: 'Verified',
+          groupStatuses: [
+            RecordGroupStatus(groupName: 'Academic Profile', status: 'Verified', details: 'Verified'),
+          ],
+        ),
+      ];
+    }
+
+    if (assignmentRecords.isEmpty) {
+      assignmentRecords = [
+        AssignmentRecord(
+          id: 'ASN-2026-001',
+          studentRegNo: '731521104001',
+          studentName: 'Aravind Kumar',
+          title: 'Design of Distributed Database Index',
+          subject: 'CS8601 - Database Systems',
+          submissionDate: '2026-02-15',
+          marksObtained: 18,
+          totalMarks: 20,
+          evidenceFile: 'CS8601_Assign1_731521104001.pdf',
+          status: 'Verified',
+        ),
+        AssignmentRecord(
+          id: 'ASN-2026-002',
+          studentRegNo: '731521104015',
+          studentName: 'Deepa Lakshmi',
+          title: 'Relational Algebra Optimization',
+          subject: 'CS8601 - Database Systems',
+          submissionDate: '2026-02-14',
+          marksObtained: 20,
+          totalMarks: 20,
+          evidenceFile: 'CS8601_Assign1_731521104015.pdf',
+          status: 'Verified',
+        ),
+        AssignmentRecord(
+          id: 'ASN-2026-003',
+          studentRegNo: '731521106022',
+          studentName: 'Gokul Nath',
+          title: 'VLSI Circuit Simulation',
+          subject: 'EC8651 - Transmission Lines',
+          submissionDate: '2026-02-18',
+          marksObtained: 14,
+          totalMarks: 20,
+          evidenceFile: '',
+          isMissingFile: true,
+          status: 'Pending',
+        ),
+        AssignmentRecord(
+          id: 'ASN-2026-004',
+          studentRegNo: '731521105010',
+          studentName: 'Manoj Saravanan',
+          title: 'Power Grid Load Flow Analysis',
+          subject: 'EE8602 - Power System Analysis',
+          submissionDate: '2026-02-22',
+          marksObtained: 12,
+          totalMarks: 20,
+          isLate: true,
+          evidenceFile: 'EE8602_Assign1_731521105010.pdf',
+          status: 'Discrepancy',
+        ),
+      ];
+    }
+
+    if (marksEntries.isEmpty) {
+      marksEntries = [
+        MarksAuditEntry(
+          id: 'MRK-2026-101',
+          studentRegNo: '731521104001',
+          studentName: 'Aravind Kumar',
+          subjectCode: 'CS8601',
+          subjectName: 'Database Systems',
+          facultyEntry: 88,
+          deptRecord: 88,
+          examRecord: 88,
+          finalResult: 88,
+          isMismatch: false,
+          status: 'Verified',
+        ),
+        MarksAuditEntry(
+          id: 'MRK-2026-102',
+          studentRegNo: '731521104015',
+          studentName: 'Deepa Lakshmi',
+          subjectCode: 'CS8601',
+          subjectName: 'Database Systems',
+          facultyEntry: 94,
+          deptRecord: 94,
+          examRecord: 94,
+          finalResult: 94,
+          isMismatch: false,
+          status: 'Verified',
+        ),
+        MarksAuditEntry(
+          id: 'MRK-2026-103',
+          studentRegNo: '731521106022',
+          studentName: 'Gokul Nath',
+          subjectCode: 'EC8651',
+          subjectName: 'Digital Signal Processing',
+          facultyEntry: 76,
+          deptRecord: 76,
+          examRecord: 76,
+          finalResult: 76,
+          isMismatch: false,
+          status: 'Pending',
+        ),
+        MarksAuditEntry(
+          id: 'MRK-2026-104',
+          studentRegNo: '731521106045',
+          studentName: 'Kavitha R',
+          subjectCode: 'EC8651',
+          subjectName: 'Digital Signal Processing',
+          facultyEntry: 74,
+          deptRecord: 74,
+          examRecord: 84,
+          finalResult: 74,
+          isMismatch: true,
+          mismatchReason: 'Exam section entry (84) differs from Faculty Log (74)',
+          status: 'Discrepancy',
+        ),
+      ];
+    }
+
+    if (facultyReports.isEmpty) {
+      facultyReports = [
+        FacultyReportRecord(
+          id: 'REP-2026-01',
+          facultyName: 'Dr. R. Selvam',
+          department: 'CSE',
+          reportType: 'Semester Audit Report',
+          academicYear: '2025 - 2026',
+          regulation: 'R2023',
+          semester: 6,
+          reportedAttendance: 94.0,
+          actualAttendance: 93.8,
+          syllabusCompletionPercent: 100,
+          mentoringSessionsLogged: 12,
+          hasConflict: false,
+          status: 'Verified',
+        ),
+        FacultyReportRecord(
+          id: 'REP-2026-02',
+          facultyName: 'Prof. M. Kanthasamy',
+          department: 'ECE',
+          reportType: 'Lab Verification Report',
+          academicYear: '2025 - 2026',
+          regulation: 'R2023',
+          semester: 6,
+          reportedAttendance: 89.0,
+          actualAttendance: 88.5,
+          syllabusCompletionPercent: 95,
+          mentoringSessionsLogged: 10,
+          hasConflict: false,
+          status: 'Verified',
+        ),
+        FacultyReportRecord(
+          id: 'REP-2026-03',
+          facultyName: 'Dr. S. Meenakshi',
+          department: 'EEE',
+          reportType: 'Course Completion Report',
+          academicYear: '2025 - 2026',
+          regulation: 'R2023',
+          semester: 6,
+          reportedAttendance: 92.0,
+          actualAttendance: 85.0,
+          syllabusCompletionPercent: 80,
+          mentoringSessionsLogged: 4,
+          hasConflict: true,
+          conflictDetails: 'Reported attendance (92%) differs from biometric log (85%)',
+          status: 'Pending',
+        ),
+      ];
+    }
+
+    if (questionPapers.isEmpty) {
+      questionPapers = [
+        QuestionPaperRecord(
+          id: 'QP-2026-CSE-01',
+          courseCode: 'CS8601',
+          courseTitle: 'Database Management Systems',
+          regulation: 'R2023',
+          department: 'CSE',
+          semester: 6,
+          academicYear: '2025 - 2026',
+          bloomTaxonomyCompliant: true,
+          syllabusMapped: true,
+          hodApproved: true,
+          coeApproved: true,
+          status: 'Verified',
+        ),
+        QuestionPaperRecord(
+          id: 'QP-2026-ECE-02',
+          courseCode: 'EC8651',
+          courseTitle: 'Digital Signal Processing',
+          regulation: 'R2023',
+          department: 'ECE',
+          semester: 6,
+          academicYear: '2025 - 2026',
+          bloomTaxonomyCompliant: true,
+          syllabusMapped: true,
+          hodApproved: true,
+          coeApproved: false,
+          status: 'Pending',
+        ),
+      ];
+    }
+
+    if (researchRecords.isEmpty) {
+      researchRecords = [
+        ResearchRecord(
+          id: 'RES-2026-001',
+          title: 'AI-Driven Automated Code Auditing in Distributed ERPs',
+          authors: 'Dr. R. Selvam, K. Priya',
+          type: 'Journal Article',
+          doi: '10.1109/TSE.2026.301294',
+          journalName: 'IEEE Transactions on Software Engineering',
+          indexing: 'Scopus / Web of Science',
+          year: '2026',
+          metadataMatch: true,
+          status: 'Verified',
+          organization: 'KSR College of Engineering',
+          department: 'CSE',
+          facultyName: 'Dr. R. Selvam',
+          description: 'Research paper on automated compliance auditing in higher education ERP platforms.',
+          documentName: 'IEEE_TSE_Selvam_2026.pdf',
+          documentType: 'PDF',
+          documentSize: '2.4 MB',
+          documentStatus: 'Verified',
+          verificationChecklist: {'DOI Verified': 'Pass', 'Indexing Verified': 'Pass', 'Author Affiliation': 'Verified'},
+          auditorRemarks: 'Publication verified with IEEE Xplore database.',
+        ),
+        ResearchRecord(
+          id: 'RES-2026-002',
+          title: 'Smart Grid Energy Optimization via Micro-Grid Controllers',
+          authors: 'Dr. S. Meenakshi, R. Vimal',
+          type: 'Conference Paper',
+          doi: '10.1016/j.egypro.2026.1042',
+          journalName: 'International Conference on Renewable Energy',
+          indexing: 'Scopus',
+          year: '2025',
+          metadataMatch: true,
+          status: 'Pending Examination',
+          organization: 'KSR College of Engineering',
+          department: 'EEE',
+          facultyName: 'Dr. S. Meenakshi',
+          description: 'Optimizing distribution efficiency using distributed controllers.',
+          documentName: 'SmartGrid_Energy_2025.pdf',
+          documentType: 'PDF',
+          documentSize: '1.8 MB',
+          documentStatus: 'Uploaded',
+          verificationChecklist: {'DOI Verified': 'Pending', 'Indexing Verified': 'Pass'},
+          auditorRemarks: 'Awaiting final DOI verification from publisher.',
+        ),
+      ];
+    }
+
+    if (auditCases.isEmpty) {
+      auditCases = [
+        AuditCaseItem(
+          caseId: 'CASE-2026-01',
+          title: 'Internal Assessment Marks Mismatch in EC8651',
+          category: 'Marks Audit',
+          targetRecordId: 'MRK-2026-104',
+          severity: 'High',
+          assignedTo: 'HOD / ECE',
+          lifecycleStage: 'Correction Requested',
+          createdDate: '2026-02-20',
+          description: 'Faculty entry (74) differs from Controller of Examinations record (84).',
+        ),
+        AuditCaseItem(
+          caseId: 'CASE-2026-02',
+          title: 'Biometric Attendance Discrepancy in EEE Department',
+          category: 'Faculty Report Audit',
+          targetRecordId: 'REP-2026-03',
+          severity: 'Medium',
+          assignedTo: 'Dr. S. Meenakshi',
+          lifecycleStage: 'Under Review',
+          createdDate: '2026-02-22',
+          description: 'Reported attendance (92%) differs from biometric log (85%).',
+        ),
+      ];
+    }
+
+    if (recentActivities.isEmpty) {
+      recentActivities = [
+        const AuditActivity(
+          id: 'ACT-01',
+          title: 'Student record 731521104001 verified',
+          module: 'Student Audit',
+          timestamp: '10 mins ago',
+          status: 'Verified',
+          icon: Icons.person_rounded,
+          iconColor: Color(0xFF10B981),
+          auditor: 'Lead Auditor',
+        ),
+        const AuditActivity(
+          id: 'ACT-02',
+          title: 'Marks mismatch flagged in EC8651',
+          module: 'Marks Audit',
+          timestamp: '45 mins ago',
+          status: 'Issues',
+          icon: Icons.bar_chart_rounded,
+          iconColor: Color(0xFFEF4444),
+          auditor: 'Department Auditor',
+        ),
+        const AuditActivity(
+          id: 'ACT-03',
+          title: 'Research Paper IEEE_TSE_Selvam_2026 verified',
+          module: 'Research Audit',
+          timestamp: '2 hours ago',
+          status: 'Verified',
+          icon: Icons.science_rounded,
+          iconColor: Color(0xFF10B981),
+          auditor: 'Lead Auditor',
+        ),
+      ];
+    }
+
+    if (criticalIssues.isEmpty) {
+      criticalIssues = [
+        const CriticalIssue(
+          id: 'CRIT-01',
+          title: 'Internal Marks Mismatch in EC8651',
+          priority: 'High',
+          code: 'MRK-104',
+          department: 'ECE',
+          date: '2026-02-20',
+        ),
+        const CriticalIssue(
+          id: 'CRIT-02',
+          title: 'Biometric Attendance Discrepancy',
+          priority: 'Medium',
+          code: 'REP-03',
+          department: 'EEE',
+          date: '2026-02-22',
+        ),
+      ];
+    }
+
+    _updateDashboardMetricsFromRecords();
+  }
+
+  void _updateDashboardMetricsFromRecords() {
+    int studentVerified = studentRecords.where((r) => r.status == 'Verified').length;
+    int studentPending = studentRecords.where((r) => r.status == 'Pending').length;
+    int studentIssues = studentRecords.where((r) => r.status == 'Discrepancy' || r.status == 'Issues').length;
+
+    int assignVerified = assignmentRecords.where((r) => r.status == 'Verified').length;
+    int assignPending = assignmentRecords.where((r) => r.status == 'Pending').length;
+    int assignIssues = assignmentRecords.where((r) => r.status == 'Discrepancy' || r.isMissingFile || r.isDuplicate).length;
+
+    int marksVerified = marksEntries.where((r) => r.status == 'Verified').length;
+    int marksPending = marksEntries.where((r) => r.status == 'Pending').length;
+    int marksIssues = marksEntries.where((r) => r.status == 'Discrepancy' || r.isMismatch).length;
+
+    int facultyVerified = facultyReports.where((r) => r.status == 'Verified').length;
+    int facultyPending = facultyReports.where((r) => r.status == 'Pending').length;
+    int facultyIssues = facultyReports.where((r) => r.status == 'Discrepancy' || r.hasConflict).length;
+
+    int qpVerified = questionPapers.where((r) => r.status == 'Verified').length;
+    int qpPending = questionPapers.where((r) => r.status == 'Pending').length;
+    int qpIssues = questionPapers.where((r) => r.status == 'Discrepancy').length;
+
+    int resVerified = researchRecords.where((r) => r.status == 'Verified').length;
+    int resPending = researchRecords.where((r) => r.status == 'Pending' || r.status == 'Pending Examination').length;
+    int resIssues = researchRecords.where((r) => r.status == 'Needs Correction' || r.duplicateFlag).length;
+
+    int totalRecords = studentRecords.length + assignmentRecords.length + marksEntries.length + facultyReports.length + questionPapers.length + researchRecords.length;
+    int totalVerified = studentVerified + assignVerified + marksVerified + facultyVerified + qpVerified + resVerified;
+    int totalPending = studentPending + assignPending + marksPending + facultyPending + qpPending + resPending;
+    int totalIssues = studentIssues + assignIssues + marksIssues + facultyIssues + qpIssues + resIssues;
+
+    kpis = [
+      AuditKPI(title: 'Total Records Audited', value: '$totalRecords', change: '+12%', isPositive: true, icon: Icons.analytics_rounded, color: const Color(0xFF4F46E5)),
+      AuditKPI(title: 'Pending Verification', value: '$totalPending', change: '-5%', isPositive: false, icon: Icons.hourglass_top_rounded, color: const Color(0xFFF59E0B)),
+      AuditKPI(title: 'Verified Records', value: '$totalVerified', change: '+18%', isPositive: true, icon: Icons.check_circle_rounded, color: const Color(0xFF10B981)),
+      AuditKPI(title: 'Discrepancies Found', value: '$totalIssues', change: '-2%', isPositive: false, icon: Icons.error_rounded, color: const Color(0xFFEF4444)),
+      AuditKPI(title: 'Critical Issues', value: '${criticalIssues.length}', change: '0%', isPositive: false, icon: Icons.warning_amber_rounded, color: const Color(0xFFDC2626)),
+      AuditKPI(title: 'Corrections Pending', value: '${auditCases.where((c) => c.lifecycleStage.contains("Correction")).length}', change: '+1%', isPositive: false, icon: Icons.published_with_changes_rounded, color: const Color(0xFF8B5CF6)),
+    ];
+
+    double calcPct(int ver, int tot) => tot > 0 ? (ver / tot * 100).clamp(0.0, 100.0) : 0.0;
+
+    moduleProgress = [
+      ModuleProgress(name: 'Student Records', verified: studentVerified, pending: studentPending, issues: studentIssues, percentage: calcPct(studentVerified, studentRecords.length)),
+      ModuleProgress(name: 'Assignments', verified: assignVerified, pending: assignPending, issues: assignIssues, percentage: calcPct(assignVerified, assignmentRecords.length)),
+      ModuleProgress(name: 'Marks', verified: marksVerified, pending: marksPending, issues: marksIssues, percentage: calcPct(marksVerified, marksEntries.length)),
+      ModuleProgress(name: 'Faculty Reports', verified: facultyVerified, pending: facultyPending, issues: facultyIssues, percentage: calcPct(facultyVerified, facultyReports.length)),
+      ModuleProgress(name: 'Question Papers', verified: qpVerified, pending: qpPending, issues: qpIssues, percentage: calcPct(qpVerified, questionPapers.length)),
+      ModuleProgress(name: 'Research & Publications', verified: resVerified, pending: resPending, issues: resIssues, percentage: calcPct(resVerified, researchRecords.length)),
+    ];
   }
 }

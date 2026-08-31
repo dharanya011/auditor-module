@@ -8,7 +8,7 @@ class ApiService {
     if (envUrl.isNotEmpty) {
       return envUrl.endsWith('/') ? envUrl.substring(0, envUrl.length - 1) : envUrl;
     }
-    if (kIsWeb) return 'http://localhost:5000/api';
+    if (kIsWeb) return 'http://13.204.53.209:5000/api';
     return 'http://10.0.2.2:5000/api';
   }
   static const Duration timeout = Duration(seconds: 30);
