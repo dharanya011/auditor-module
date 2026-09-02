@@ -82,9 +82,9 @@ class DashboardView extends StatelessWidget {
       );
     }
 
-    final totalVerified = int.tryParse(state.kpis[2].value) ?? 0;
-    final totalPending = int.tryParse(state.kpis[1].value) ?? 0;
-    final totalIssues = int.tryParse(state.kpis[3].value) ?? 0;
+    final totalVerified = (state.kpis.length > 2) ? (int.tryParse(state.kpis[2].value) ?? 0) : 0;
+    final totalPending = (state.kpis.length > 1) ? (int.tryParse(state.kpis[1].value) ?? 0) : 0;
+    final totalIssues = (state.kpis.length > 3) ? (int.tryParse(state.kpis[3].value) ?? 0) : 0;
     final grandTotal = (totalVerified + totalPending + totalIssues) > 0 ? (totalVerified + totalPending + totalIssues) : 1;
 
     final verifiedVal = (totalVerified / grandTotal * 100).roundToDouble();

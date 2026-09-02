@@ -245,7 +245,9 @@ class Header extends StatelessWidget {
                           radius: 14,
                           backgroundColor: const Color(0xFF818CF8),
                           child: Text(
-                            state.userName.substring(0, 2).toUpperCase(),
+                            state.userName.isNotEmpty && state.userName.length >= 2 
+                                ? state.userName.substring(0, 2).toUpperCase() 
+                                : 'AU',
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                           ),
                         ),

@@ -14,7 +14,7 @@ class ApiService {
 
   /// Base URL of the Node.js backend.
   /// Change this to your deployed backend URL when running in production.
-  static const String _baseUrl = 'http://localhost:3000/api';
+  static const String _baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:3000/api');
 
   // ────────────────────────────────────────────────────────────────────────────
   // Health
