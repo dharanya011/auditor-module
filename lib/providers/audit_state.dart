@@ -12,8 +12,6 @@ class AuditState extends ChangeNotifier {
 
   final ApiService _api = ApiService.instance;
 
-  final ApiService _api = ApiService.instance;
-
   // Backend API state
   bool _isLoading = false;
   bool _backendConnected = false;
