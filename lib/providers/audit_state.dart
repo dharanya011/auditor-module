@@ -6,8 +6,11 @@ class AuditState extends ChangeNotifier {
   String _activeModule = 'Dashboard';
   String _selectedAcademicYear = '2025 - 2026';
   String _globalSearchQuery = '';
-  String _userRole = 'Lead Auditor';
-  final String _userName = 'Auditor User';
+  String _userRole = '';
+  String _userName = '';
+  String _userEmail = '';
+
+  final ApiService _api = ApiService.instance;
 
   final ApiService _api = ApiService.instance;
 
@@ -32,6 +35,7 @@ class AuditState extends ChangeNotifier {
   String get globalSearchQuery => _globalSearchQuery;
   String get userRole => _userRole;
   String get userName => _userName;
+  String get userEmail => _userEmail;
   EvidenceItem? get selectedEvidence => _selectedEvidence;
   String? get notificationToast => _notificationToast;
   bool get isAuthenticated => true;
@@ -536,6 +540,20 @@ class AuditState extends ChangeNotifier {
     }
   }
 
+  Future<void> loadAuditorProfile() async {
+    try {
+      final data = await _api.getAuditorProfile();
+      if (data != null) {
+        _userName = data['fullName']?.toString() ?? '';
+        _userRole = data['role']?.toString() ?? '';
+        _userEmail = data['email']?.toString() ?? '';
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Failed to load auditor profile: $e');
+    }
+  }
+
   // Verification & Action Methods
   Future<void> verifyStudentRecord(String regNo) async {
     final idx = studentRecords.indexWhere((r) => r.registerNo == regNo);
@@ -677,6 +695,8 @@ class AuditState extends ChangeNotifier {
         return; // No mock fallback — stay empty
       }
       _backendConnected = true;
+
+      await loadAuditorProfile();
 
       // ── Step 2: Fetch students from real PostgreSQL ───────────────────────
       final rawStudents = await api.fetchStudents(limit: 500);

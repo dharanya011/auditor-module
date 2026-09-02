@@ -423,13 +423,13 @@ class _AccountSettingsModalState extends State<_AccountSettingsModal> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.email_outlined, size: 18, color: AppColors.accent),
-                        SizedBox(width: 10),
-                        Text('Official Email:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        SizedBox(width: 8),
-                        Text('auditor.admin@ksrce.ac.in', style: TextStyle(fontSize: 12, fontFamily: 'monospace', color: AppColors.textSecondary)),
+                        const Icon(Icons.email_outlined, size: 18, color: AppColors.accent),
+                        const SizedBox(width: 10),
+                        const Text('Official Email:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        const SizedBox(width: 8),
+                        Text(widget.state.userEmail, style: const TextStyle(fontSize: 12, fontFamily: 'monospace', color: AppColors.textSecondary)),
                       ],
                     ),
                   ],

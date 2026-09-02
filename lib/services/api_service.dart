@@ -334,6 +334,17 @@ class ApiService {
     return {'records': []};
   }
 
+  Future<Map<String, dynamic>?> getAuditorProfile() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/profile')).timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        return body['profile'] as Map<String, dynamic>?;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   // Read-only safe stubs for write actions (NO database operations executed)
   Future<void> verifyStudent(String regNo) async {}
 

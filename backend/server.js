@@ -49,7 +49,9 @@ const searchRouter = require('./routes/search');
 const workQueueRouter = require('./routes/work_queue');
 const casesRouter = require('./routes/cases');
 const dbInspectorRouter = require('./routes/db_inspector');
-
+const evidenceRouter = require('./routes/evidence');
+const auditHistoryRouter = require('./routes/audit_history');
+const profileRouter = require('./routes/profile');
 app.use('/api/health', healthRouter);
 app.use('/api/students', studentsRouter);
 app.use('/api/marks', marksRouter);
@@ -62,7 +64,9 @@ app.use('/api/search', searchRouter);
 app.use('/api/work-queue', workQueueRouter);
 app.use('/api/cases', casesRouter);
 app.use('/api/db', dbInspectorRouter);
-
+app.use('/api/evidence', evidenceRouter);
+app.use('/api/audit-history', auditHistoryRouter);
+app.use('/api/profile', profileRouter);
 // ──────────────────────────────────────────────
 // 404 handler
 // ──────────────────────────────────────────────
