@@ -25,8 +25,8 @@ const PORT = process.env.PORT || 3000;
 // ──────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
-// Serve static database_inspector.html and database_inspector.js from root directory
-app.use(express.static(path.join(__dirname, '..')));
+// Serve static database_inspector.html and database_inspector.js from backend directory
+app.use(express.static(path.join(__dirname)));
 
 // Request logger (never logs DB_PASSWORD)
 app.use((req, _res, next) => {

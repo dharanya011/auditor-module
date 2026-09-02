@@ -33,14 +33,16 @@ jobs:
 
       - name: Install Dependencies
         run: flutter pub get
+        working-directory: ./frontend
 
       - name: Build Flutter Web
         run: flutter build web --release --base-href "/auditor-module/" --no-tree-shake-icons --pwa-strategy=none --dart-define=API_BASE_URL="${{ secrets.API_BASE_URL }}"
+        working-directory: ./frontend
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./build/web
+          path: ./frontend/build/web
 
       - name: Deploy to GitHub Pages (Actions Native)
         id: deployment
