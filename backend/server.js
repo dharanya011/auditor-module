@@ -15,14 +15,18 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+const path = require('path');
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // ──────────────────────────────────────────────
 // Middleware
 // ──────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
+// Serve static database_inspector.html and database_inspector.js from root directory
+app.use(express.static(path.join(__dirname, '..')));
 
 // Request logger (never logs DB_PASSWORD)
 app.use((req, _res, next) => {
@@ -44,6 +48,7 @@ const researchRouter = require('./routes/research');
 const searchRouter = require('./routes/search');
 const workQueueRouter = require('./routes/work_queue');
 const casesRouter = require('./routes/cases');
+const dbInspectorRouter = require('./routes/db_inspector');
 
 app.use('/api/health', healthRouter);
 app.use('/api/students', studentsRouter);
@@ -56,6 +61,7 @@ app.use('/api/research', researchRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/work-queue', workQueueRouter);
 app.use('/api/cases', casesRouter);
+app.use('/api/db', dbInspectorRouter);
 
 // ──────────────────────────────────────────────
 // 404 handler

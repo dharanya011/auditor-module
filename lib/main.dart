@@ -46,25 +46,15 @@ class _KSRCEAuditorAppState extends State<KSRCEAuditorApp> {
 
   Future<void> _initializeData() async {
     try {
-      // Auto-authenticate with seed admin credentials on start to bypass sign-in step
-      await _auditState.signIn('admin@ksrce.edu.in', 'Admin@123');
+      await _auditState.loadFromApi();
     } catch (e) {
-      debugPrint('Auto-login failed: $e. Loading data anonymously.');
-      await _auditState.loadAllData();
+      debugPrint('Failed to load API data: $e');
     }
     if (mounted) {
       setState(() {
         _isInitializing = false;
       });
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Attempt to load real data from the Node.js backend (backend/.env credentials).
-    // If the backend is not running, mock data is used as fallback — no crash.
-    _auditState.loadFromApi();
   }
 
   @override

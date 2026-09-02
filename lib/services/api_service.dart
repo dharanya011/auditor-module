@@ -14,7 +14,7 @@ class ApiService {
 
   /// Base URL of the Node.js backend.
   /// Change this to your deployed backend URL when running in production.
-  static const String _baseUrl = 'http://localhost:5000/api';
+  static const String _baseUrl = 'http://localhost:3000/api';
 
   // ────────────────────────────────────────────────────────────────────────────
   // Health
@@ -251,9 +251,98 @@ class ApiService {
   // Helpers
   // ────────────────────────────────────────────────────────────────────────────
 
+  // ────────────────────────────────────────────────────────────────────────────
+  // Alias Methods & Compatibility APIs
+  // ────────────────────────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> getDashboard() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/dashboard')).timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    return {'kpis': {}, 'moduleProgress': [], 'recentActivities': [], 'criticalIssues': []};
+  }
+
+  Future<Map<String, dynamic>> getStudents({int limit = 500}) async {
+    final list = await fetchStudents(limit: limit);
+    return {'records': list};
+  }
+
+  Future<Map<String, dynamic>> getAssignments() async {
+    final list = await fetchAssignments();
+    return {'records': list};
+  }
+
+  Future<Map<String, dynamic>> getMarks([String? studentId]) async {
+    final list = studentId != null ? await fetchMarks(studentId) : <Map<String, dynamic>>[];
+    return {'records': list};
+  }
+
+  Future<Map<String, dynamic>> getFacultyReports() async {
+    final list = await fetchFacultyReports();
+    return {'records': list};
+  }
+
+  Future<Map<String, dynamic>> getQuestionPapers() async {
+    final list = await fetchQuestionPapers();
+    return {'records': list};
+  }
+
+  Future<Map<String, dynamic>> getResearch() async {
+    final list = await fetchResearch();
+    return {'records': list};
+  }
+
+  Future<Map<String, dynamic>> getEvidence() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/evidence')).timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    return {'records': []};
+  }
+
+  Future<Map<String, dynamic>> getAuditCases() async {
+    try {
+      final list = await fetchAuditCases();
+      return {'records': list.map((c) => {
+        'caseId': c.caseId,
+        'title': c.title,
+        'category': c.category,
+        'targetRecordId': c.targetRecordId,
+        'severity': c.severity,
+        'assignedTo': c.assignedTo,
+        'lifecycleStage': c.lifecycleStage,
+        'createdDate': c.createdDate,
+        'description': c.description,
+      }).toList()};
+    } catch (_) {
+      return {'records': []};
+    }
+  }
+
+  Future<Map<String, dynamic>> getAuditHistory() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/audit-history')).timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    return {'records': []};
+  }
+
+  // Read-only safe stubs for write actions (NO database operations executed)
+  Future<void> verifyStudent(String regNo) async {}
+
+  Future<void> flagIssue({required String recordId, required String reason, required String severity}) async {}
+
+  Future<void> updateResearch(String id, Map<String, dynamic> data) async {}
+
   void _checkStatus(http.Response response, String context) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      // Never log DB credentials — only the status code and safe message
       String message = 'HTTP ${response.statusCode}';
       try {
         final body = jsonDecode(response.body) as Map<String, dynamic>;

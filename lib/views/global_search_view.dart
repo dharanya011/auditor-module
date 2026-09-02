@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../providers/audit_state.dart';
-import '../widgets/status_badge.dart';
 import '../services/api_service.dart';
 import '../widgets/api_error_widget.dart';
 
@@ -292,6 +291,39 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildResultCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required String type,
+    required String status,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: AppColors.border),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        subtitle: Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            type,
+            style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11),
+          ),
+        ),
+      ),
     );
   }
 }

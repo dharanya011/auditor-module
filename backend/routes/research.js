@@ -21,6 +21,7 @@ async function inspectResearchSchema() {
 
   const candidates = [
     { schema: 'public', table: 'research_records' },
+    { schema: 'faculty', table: 'research_publications' },
     { schema: 'faculty', table: 'publications' },
     { schema: 'principal', table: 'profile_research_papers' },
     { schema: 'public', table: 'publications' },
